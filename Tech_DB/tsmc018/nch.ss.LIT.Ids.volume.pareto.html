@@ -1,0 +1,227 @@
+<html><body>
+<h2>LIT Memory/Accuracy Trade-Off for Ids for nch@ss</h2>
+<h3>Useful Resolution Combinations:</h3>
+<table border="2"><tr><td></td><td><b>Vgs</b></td><td><b>Vds</b></td><td><b>Vbs</b></td><td><b>Memory</b></td><td><b>Max Error</b></td></tr>
+<tr>
+<td>
+<b>1</b>
+</td>
+<td>
+9
+</td>
+<td>
+9
+</td>
+<td>
+9
+</td>
+<td>
+997KB
+</td>
+<td>
+180.718%
+</td>
+</tr>
+<tr>
+<td>
+<b>2</b>
+</td>
+<td>
+12
+</td>
+<td>
+9
+</td>
+<td>
+9
+</td>
+<td>
+1MB
+</td>
+<td>
+87.070%
+</td>
+</tr>
+<tr>
+<td>
+<b>3</b>
+</td>
+<td>
+17
+</td>
+<td>
+9
+</td>
+<td>
+9
+</td>
+<td>
+2MB
+</td>
+<td>
+41.527%
+</td>
+</tr>
+<tr>
+<td>
+<b>4</b>
+</td>
+<td>
+17
+</td>
+<td>
+17
+</td>
+<td>
+9
+</td>
+<td>
+3MB
+</td>
+<td>
+30.341%
+</td>
+</tr>
+<tr>
+<td>
+<b>5</b>
+</td>
+<td>
+17
+</td>
+<td>
+33
+</td>
+<td>
+17
+</td>
+<td>
+13MB
+</td>
+<td>
+26.489%
+</td>
+</tr>
+</table>
+<h3>Pareto Front:</h3>
+<svg width="1200" height="600"  > <text x="118" y="-5" font-size="15"  > Pareto-front for Ids look-up error for nch@ss and LIT interpolation method </text>
+ <rect x="100" y="10" width="500" height="400" fill="none" stroke="black" stroke-width="3"  />
+ <text x="266" y="450" font-size="15"  > Required Memory </text>
+ <line x1="100.0" y1="410" x2="100.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="100.0" y="430" font-size="10"  > 811KB </text>
+ <line x1="100.0" y1="410" x2="100.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="150.0" y1="410" x2="150.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="150.0" y="430" font-size="10"  > 1MB </text>
+ <line x1="150.0" y1="410" x2="150.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="200.0" y1="410" x2="200.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="200.0" y="430" font-size="10"  > 2MB </text>
+ <line x1="200.0" y1="410" x2="200.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="250.0" y1="410" x2="250.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="250.0" y="430" font-size="10"  > 3MB </text>
+ <line x1="250.0" y1="410" x2="250.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="300.0" y1="410" x2="300.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="300.0" y="430" font-size="10"  > 4MB </text>
+ <line x1="300.0" y1="410" x2="300.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="350.0" y1="410" x2="350.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="350.0" y="430" font-size="10"  > 7MB </text>
+ <line x1="350.0" y1="410" x2="350.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="400.0" y1="410" x2="400.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="400.0" y="430" font-size="10"  > 11MB </text>
+ <line x1="400.0" y1="410" x2="400.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="450.0" y1="410" x2="450.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="450.0" y="430" font-size="10"  > 16MB </text>
+ <line x1="450.0" y1="410" x2="450.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="500.0" y1="410" x2="500.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="500.0" y="430" font-size="10"  > 25MB </text>
+ <line x1="500.0" y1="410" x2="500.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="550.0" y1="410" x2="550.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="550.0" y="430" font-size="10"  > 39MB </text>
+ <line x1="550.0" y1="410" x2="550.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="600.0" y1="410" x2="600.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="600.0" y="430" font-size="10"  > 60MB </text>
+ <line x1="600.0" y1="410" x2="600.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <text x="20" y="330.0" font-size="15" style="direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;"  > Max Relative Error for 99% of the samples </text>
+ <line x1="100" y1="10.0" x2="90" y2="10.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="10.0" font-size="10"  > 242.7% </text>
+ <line x1="600" y1="10.0" x2="100" y2="10.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="50.0" x2="90" y2="50.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="50.0" font-size="10"  > 220.049% </text>
+ <line x1="600" y1="50.0" x2="100" y2="50.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="90.0" x2="90" y2="90.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="90.0" font-size="10"  > 197.398% </text>
+ <line x1="600" y1="90.0" x2="100" y2="90.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="130.0" x2="90" y2="130.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="130.0" font-size="10"  > 174.746% </text>
+ <line x1="600" y1="130.0" x2="100" y2="130.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="170.0" x2="90" y2="170.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="170.0" font-size="10"  > 152.096% </text>
+ <line x1="600" y1="170.0" x2="100" y2="170.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="210.0" x2="90" y2="210.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="210.0" font-size="10"  > 129.445% </text>
+ <line x1="600" y1="210.0" x2="100" y2="210.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="250.0" x2="90" y2="250.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="250.0" font-size="10"  > 106.794% </text>
+ <line x1="600" y1="250.0" x2="100" y2="250.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="290.0" x2="90" y2="290.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="290.0" font-size="10"  > 84.143% </text>
+ <line x1="600" y1="290.0" x2="100" y2="290.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="330.0" x2="90" y2="330.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="330.0" font-size="10"  > 61.492% </text>
+ <line x1="600" y1="330.0" x2="100" y2="330.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="370.0" x2="90" y2="370.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="370.0" font-size="10"  > 38.841% </text>
+ <line x1="600" y1="370.0" x2="100" y2="370.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="410.0" x2="90" y2="410.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="410.0" font-size="10"  > 16.19% </text>
+ <line x1="600" y1="410.0" x2="100" y2="410.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <circle cx="123.77612559030116" cy="119.45475366270585" r="3" stroke="green" stroke-width="1" fill="green"  />
+ <circle cx="156.99576444154596" cy="93.06667448306388" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="156.99576444154596" cy="284.8311017565661" r="3" stroke="green" stroke-width="1" fill="green"  />
+ <circle cx="190.21540329279094" cy="253.81359517816975" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="197.21593698983872" cy="365.2553768701676" r="3" stroke="green" stroke-width="1" fill="green"  />
+ <circle cx="197.21593698983872" cy="119.77412050990193" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="197.21593698983872" cy="101.89037618683233" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="230.43557584108373" cy="357.65229478113014" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="230.43557584108373" cy="58.00286726363464" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="230.43557584108373" cy="289.2058014799312" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="230.43557584108373" cy="295.78421292036876" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="263.65521469232874" cy="262.8160039648293" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="270.6557483893765" cy="385.00972894488257" r="3" stroke="green" stroke-width="1" fill="green"  />
+ <circle cx="270.6557483893765" cy="367.6703824269848" r="3" stroke="orange" stroke-width="1" fill="orange"  />
+ <circle cx="270.6557483893765" cy="99.25877701326243" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="273.80880274160137" cy="106.1491126454709" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="303.8753872406215" cy="369.90941400278484" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="303.8753872406215" cy="295.4882157325273" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="307.0284415928463" cy="53.0248207585027" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="307.0284415928463" cy="287.4018735408173" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="340.2480804440912" cy="273.8039771671026" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="344.0955597889143" cy="382.4783498850023" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="347.2486141411391" cy="387.0397679591312" r="3" stroke="orange" stroke-width="1" fill="orange"  />
+ <circle cx="347.2486141411391" cy="132.28106364104252" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="352.0859053315734" cy="106.068014186129" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="380.46825299238395" cy="367.9149264567385" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="380.46825299238395" cy="295.4475250321303" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="385.30554418281844" cy="28.104222192651548" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="385.30554418281844" cy="287.03247769517" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="418.5251830340632" cy="258.1801963839282" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="420.6884255406769" cy="391.8116400874299" r="3" stroke="green" stroke-width="1" fill="green"  />
+ <circle cx="425.525716731111" cy="386.76607942969974" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="425.525716731111" cy="124.79386782166597" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="431.23430423065366" cy="88.77309717050241" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="458.7453555823557" cy="369.2468917122422" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="458.7453555823557" cy="297.8936753087619" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="464.4539430818985" cy="76.53445527477294" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="464.4539430818985" cy="289.6231288210669" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="497.6735819331433" cy="267.14338596773376" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="498.96552813064875" cy="386.39457317409574" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="504.67411563019147" cy="385.87279997999593" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="504.67411563019147" cy="125.66019945623196" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="537.8937544814362" cy="368.9306212791661" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="537.8937544814362" cy="291.7487053086715" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <circle cx="578.1139270297292" cy="388.8974325451859" r="3" stroke="red" stroke-width="1" fill="red"  />
+ <line x1="156.99576444154596" y1="284.8311017565661" x2="123.77612559030116" y2="119.45475366270591" stroke="green" stroke-width="1" stroke-dasharray="2,5"  />
+ <line x1="197.21593698983872" y1="365.2553768701676" x2="156.99576444154596" y2="284.8311017565661" stroke="green" stroke-width="1" stroke-dasharray="2,5"  />
+ <line x1="270.6557483893765" y1="385.00972894488257" x2="197.21593698983872" y2="365.2553768701676" stroke="green" stroke-width="1" stroke-dasharray="2,5"  />
+ <line x1="420.6884255406769" y1="391.8116400874299" x2="270.6557483893765" y2="385.00972894488257" stroke="green" stroke-width="1" stroke-dasharray="2,5"  />
+ </svg>
+ </body></html>

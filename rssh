@@ -1,0 +1,19 @@
+# \
+exec $RAMSPICE/ramspice $0 $argv
+
+puts -nonewline "% "
+flush stdout
+while {[gets stdin line]>=0} {
+    if {[catch {set retval [eval $line]} msg]} {
+        Error: $msg
+	continue
+    }
+    if {$retval!={}} {
+        puts $retval
+        flush stdout
+    }
+    puts -nonewline "% "
+    flush stdout
+}
+exit
+
