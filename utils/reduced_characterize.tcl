@@ -19,6 +19,7 @@ if {[lsearch {-help -h --help} $argv]!=-1} {
         -tech name of tech file to be generated
         Example:
         characterize.tcl core_40.scs -device 'nch pch' -corner 'ss ff' -topv 1.8
+	
     }
     return
 }
