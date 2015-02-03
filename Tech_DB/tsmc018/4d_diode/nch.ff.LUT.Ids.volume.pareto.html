@@ -1,0 +1,78 @@
+<html><body>
+<h2>LUT Memory/Accuracy Trade-Off for Ids for nch@ff</h2>
+<h3>Useful Resolution Combinations:</h3>
+<table border="2"><tr><td></td><td><b>Vgs</b></td><td><b>Vbs</b></td><td><b>L</b></td><td><b>Memory</b></td><td><b>Max Error</b></td></tr>
+</table>
+<h3>Pareto Front:</h3>
+<svg width="1200" height="600"  > <text x="118" y="-5" font-size="15"  > Pareto-front for Ids look-up error for nch@ff and LUT interpolation method </text>
+ <rect x="100" y="10" width="500" height="400" fill="none" stroke="black" stroke-width="3"  />
+ <text x="266" y="450" font-size="15"  > Required Memory </text>
+ <line x1="100.0" y1="410" x2="100.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="100.0" y="430" font-size="10"  > InfB </text>
+ <line x1="100.0" y1="410" x2="100.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="150.0" y1="410" x2="150.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="150.0" y="430" font-size="10"  > InfB </text>
+ <line x1="150.0" y1="410" x2="150.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="200.0" y1="410" x2="200.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="200.0" y="430" font-size="10"  > InfB </text>
+ <line x1="200.0" y1="410" x2="200.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="250.0" y1="410" x2="250.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="250.0" y="430" font-size="10"  > InfB </text>
+ <line x1="250.0" y1="410" x2="250.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="300.0" y1="410" x2="300.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="300.0" y="430" font-size="10"  > InfB </text>
+ <line x1="300.0" y1="410" x2="300.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="350.0" y1="410" x2="350.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="350.0" y="430" font-size="10"  > 1B </text>
+ <line x1="350.0" y1="410" x2="350.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="400.0" y1="410" x2="400.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="400.0" y="430" font-size="10"  > 0 </text>
+ <line x1="400.0" y1="410" x2="400.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="450.0" y1="410" x2="450.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="450.0" y="430" font-size="10"  > 0 </text>
+ <line x1="450.0" y1="410" x2="450.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="500.0" y1="410" x2="500.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="500.0" y="430" font-size="10"  > 0 </text>
+ <line x1="500.0" y1="410" x2="500.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="550.0" y1="410" x2="550.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="550.0" y="430" font-size="10"  > 0 </text>
+ <line x1="550.0" y1="410" x2="550.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="600.0" y1="410" x2="600.0" y2="420" stroke="black" stroke-width="3"  />
+ <text x="600.0" y="430" font-size="10"  > 0 </text>
+ <line x1="600.0" y1="410" x2="600.0" y2="10" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <text x="20" y="330.0" font-size="15" style="direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;"  > Max Relative Error for 99% of the samples </text>
+ <line x1="100" y1="10.0" x2="90" y2="10.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="10.0" font-size="10"  > -1099999999999999951824702772428630345474600697127459551981745117036136399002837465482395648.000% </text>
+ <line x1="600" y1="10.0" x2="100" y2="10.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="50.0" x2="90" y2="50.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="50.0" font-size="10"  > -880000000000000006691047076269543113712096576720681646768983853644754447115388725476982784.000% </text>
+ <line x1="600" y1="50.0" x2="100" y2="50.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="90.0" x2="90" y2="90.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="90.0" font-size="10"  > -660000000000000061557391380110455881949592456313903741556222590253372495227939985471569920.000% </text>
+ <line x1="600" y1="90.0" x2="100" y2="90.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="130.0" x2="90" y2="130.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="130.0" font-size="10"  > -440000000000000116423735683951368650187088335907125836343461326861990543340491245466157056.000% </text>
+ <line x1="600" y1="130.0" x2="100" y2="130.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="170.0" x2="90" y2="170.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="170.0" font-size="10"  > -220000000000000171290079987792281418424584215500347931130700063470608591453042505460744192.000% </text>
+ <line x1="600" y1="170.0" x2="100" y2="170.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="210.0" x2="90" y2="210.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="210.0" font-size="10"  > 0 </text>
+ <line x1="600" y1="210.0" x2="100" y2="210.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="250.0" x2="90" y2="250.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="250.0" font-size="10"  > 219999999999999945133655696159087231762504120406777905212761263391381951887448740005412864.000% </text>
+ <line x1="600" y1="250.0" x2="100" y2="250.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="290.0" x2="90" y2="290.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="290.0" font-size="10"  > 439999999999999890267311392318174463525008240813555810425522526782763903774897480010825728.000% </text>
+ <line x1="600" y1="290.0" x2="100" y2="290.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="330.0" x2="90" y2="330.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="330.0" font-size="10"  > 659999999999999948479179234293858788618552408767118728597253190213759175445143102743904256.000% </text>
+ <line x1="600" y1="330.0" x2="100" y2="330.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="370.0" x2="90" y2="370.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="370.0" font-size="10"  > 880000000000000006691047076269543113712096576720681646768983853644754447115388725476982784.000% </text>
+ <line x1="600" y1="370.0" x2="100" y2="370.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ <line x1="100" y1="410.0" x2="90" y2="410.0" stroke="black" stroke-width="3"  />
+ <text x="40" y="410.0" font-size="10"  > 1099999999999999951824702772428630345474600697127459551981745117036136399002837465482395648.000% </text>
+ <line x1="600" y1="410.0" x2="100" y2="410.0" stroke="black" stroke-width="1" stroke-dasharray="5,5"  />
+ </svg>
+ </body></html>
