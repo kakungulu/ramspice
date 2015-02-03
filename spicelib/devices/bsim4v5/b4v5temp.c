@@ -44,7 +44,8 @@
 }
 
 
-
+extern float Captured_Cgs;
+extern float Captured_Cgd;
 static int
 BSIM4v5DioIjthVjmEval(
 double Nvtm, double Ijth, double Isb, double XExpBV,
@@ -1458,7 +1459,6 @@ CKTcircuit *ckt)
             
             here->BSIM4v5cgso = pParam->BSIM4v5cgso;
             here->BSIM4v5cgdo = pParam->BSIM4v5cgdo;
-            
             lnl = log(pParam->BSIM4v5leff * 1.0e6);
             lnw = log(pParam->BSIM4v5weff * 1.0e6);
             lnnf = log(here->BSIM4v5nf);
@@ -1827,6 +1827,8 @@ CKTcircuit *ckt)
             here->BSIM4v5SswgTempRevSatCur = T5 * T10 * model->BSIM4v5jtsswgs;
             here->BSIM4v5DswgTempRevSatCur = T6 * T10 * model->BSIM4v5jtsswgd;
             
+            Captured_Cgs=here->BSIM4v5cgso;
+            Captured_Cgd=here->BSIM4v5cgdo;
             
             if (BSIM4v5checkModel(model, here, ckt))
             {   IFuid namarray[2];

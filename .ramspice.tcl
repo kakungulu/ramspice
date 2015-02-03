@@ -805,4 +805,6 @@ textbox {
     Rewritten by Yishai Statter as part of PhD requirements
     Advisor: Dr Tom Chen
 }
+puts version=[clock format [file mtime $::env(RAMSPICE)/ramspice]]
+
 

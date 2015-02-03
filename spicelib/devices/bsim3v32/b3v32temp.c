@@ -28,6 +28,8 @@
 #define MIN_EXP 1.713908431e-15
 #define EXP_THRESHOLD 34.0
 #define Charge_q 1.60219e-19
+extern float Captured_Cgs;
+extern float Captured_Cgd;
 
 /* ARGSUSED */
 int
@@ -923,6 +925,8 @@ BSIM3v32temp (GENmodel *inModel, CKTcircuit *ckt)
             
             here->BSIM3v32cgso = pParam->BSIM3v32cgso;
             here->BSIM3v32cgdo = pParam->BSIM3v32cgdo;
+            Captured_Cgs=here->BSIM3v32cgso;
+            Captured_Cgd=here->BSIM3v32cgdo;
             
             Nvtm = model->BSIM3v32vtm * model->BSIM3v32jctEmissionCoeff;
             if (model->BSIM3v32acmMod == 0)

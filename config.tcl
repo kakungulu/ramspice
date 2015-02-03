@@ -134,6 +134,8 @@ set ::global_c_variables {
     Captured_Ssi 
     Captured_EffFreq
     Captured_Quick_Noise
+    Captured_Cgs
+    Captured_Cgd
 }
 set ::sizer_parameters_no_ids {gm go Vt Nth Nflicker sigmaVt}
 set ::sizer_parameters [concat Ids $::sizer_parameters_no_ids]

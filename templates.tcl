@@ -7,6 +7,7 @@ proc spice_object {name body} {
     print_line "void serial_read_$name\($name *i_$name\);"
 }
 
+
 proc For: {initial condition step body} {
     uplevel $initial
     while {[uplevel "expr $condition"]} {

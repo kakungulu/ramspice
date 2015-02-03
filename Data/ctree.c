@@ -1444,7 +1444,7 @@ get_spice_data (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         }
     }
     if (V==NULL) {
-        #Error: "get_vector_data did not get a valid vector name %s" vector_name
+        #Error: "get_vector_data did not get a valid vector name '%s'" vector_name
         return TCL_ERROR;
     }
     char *command=argv[2];

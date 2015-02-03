@@ -917,6 +917,9 @@ main(int argc, char **argv)
 
     srand((unsigned int) getpid());
     TausSeed();
+    if (Tcl_Eval(interp,"puts \"RAMSPICE=$::env(RAMSPICE)\"")==TCL_ERROR) {
+        Tcl_Eval(interp,"puts $errorInfo");
+    };
     if (Tcl_Eval(interp,"source $::env(RAMSPICE)/.ramspice.tcl")==TCL_ERROR) {
         Tcl_Eval(interp,"puts $errorInfo");
     };
