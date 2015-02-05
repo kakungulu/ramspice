@@ -37,6 +37,9 @@ puts $O "#include \"ramspice_types.h\""
 puts $O "#include \"DotCamel/virtual_machine.h\""
 close $O
 set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.c w]
+puts $O "#include <stdio.h>"
+puts $O "#include <stdlib.h>"
+puts $O "#include \"Data/ctree.h\""
 puts $O "#include \"DotCamel/DotCamelCommands.h\""
 close $O
 source $::env(RAMSPICE)/DotCamel/DotCamelCommands.tcl

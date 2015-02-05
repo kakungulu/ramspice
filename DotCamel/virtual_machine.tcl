@@ -1,6 +1,6 @@
 proc DotCamelCommand {name interface i_body} {
     puts "Info: Declaring DotCamel command: $name"
-    set body "if (!DotCamelVirtualMachineSkip) \{FC FCUNION;\n"
+    set body "\n    #Info: \"$name\"\n    int DotCamelVirtualMachineTempSkip=DotCamelVirtualMachineSkip;\n    DotCamelVirtualMachineSkip=0;\n    if (!DotCamelVirtualMachineTempSkip) \{\n    FC FCUNION;\n"
     set i 0
     foreach var_declaration [split $interface ,] {
         incr i
@@ -14,16 +14,20 @@ proc DotCamelCommand {name interface i_body} {
         }
         set var_name [lindex $var_declaration end]
         switch $var_type {
+            LUT {
+                append body "        LUT *$var_name=(LUT *)DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i].P;\n"
+            } 
+            var {
+                append body "        float *$var_name=(float *)DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i].P;\n"
+            } 
             pointer {
-                append body "void *$var_name=(void *)DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i];\n"
+                append body "        void *$var_name=DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i].P;\n"
             } 
             float {
-                append body "FCUNION.P=(void *)DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i];\n"
-                append body "float $var_name=FCUNION.F;\n"
+                append body "        float $var_name=DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i].F;\n"
             }
             int {
-                append body "FCUNION.P=(void *)DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i];\n"
-                append body "ordinal $var_name=FCUNION.I;\n"
+                append body "        ordinal $var_name=DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+$i].I;\n"
             }
             default {
                 puts -stderr "Error: DotCamelCommand interface type $var_type undefined"
@@ -33,13 +37,13 @@ proc DotCamelCommand {name interface i_body} {
     }
     append body $i_body
     incr i
-    append body "\}\nDotCamelVirtualMachineSkip=0;\n"
-    append body "DotCamelVirtualMachineBatchProgramCounter+=$i;\n"
+    append body "    \}\n"
+    append body "    DotCamelVirtualMachineBatchProgramCounter+=$i;\n"
     set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.h a]
-    puts $O "void DotCamelCommand_$name\(\);"
+    puts $O "void DotCamelCommand$name\(\);"
     close $O
     set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.c a]
-    puts $O "void DotCamelCommand_$name\(\) \{$body\}"
+    puts $O "void DotCamelCommand$name\(\) \{$body\}"
     close $O
     set ::DotCamelCommands($name) $interface
 }
@@ -58,7 +62,7 @@ proc DotCamelTclInterface {} {
         puts $O "        #Error: \"%s requires the following arguments: \($::DotCamelCommands($name)\)\" argv[0]"
         puts $O "    \}"
         set i 0
-	puts $O "DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++]=DotCamelCommand_$name;"
+	puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].func=DotCamelCommand$name;"
         foreach var_declaration [split $interface ,] {
             incr i
             set var_type real
@@ -67,19 +71,25 @@ proc DotCamelTclInterface {} {
             }
             set var_name [lindex $var_declaration end]
             switch $var_type {
+                var {
+	            puts $O "    context *DotCamelContext$i;"
+	            puts $O "    resolve_context(argv\[$i\],&(DotCamelContext$i),NULL);"
+	            puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].P=(void *)(&(DotCamelContext$i->value.s));"
+		}
+                LUT {
+	            puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].P=get_LUT(argv\[$i\]);"
+		}
                 pointer {
-	            puts $O "DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++]=get_LUT(argv\[$i\]);"
+	            puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].P=get_LUT(argv\[$i\]);"
                 } 
                 float {
-	            puts $O "FCUNION.F=atof(argv\[$i\]);"
-	            puts $O "DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++]=FCUNION.P;"
+	            puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].F=strtof(argv\[$i\],NULL);"
                 }
                 int {
-	            puts $O "FCUNION.I=atoi(argv\[$i\]);"
-	            puts $O "DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++]=FCUNION.P;"
+	            puts $O "    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].I=atoi(argv\[$i\]);"
                 }
                 default {
-                    puts -stderr "Error: DotCamelCommand interface type $var_type undefined"
+                    puts stderr "Error: DotCamelCommand interface type $var_type undefined"
                     exit
                 }
             }
@@ -90,7 +100,7 @@ proc DotCamelTclInterface {} {
     }
     puts $O "void init_tcl_dot_camel(Tcl_Interp *interp) \{"
     foreach name [array names ::DotCamelCommands] {
-        puts $O "Tcl_CreateCommand(interp, \"DotCamelCommand_$name\", tcl_dot_camel_$name, NULL, NULL);"
+        puts $O "Tcl_CreateCommand(interp, \"DotCamelCommand$name\", tcl_dot_camel_$name, NULL, NULL);"
     }
     puts $O "\}"
     close $O

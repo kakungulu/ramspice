@@ -89,7 +89,7 @@ proc calc_error {parameter section sim int} {
 	#	if {$Vds<=($Vgs-0.6)} continue
 	   #     skip {$W/$L>5} 
 		# report_vars Vgs Vbs L W LUT_Ids Ids LUT_gm gm LUT_ro ro
-		#report_vars Vgs Vbs L W LUT_gm gm 
+		report_vars Vgs Vbs L W LUT_gm gm 
 		# Info: Vgs=$Vgs [regexp {nan} $Vds]
                 if {[regexp {nan} $Vbs]} {
                     set access_time($rez) $Vgs

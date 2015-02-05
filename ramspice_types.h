@@ -31,6 +31,7 @@ typedef union {
     float F; 
     int32_t I; 
     void *P;
+    void (*func)();
     unsigned char C[4];
 } FC;
 #define BYTES_PER_FLOAT 4

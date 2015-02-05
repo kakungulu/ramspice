@@ -160,3 +160,4 @@ array set ::sizer_parameter_dim {
 }
 set ::DotCamelVirtualMachineBatchSize [expr 1024*1024*16]
 set ::DotCamelVirtualMachineStackSize [expr 1024*1024*16]
+set ::DotCamelVirtualMachineGosubStackSize [expr 1024*1024]

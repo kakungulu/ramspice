@@ -152,8 +152,8 @@ for {set max_wbyl $opt(max_wbyl)} {$max_wbyl<=$opt(max_wbyl)} {incr max_wbyl} {
     set stddev [expr sqrt($stddev/[llength $error_list])]
     Info: average=$average stddev=$stddev
     set time [expr 1e-9*[lindex [timer_report] 0]]
-    Info: Access time=[eng $time sec]
     write_bin float $time
+    Info: Access time=[eng $time sec]
     close_bin write
     set O [open /tmp/stats a]
     puts $O "$max_wbyl $average $stddev"

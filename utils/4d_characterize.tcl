@@ -857,8 +857,6 @@ foreach type [split $device :] {
                                 ::spice::alter vbs = $Vbs
                                 ::spice::noise v(3) vgs lin 2 1 2
 				@ look_up_tables/$type/cgs/${::corner}($i0,$i1,$i2,$i3) =  [get_spice_data Captured_Cgs end]
-				set cgs [get_spice_data Captured_Cgs end]
-				report_vars W L Vgs Vds Vbs cgs
 				@ look_up_tables/$type/cds/${::corner}($i0,$i1,$i2,$i3) =  [get_spice_data Captured_Cgd end]
                                 set thermal_noise [get_spice_data Captured_Thermal_Noise end]
                                 if {[string match *nan* $thermal_noise]} {

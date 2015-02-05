@@ -5,9 +5,8 @@ set tech=$1
 set topv=$2
 foreach l (6 6.5 7)
 foreach vgs (5 5.5 6 6.5)
-    foreach vds (5 6 6.5 7 7.5)
         foreach vbs (3 3.5 4 4.5)
-	    set rez=$vgs":"$vds":"$vbs":"$l
+	    set rez=$vgs":"$vbs":"$l
 	    foreach dev (nch)
 	       foreach corner (ss tt ff fs sf) 
 	          foreach interpolation (LUT) 
@@ -17,7 +16,6 @@ foreach vgs (5 5.5 6 6.5)
 	    end	
         end
     end
-end
 end
 
 foreach device (nch)

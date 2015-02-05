@@ -1948,7 +1948,7 @@ ordinal add_sub_context(context *i_parent,context *i_child) {
     return(i_parent->num_of_children-1);
 }
 int resolve_context(char *i_key,context **i_context,float **array_entry) {
-    context *temp_context=*i_context;
+    context *temp_context=Context;
     if (i_key[0]=='/') temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0;
@@ -1960,7 +1960,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         j=0;
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
-                //               #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=temp_context->parent;
@@ -1980,7 +1980,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
                 }
             }
             if (!next_context) {
-                //                #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=next_context;
@@ -2025,6 +2025,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         }
         temp_context=next_context;
     }
+    #Info: "Resolved context %s -> %x" i_key temp_context
     *i_context=temp_context;
     return 1;
 }
