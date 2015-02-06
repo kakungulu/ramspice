@@ -7,13 +7,13 @@ RAMSPICE=/home/ystatter/virunga
     # Advisor: Dr Tom Chen                                    #
     #                                                         #
     ###########################################################
-version=Thu Feb 05 16:34:46 MST 2015
+version=Thu Feb 05 17:12:51 MST 2015
 Info: Sourcing Tcl script: tests/dot_camel.tcl 
-Info: Resolved context /test_vars/a -> 1263c510 
-Info: Resolved context /test_vars/b -> 12660070 
-Info: Resolved context /test_vars/a -> 1263c510 
+Info: Resolved context /test_vars/a -> 1272e0d0 
+Info: Resolved context /test_vars/b -> 1272e310 
+Info: Resolved context /test_vars/a -> 1272e0d0 
 Info: a = 4 
-Info: Resolved context /test_vars -> 1263c4b0 
+Info: Resolved context /test_vars -> 1272e070 
 Info: Compiling expression interpolate(Ids,Vgs,Vds,Vbs,L)*W/L 
 Info: Compiling expression Ids 
 Info: compiler output: DotCamelCommandPushVar Ids 
@@ -35,50 +35,178 @@ Info: compiler output: DotCamelCommandPushVar W
 Info: compiler output: DotCamelCommandDiv 
 Info: Compiling expression @ 
 Info: compiler output: DotCamelCommandMult 
-Info: Compiling expression (a+7)/(b+3) 
-Info: Compiling expression b+3 
+Info: Compiling expression x*x 
+Info: Compiling expression x 
+Info: Compiling expression x 
+Info: compiler output: DotCamelCommandMult 
+Info: Compiling expression (a*7-square(2))/(b+square(3)) 
 Info: Compiling expression 3 
 Info: compiler output: DotCamelCommandPush 3 
+Info: compiler output: DotCamelCommandGoSub 27 
+Info: Compiling expression (a*7-square(2))/(b+@) 
+Info: Compiling expression b+@ 
+Info: Compiling expression @ 
 Info: Compiling expression b 
-Info: Resolved context b -> 12660070 
+Info: Resolved context b -> 1272e310 
 Info: compiler output: DotCamelCommandPushVar b 
 Info: compiler output: DotCamelCommandPlus 
-Info: Compiling expression (a+7)/@ 
-Info: Compiling expression a+7 
+Info: Compiling expression (a*7-square(2))/@ 
+Info: Compiling expression 2 
+Info: compiler output: DotCamelCommandPush 2 
+Info: compiler output: DotCamelCommandGoSub 27 
+Info: Compiling expression (a*7-@)/@ 
+Info: Compiling expression a*7-@ 
+Info: Compiling expression @ 
+Info: Compiling expression a*7 
 Info: Compiling expression 7 
 Info: compiler output: DotCamelCommandPush 7 
 Info: Compiling expression a 
-Info: Resolved context a -> 1263c510 
+Info: Resolved context a -> 1272e0d0 
 Info: compiler output: DotCamelCommandPushVar a 
-Info: compiler output: DotCamelCommandPlus 
+Info: compiler output: DotCamelCommandMult 
+Info: compiler output: DotCamelCommandMinus 
 Info: Compiling expression @/@ 
 Info: Compiling expression @ 
 Info: Compiling expression @ 
 Info: compiler output: DotCamelCommandDiv 
-Info: property=Ids,min 0 Ids,unit A F,calculation 17 Ids,max 1.0 Ids,calculation 0 
-Info: Running 29 
+Info: property=Ids,min 0 Ids,unit A F,calculation 37 Ids,max 1.0 Ids,calculation 0 
+Info: Running 68 
 Info: GoSub 
-Info: Running 17 
+Info: Running 37 
 Info: Push 
-Info: Running 19 
-Info: PushVar 
-Info: Pushing var 12660090 (3) 
-Info: Running 21 
-Info: Plus 
-Info: Running 22 
-Info: Push 
-Info: Running 24 
-Info: PushVar 
-Info: Pushing var 1263c530 (4) 
-Info: Running 26 
-Info: Plus 
-Info: Running 27 
-Info: Div 
-Info: Running 28 
-Info: Return 
-Info: Running 31 
+Info: Running 39 
 Info: DumpStack 
-Info: This is the content of the stack: 
-Info: Stack[16777215] = 1.222222 
+Info: This is the content of the stack (index=16777214): 
+Info: Stack[16777215] = 3.000000 
+Info: Running 40 
+Info: GoSub 
+Info: Running 27 
+Info: PushArg 
+Info: Running 29 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 3.000000 
+Info: Stack[16777214] = 3.000000 
+Info: Running 30 
+Info: PushArg 
 Info: Running 32 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777212): 
+Info: Stack[16777215] = 3.000000 
+Info: Stack[16777214] = 3.000000 
+Info: Stack[16777213] = 3.000000 
+Info: Running 33 
+Info: Mult 
+Info: Running 34 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 3.000000 
+Info: Stack[16777214] = 9.000000 
+Info: Running 35 
+Info: Return 
+Info: Running 42 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777214): 
+Info: Stack[16777215] = 9.000000 
+Info: Running 43 
+Info: PushVar 
+Info: Pushing var 1272e330 (3) 
+Info: Running 45 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 9.000000 
+Info: Stack[16777214] = 3.000000 
+Info: Running 46 
+Info: Plus 
+Info: Running 47 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777214): 
+Info: Stack[16777215] = 12.000000 
+Info: Running 48 
+Info: Push 
+Info: Running 50 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 2.000000 
+Info: Running 51 
+Info: GoSub 
+Info: Running 27 
+Info: PushArg 
+Info: Running 29 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777212): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 2.000000 
+Info: Stack[16777213] = 2.000000 
+Info: Running 30 
+Info: PushArg 
+Info: Running 32 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777211): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 2.000000 
+Info: Stack[16777213] = 2.000000 
+Info: Stack[16777212] = 2.000000 
+Info: Running 33 
+Info: Mult 
+Info: Running 34 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777212): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 2.000000 
+Info: Stack[16777213] = 4.000000 
+Info: Running 35 
+Info: Return 
+Info: Running 53 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 4.000000 
+Info: Running 54 
+Info: Push 
+Info: Running 56 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777212): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 4.000000 
+Info: Stack[16777213] = 7.000000 
+Info: Running 57 
+Info: PushVar 
+Info: Pushing var 1272e0f0 (4) 
+Info: Running 59 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777211): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 4.000000 
+Info: Stack[16777213] = 7.000000 
+Info: Stack[16777212] = 4.000000 
+Info: Running 60 
+Info: Mult 
+Info: Running 61 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777212): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 4.000000 
+Info: Stack[16777213] = 28.000000 
+Info: Running 62 
+Info: Minus 
+Info: Running 63 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777213): 
+Info: Stack[16777215] = 12.000000 
+Info: Stack[16777214] = 24.000000 
+Info: Running 64 
+Info: Div 
+Info: Running 65 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777214): 
+Info: Stack[16777215] = 2.000000 
+Info: Running 66 
+Info: Return 
+Info: Running 70 
+Info: DumpStack 
+Info: This is the content of the stack (index=16777214): 
+Info: Stack[16777215] = 2.000000 
+Info: Running 71 
 Info: Stop 

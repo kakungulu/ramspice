@@ -4,18 +4,20 @@ DotCamelCommand Push {float F} {
 }
 
 DotCamelCommand GoSub {int SubRoutine} {
-    DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineBatchProgramCounter+1;
+    DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineBatchProgramCounter;
     DotCamelVirtualMachineGosubStackIndex--;
     DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineStackArgs;
     DotCamelVirtualMachineGosubStackIndex--;
     DotCamelVirtualMachineBatchProgramCounter=SubRoutine-2;
     DotCamelVirtualMachineStackArgs=DotCamelVirtualMachineStackIndex;
 }
-DotCamelCommand Return {} {
+DotCamelCommand Return {int NumOfArguments} {
     DotCamelVirtualMachineGosubStackIndex++;
     DotCamelVirtualMachineStackArgs=DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I;
     DotCamelVirtualMachineGosubStackIndex++;
     DotCamelVirtualMachineBatchProgramCounter=DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+NumOfArguments+1].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F;
+    DotCamelVirtualMachineStackIndex+=NumOfArguments;
 }
 DotCamelCommand PushArg {int Arg} {
     DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackArgs+Arg].F;
@@ -37,7 +39,7 @@ DotCamelCommand Pop {} {
 set op_template {
     DotCamelVirtualMachineStackIndex++;
     DotCamelVirtualMachineStackIndex++;
-    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F@DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F@DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F;
     DotCamelVirtualMachineStackIndex--;
 }
 foreach op {+ - * /} op_name {Plus Minus Mult Div} {
@@ -46,7 +48,7 @@ foreach op {+ - * /} op_name {Plus Minus Mult Div} {
 }
 
 set op_template {
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F@DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F@DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
 }
 foreach op {< > <= >= == !=} op_name {LessThan GreaterThan AtMost AtLeast Equal Different} {
     regsub @ $op_template $op body
@@ -64,7 +66,7 @@ DotCamelCommand Goto {int location} {
 }
 DotCamelCommand DumpStack {} {
     int i;
-    #Info: "This is the content of the stack:"
+    #Info: "This is the content of the stack (index=%ld):" DotCamelVirtualMachineStackIndex
     for (i=DotCamelVirtualMachineStackSize-1;i>DotCamelVirtualMachineStackIndex;i--) {
         #Info: "Stack[%d] = %f" i DotCamelVirtualMachineStack[i].F
     }

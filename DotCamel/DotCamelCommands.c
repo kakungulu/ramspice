@@ -23,7 +23,7 @@ void DotCamelCommandGoSub() {
     FC FCUNION;
         ordinal SubRoutine=DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+1].I;
 
-    DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineBatchProgramCounter+1;
+    DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineBatchProgramCounter;
     DotCamelVirtualMachineGosubStackIndex--;
     DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I=DotCamelVirtualMachineStackArgs;
     DotCamelVirtualMachineGosubStackIndex--;
@@ -38,13 +38,16 @@ void DotCamelCommandReturn() {
     DotCamelVirtualMachineSkip=0;
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
+        ordinal NumOfArguments=DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramCounter+1].I;
 
     DotCamelVirtualMachineGosubStackIndex++;
     DotCamelVirtualMachineStackArgs=DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I;
     DotCamelVirtualMachineGosubStackIndex++;
     DotCamelVirtualMachineBatchProgramCounter=DotCamelVirtualMachineGosubStack[DotCamelVirtualMachineGosubStackIndex].I;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+NumOfArguments+1].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F;
+    DotCamelVirtualMachineStackIndex+=NumOfArguments;
     }
-    DotCamelVirtualMachineBatchProgramCounter+=1;
+    DotCamelVirtualMachineBatchProgramCounter+=2;
 }
 void DotCamelCommandPushArg() {
     #Info: "PushArg"
@@ -106,7 +109,7 @@ void DotCamelCommandPlus() {
 
     DotCamelVirtualMachineStackIndex++;
     DotCamelVirtualMachineStackIndex++;
-    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F+DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F+DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F;
     DotCamelVirtualMachineStackIndex--;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
@@ -120,7 +123,7 @@ void DotCamelCommandMinus() {
 
     DotCamelVirtualMachineStackIndex++;
     DotCamelVirtualMachineStackIndex++;
-    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F-DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F-DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F;
     DotCamelVirtualMachineStackIndex--;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
@@ -134,7 +137,7 @@ void DotCamelCommandMult() {
 
     DotCamelVirtualMachineStackIndex++;
     DotCamelVirtualMachineStackIndex++;
-    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F*DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F*DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F;
     DotCamelVirtualMachineStackIndex--;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
@@ -148,7 +151,7 @@ void DotCamelCommandDiv() {
 
     DotCamelVirtualMachineStackIndex++;
     DotCamelVirtualMachineStackIndex++;
-    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F/DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F;
+    DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F/DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F;
     DotCamelVirtualMachineStackIndex--;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
@@ -160,7 +163,7 @@ void DotCamelCommandLessThan() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F<DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F<DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -171,7 +174,7 @@ void DotCamelCommandGreaterThan() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F>DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F>DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -182,7 +185,7 @@ void DotCamelCommandAtMost() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F<=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F<=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -193,7 +196,7 @@ void DotCamelCommandAtLeast() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F>=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F>=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -204,7 +207,7 @@ void DotCamelCommandEqual() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F==DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F==DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -215,7 +218,7 @@ void DotCamelCommandDifferent() {
     if (!DotCamelVirtualMachineTempSkip) {
     FC FCUNION;
 
-    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+2].F!=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex+1].F)) DotCamelVirtualMachineSkip=1;
+    if (!(DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex-1].F!=DotCamelVirtualMachineStack[DotCamelVirtualMachineStackIndex].F)) DotCamelVirtualMachineSkip=1;
     }
     DotCamelVirtualMachineBatchProgramCounter+=1;
 }
@@ -262,7 +265,7 @@ void DotCamelCommandDumpStack() {
     FC FCUNION;
 
     int i;
-    #Info: "This is the content of the stack:"
+    #Info: "This is the content of the stack (index=%ld):" DotCamelVirtualMachineStackIndex
     for (i=DotCamelVirtualMachineStackSize-1;i>DotCamelVirtualMachineStackIndex;i--) {
         #Info: "Stack[%d] = %f" i DotCamelVirtualMachineStack[i].F
     }
@@ -289,10 +292,12 @@ static int tcl_dot_camel_GoSub(ClientData clientData,Tcl_Interp *interp,int argc
 }
 static int tcl_dot_camel_Return(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     FC FCUNION;
-    if (argc!=1) {
-        #Error: "%s requires the following arguments: ()" argv[0]
+    if (argc!=2) {
+        #Error: "%s requires the following arguments: (int NumOfArguments)" argv[0]
     }
     DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].func=DotCamelCommandReturn;
+    DotCamelVirtualMachineBatch[DotCamelVirtualMachineBatchProgramSize++].I=atoi(argv[1]);
+
     return TCL_OK;
 }
 static int tcl_dot_camel_PopVar(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
