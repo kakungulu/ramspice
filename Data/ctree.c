@@ -989,7 +989,10 @@ void context_load(context *c) {
             copy_string(a->name);
             a->dim=read_ordinal();
 	    #For: {set dim 1} {$dim<$::MAXDIM} {incr dim} {
-	        if (a->dim==$dim) a->interpolate=lut_interpolation_$dim;
+	        if (a->dim==$dim) {
+		    a->interpolate=lut_interpolation_$dim;
+		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+		}    
 	    }
             ordinal volume=1;
             int j,k,i;
@@ -1099,7 +1102,10 @@ int array_load(char *filename) {
         a->name=name;
         a->dim=read_ordinal();
 	#For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-	    if (a->dim==$dim) a->interpolate=lut_interpolation_$dim;
+	    if (a->dim==$dim) {
+	        a->interpolate=lut_interpolation_$dim;
+		a->gamma_interpolate=lut_gamma_interpolation_$dim;
+	    }	
 	}
         a->LIT=NULL;
         a->hit=NULL;
@@ -1952,11 +1958,13 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
     if (i_key[0]=='/') temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0;
+    // #Info: "Resolving Context %s from %x" i_key temp_context
     while (i_key[i]) {
         while ((i_key[i]=='/')&&(i_key[i])) i++;
         if (i_key[i]==0) break;
         while ((i_key[i]!='/')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
         context_name_buffer[j]=0;
+        // #Info: "Resolving SubContext %s from %x" context_name_buffer temp_context
         j=0;
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
@@ -2020,12 +2028,12 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
             }
         }
         if (!next_context) {
-            //            #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
+            #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
             return 0;
         }
         temp_context=next_context;
     }
-    #Info: "Resolved context %s -> %x" i_key temp_context
+    // #Info: "Resolved context %s -> %x (%x,%g)" i_key temp_context &(temp_context->value.s) temp_context->value.s
     *i_context=temp_context;
     return 1;
 }
@@ -2073,7 +2081,10 @@ int create_context(char *i_key) {
             for (l=k+1;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') context_name_buffer[l]=0;
             context_name_buffer[l]=0;
 	    #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-	        if (a->dim==$dim) a->interpolate=lut_interpolation_$dim;
+	        if (a->dim==$dim) {
+		    a->interpolate=lut_interpolation_$dim;
+		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+		}
 	    }
             ordinal volume=1;
             for (l=0;l<a->dim;l++) {
@@ -2107,7 +2118,7 @@ int create_context(char *i_key) {
             } 
             a->LIT=NULL;
             a->hit=NULL;
-            #Info: "new array: %s (size: %ld*%ld=[eng %ld B])" temp_context->name volume sizeof(float) volume*sizeof(float)
+            #Info: "new array: %s (size: %ld*%ld=[eng %ld B]) %x" temp_context->name volume sizeof(float) volume*sizeof(float) a
             continue;
         }
         context *next_context=NULL;
@@ -2353,7 +2364,10 @@ node *add_array_context(char *i_key,node **i_node) {
     a->name=(*i_node)->name;
     a->dim=argc;
     #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-    	if (a->dim==$dim) a->interpolate=lut_interpolation_$dim;
+    	if (a->dim==$dim) {
+	    a->interpolate=lut_interpolation_$dim;
+	    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+	}    
     }
     ordinal volume=1;
     for (i=0;i<a->dim;i++) {

@@ -1,6 +1,6 @@
 BSIM3 Model (Supports: v3.2,v3.2.2,v3.2.3,v3.2.4)
 Parameter Checking.
-Model = nch_sf_16
-W = 3.68691e-07,L = 1.97859e-07,M = 1
-Warning: Pd = 0 is less than W=3.62691e-07.
-Warning: Ps = 0 is less than W=3.62691e-07.
+Model = nch_ss_1
+W = 8.31119e-05,L = 1.37677e-05,M = 1
+Warning: Pd = 0 is less than W=8.3096e-05.
+Warning: Ps = 0 is less than W=8.3096e-05.

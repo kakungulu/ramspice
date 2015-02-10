@@ -136,6 +136,7 @@ typedef struct {
     unsigned char *hit_bytecode;
     ordinal hit_bytecode_size;
     float (*interpolate)(void *a,float *coord);
+    float (*gamma_interpolate)(void *a);
 } LUT;
 float global_coord[$MAXDIM];
 void serial_LUT(LUT *i_LUT);

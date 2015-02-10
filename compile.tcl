@@ -28,23 +28,24 @@ source $::env(RAMSPICE)/templates.tcl
 source $::env(RAMSPICE)/unknown.tcl
 
 
-# DotCamel support comes in here:
-source $::env(RAMSPICE)/DotCamel/virtual_machine.tcl
-set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.h w]
-puts $O "#ifndef DotCamelCommands"
-puts $O "#define DotCamelCommands"
+# Gamma support comes in here:
+source $::env(RAMSPICE)/Gamma/virtual_machine.tcl
+set O [open $::env(RAMSPICE)/Gamma/Gamma.h w]
+puts $O "#ifndef Gamma"
+puts $O "#define Gamma"
 puts $O "#include \"ramspice_types.h\""
-puts $O "#include \"DotCamel/virtual_machine.h\""
+puts $O "#include \"Gamma/virtual_machine.h\""
+#puts $O "#include <tcl.h>"
 close $O
-set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.c w]
+set O [open $::env(RAMSPICE)/Gamma/Gamma.c w]
 puts $O "#include <stdio.h>"
 puts $O "#include <stdlib.h>"
 puts $O "#include \"Data/ctree.h\""
-puts $O "#include \"DotCamel/DotCamelCommands.h\""
+puts $O "#include \"Gamma/Gamma.h\""
 close $O
-source $::env(RAMSPICE)/DotCamel/DotCamelCommands.tcl
-DotCamelTclInterface
-set O [open $::env(RAMSPICE)/DotCamel/DotCamelCommands.h a]
+source $::env(RAMSPICE)/Gamma/Gamma.tcl
+GammaTclInterface
+set O [open $::env(RAMSPICE)/Gamma/Gamma.h a]
 puts $O "#endif"
 close $O
 

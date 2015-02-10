@@ -2,6 +2,7 @@
 #define LOOKUP_TABLE
 #define SLOPES_BUFFER_SIZE 1024*1024
 #include "Data/ctree.h"
+#include "Gamma/virtual_machine.h"
 struct linear_interpolation_table{
     ordinal dim;    // the number of dimensions or the length of size[]
     ordinal *size; // an array of integers, the number of bits per dimension. 
@@ -21,6 +22,7 @@ typedef struct {
 } cluster;
 #For: {set i 0} {$i<$::MAXDIM} {incr i} {
     float lut_interpolation_$i(void *a,float *coord);
+    void lut_gamma_interpolation_$i(void *a);
     float lut_cluster_interpolation_$i(LUT *a,float *coord,cluster **i_cluster);
 }
 

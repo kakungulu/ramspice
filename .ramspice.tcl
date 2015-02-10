@@ -800,6 +800,7 @@ proc get_opts {} {
         set ::opt($key) $arg
     }
 }
+source $::env(RAMSPICE)/Gamma/.Gamma.tcl
 textbox {
     RAMSpice: Colorado State University version of NGSPICE
     Rewritten by Yishai Statter as part of PhD requirements

@@ -158,6 +158,6 @@ array set ::sizer_parameter_dim {
     Nflicker	4
     sigmaVt	1
 }
-set ::DotCamelVirtualMachineBatchSize [expr 1024*1024*16]
-set ::DotCamelVirtualMachineStackSize [expr 1024*1024*16]
-set ::DotCamelVirtualMachineGosubStackSize [expr 1024*1024]
+set ::GammaVirtualMachineBatchSize [expr 1024*1024*16]
+set ::GammaVirtualMachineStackSize [expr 1024*1024*16]
+set ::GammaVirtualMachineGosubStackSize [expr 1024*1024]

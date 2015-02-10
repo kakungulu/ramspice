@@ -526,6 +526,132 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
     }
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
+    void lut_gamma_interpolation_$DIM(void *i_a) {
+        #Info: "Gamma machine's interpolation function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
+        #tcl set num_of_corners [expr 1<<$DIM]
+	LUT *a=(LUT *)i_a;
+        Tcl_Time start_time,end_time; 
+        Tcl_GetTime(&start_time);
+   //     linear_interpolation_table *L=a->LIT;
+        ordinal i,j,end;
+        // Find the hyper-cube 
+        float retval=0;
+        ordinal index=0;
+ //       ordinal lit_index=0;
+//        ordinal sizer=1;
+ //       ordinal lit_sizer=1;
+    //    int I;
+	/*
+        #For: {set i 0} {$i<$DIM} {incr i} {
+            end=a->size[$i]-1;
+            if (a->legend[$i][end]>a->legend[$i][0]) {
+                if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F<=a->legend[$i][0]) {
+                    key[$i]=0;
+                    // #Warning: "Undershoot %g<%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0]
+                } else if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F>=a->legend[$i][end]) {
+                    key[$i]=end-1;
+                    // #Warning: "Overshoot %g>%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][end]
+                } else {
+                    ordinal pre=0;
+                    ordinal post=end;
+                    while (post-pre>1) {
+                        ordinal mid=(post+pre)/2;
+                        if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F>=a->legend[$i][mid]) {
+                            pre=mid;
+                        } else {
+                            post=mid;
+                        }
+                    }
+                    key[$i]=pre;
+                }	
+            } else {
+                if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F>=a->legend[$i][0]) {
+                    key[$i]=0;
+                    // #Warning: "Undershoot %g>%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0]
+                } else if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F<=a->legend[$i][end]) {
+                    key[$i]=end-1;
+                    // #Warning: "Overshoot %g<%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][end]
+                } else {
+                    ordinal pre=0;
+                    ordinal post=end;
+                    while (post-pre>1) {
+                        ordinal mid=(post+pre)/2;
+                        if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F<=a->legend[$i][mid]) {
+                            pre=mid;
+                        } else {
+                            post=mid;
+                        }
+                    }
+                    key[$i]=pre;
+                }	
+            }	
+            index+=key[$i]*sizer;
+            lit_index+=key[$i]*lit_sizer;
+            sizer*=a->size[$i];
+            lit_sizer*=(a->size[$i]-1);
+        }
+	*/
+	float i_f;
+        #For: {set i 0} {$i<$DIM} {incr i} {
+	    i_f=(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F-a->legend[$i][0])*a->physical_factor[$i];
+	    // #Info: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
+	    int key${i}=(int)i_f;
+	    if (key${i}<0) key${i}=0;
+	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;
+            index+=key${i}*a->sizer[$i];
+	    // #Info: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
+//            lit_index+=key${i}*lit_sizer;
+//            sizer*=a->size[$i];
+//            lit_sizer*=(a->size[$i]-1);
+	}    
+	
+	/*
+        if (L) {
+            float *slopes=&(L->content[lit_index*($DIM+1)]);
+            float intercept=slopes[$DIM];
+            //       ordinal prom_dim=nan_tag(intercept);
+            if (intercept!=0) {
+                //              // #Info: "Linear " 
+                retval=intercept;
+                #For: {set i 0} {$i<$DIM} {incr i} {
+                    retval+=slopes[$i]*GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F;
+                }    
+                goto interpolation_time_$DIM;
+            }
+        }
+	*/
+        //    // #Info: "Full  " 
+        // Full interpolation, refer back to the original array
+	float *hypercube=&(a->content[index]);
+        #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
+            float interpolation_buffer$corner=hypercube[a->neighbors[$corner]];
+	    // #Info: "Corner $corner=%g" interpolation_buffer$corner
+        }
+	float w1,w2;
+        #tcl set weighing_dim 0
+        #For: {set breadth $num_of_corners} {$breadth>1} {set breadth [expr $breadth/2]} {
+	    // #Info: "Dim $weighing_dim: key=%d" key${weighing_dim} 
+	    w1=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F-a->legend[$weighing_dim][key${weighing_dim}];
+	    w2=a->legend[$weighing_dim][key${weighing_dim}+1]-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F;
+            #tcl set j 0
+	    // #Info: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
+            #For: {set i 0} {$i<$breadth} {incr i 2} {
+                #tcl set k [expr $i+1]
+                interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
+		// #Info: "interpolation_buffer$j=%g" interpolation_buffer$j
+                #tcl incr j
+            }
+            #tcl incr weighing_dim
+        }
+	GammaVirtualMachineStackIndex+=$DIM;
+        GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=interpolation_buffer0/a->hypercube_volume;
+        interpolation_time_$DIM:
+        Tcl_GetTime(&end_time);
+        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Ids_counter++;
+    }
+} 
+#For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
     float lut_cluster_interpolation_$DIM(LUT *a,float *coord,cluster **i_cluster) {
         #tcl set num_of_corners [expr 1<<$DIM]
         float retval=0;

@@ -940,8 +940,8 @@ main(int argc, char **argv)
     Tcl_CmdInfo infoPtr;
     register_tcl_functions(interp);
     register_tcl_input_functions(interp);
-    init_tcl_dot_camel(interp);
-    register_dot_camel_functions(interp);
+    init_tcl_gamma(interp);
+    register_gamma_functions(interp);
     Tcl_Eval(interp,"set ::argv {}");
     char args_buf[1024*64];
     for (i=0;i<argc;i++) {

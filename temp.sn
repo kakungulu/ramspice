@@ -1,4 +1,4 @@
-* Generated from 13624 ystatter chencloud1
+* Generated from 9239 ystatter chencloud1
 .model nch_ss_1 nmos (
 + level = 49
 + cjsw = 2.142574e-10
@@ -33829,9 +33829,10 @@
 
 
 
-.temp 27
-mn 1 1 5 4 nch_sf_16 L=1.8e-7 W=5e-7
+.temp 125
+mn 3 1 5 4 nch_ss_1 L=1e-5 W=2.0001e-5
 r5 5 0 1e-12
+Vds 3 0 dc 0 ac 0
 Vgs 1 0 dc 0 ac 0
 Vbs 4 0 dc 0 ac 0
 .end
