@@ -13,7 +13,7 @@ get_opts
 @ /test_vars/b = real 8.0
 @ /test_vars/F = real 5.0
 Info: a = [@ /test_vars/a]
-.init
+..init
 @ /test_vars cd
 ### # Program
 ###     GammaCommandPushVar a
@@ -62,12 +62,12 @@ array_set_legend A 1 1 1
 @ L !
 @ W = real 0.7
 @ L = real 0.3
-.property I=interpolate(W,L,&A)*(W/L)
+.property I=-interpolate(W,L,&A)*(W/L)
 .label: start_here
      .calculate I
      GammaCommandDumpStack
      GammaCommandStop
 @ cost = real 0
-.run   $start_here
+..run   $start_here
 Info: Result=[@ I]
 exit

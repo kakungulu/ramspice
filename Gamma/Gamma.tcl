@@ -4,6 +4,7 @@ GammaCommand Push {float F} {
 }
 
 GammaCommand GoSub {int SubRoutine} {
+    #Info: "%ld/%ld: Gosub to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize SubRoutine
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineBatchProgramCounter;
     GammaVirtualMachineGosubStackIndex--;
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineStackArgs;
@@ -12,10 +13,16 @@ GammaCommand GoSub {int SubRoutine} {
     GammaVirtualMachineStackArgs=GammaVirtualMachineStackIndex;
 }
 GammaCommand Return {int NumOfArguments} {
+    if (GammaVirtualMachineGosubStackIndex+1>=GammaVirtualMachineGosubStackSize) {
+        #Info: "Returning to nothing. Stoping!"
+        GammaVirtualMachineReset();
+	return;
+    }
     GammaVirtualMachineGosubStackIndex++;
     GammaVirtualMachineStackArgs=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
     GammaVirtualMachineGosubStackIndex++;
     GammaVirtualMachineBatchProgramCounter=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
+    #Info: "%ld/%ld: Returning to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+NumOfArguments+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
     GammaVirtualMachineStackIndex+=NumOfArguments;
 }
@@ -48,33 +55,52 @@ GammaCommand Interpolate {} {
     a->gamma_interpolate(a);
 }
 set op_template {
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     GammaVirtualMachineStackIndex++;
-    GammaVirtualMachineStackIndex++;
-    GammaVirtualMachineStack[GammaVirtualMachineStackIndex].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex-1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex].F;
-    GammaVirtualMachineStackIndex--;
 }
 foreach op {+ - * /} op_name {Plus Minus Mult Div} {
-    regsub @ $op_template $op body
-    GammaCommand $op_name {} $body 
+    regsub -all @ $op_template $op body
+    GammaOperator $op_name {} $body 
 }
-
-GammaCommand Abs {} {
-   GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=fabs(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);
+set op_template {
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I;
+    if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I)) GammaVirtualMachineSkip=1;
+    GammaVirtualMachineStackIndex++;
+}
+foreach op [list || "\\&\\&"] op_name {Or And} {
+    regsub -all @ $op_template $op body
+    GammaOperator $op_name {} $body 
+}
+GammaCommand Reverse {} {
+    float temp=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=temp;
+}
+foreach op {fabs log10 sqrt} name {Abs Log10 Sqrt} {
+    GammaCommand $name {} "GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=${op}(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);"
 }
 
 set op_template {
-    if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex-1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex].F)) GammaVirtualMachineSkip=1;
+    if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
+        #Info: "Failed %g @ %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
+        GammaVirtualMachineSkip=1;
+    } else {
+	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
+        #Info: "Passed %g @ %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+    }	
+    GammaVirtualMachineStackIndex++;
 }
 foreach op {< > <= >= == !=} op_name {LessThan GreaterThan AtMost AtLeast Equal Different} {
-    regsub @ $op_template $op body
-    GammaCommand $op_name {} $body 
+    regsub -all @ $op_template $op body
+    GammaOperator $op_name {} $body 
 }
 
 GammaCommand Branch {int step} {
     GammaVirtualMachineBatchProgramCounter+=step;
 }
 GammaCommand Stop {} {
-    GammaVirtualMachineRunning=0;
+    GammaVirtualMachineReset();
 }
 GammaCommand Goto {int location} {
     GammaVirtualMachineBatchProgramCounter=location-2;

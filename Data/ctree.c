@@ -1968,7 +1968,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         j=0;
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
-                #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                // #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=temp_context->parent;
@@ -1988,7 +1988,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
                 }
             }
             if (!next_context) {
-                #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+               //  #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=next_context;
@@ -2028,7 +2028,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
             }
         }
         if (!next_context) {
-            #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
+           // #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
             return 0;
         }
         temp_context=next_context;

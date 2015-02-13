@@ -1,6 +1,7 @@
 #ifndef GammaVirtualMachine
 #define GammaVirtualMachine
 #include "ramspice_types.h"
+#include "Data/ctree.h"
 #include <tcl.h>
 #define GammaVirtualMachineGosubStackSize $::GammaVirtualMachineGosubStackSize
 #define GammaVirtualMachineStackSize $::GammaVirtualMachineStackSize
@@ -17,6 +18,7 @@ static int tcl_run_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char
 static int tcl_reset_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_init_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_set_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_push_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 FC GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackSize];
 ordinal GammaVirtualMachineGosubStackIndex;
 FC GammaVirtualMachineStack[GammaVirtualMachineStackSize];

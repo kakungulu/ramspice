@@ -58,6 +58,22 @@ proc .goto {step} {
     }
     GammaCommandGoto $step
 }
+proc LinkGamma {} {
+    foreach label [array names ::GammaAssemblerSecondPass] {
+        Info: Linking label $label [info exists ::$label]
+        skip {![info exists ::$label]}
+        set destination [set ::$label]
+	foreach source $::GammaAssemblerSecondPass($label) {
+	   
+	    skip {[..set $source]!=-1}
+	    
+	    ..set $source $destination
+	}
+    }
+}
+
+
+
 proc .return {value} {
     if {[catch {expr $value+0}]} {
         GammaCommandPushVar $value
@@ -65,39 +81,89 @@ proc .return {value} {
     }
     GammaCommandPush $value
 }
-proc .procedure {args} {
-    if {![regexp {^\s*(\S+)\s+([^\{]+)\s+\{(.*)\}\s*$} $args -> name interface body]} {
-        Error: .procedure syntax is <name> <arg1>...<arg2> (<code>)
+proc .procedure {name args} {
+    array unset ::Gamma_function_args
+    set body [lindex $args end]
+    set interface [lrange $args 1 end-1]
+    set i [llength $interface]
+    foreach arg $interface {
+	set ::Gamma_function_args($arg) $i
+        incr i -1
     }
-    set linebuf {}
-    set braces_rank 0
-    compile_Gamma_batch $body
+    .label: ::function($name,calculation)
+    uplevel $body
     GammaCommandReturn [llength $interface]
+    array unset ::Gamma_function_args
+    set body ""
+    foreach arg $interface {
+        append body "..push $arg\n"
+    }
+    append body "..run $::function($name,calculation)"
+    proc $name $interface $body
 }
 set ::GammaConditionCounter 0
-proc .if {condition body args} {
-    compile_Gamma_expression $condition
-    incr ::GammaConditionCounter
-    set label IF$::GammaConditionCounter
-    .goto $label
-    compile_Gamma_batch $body
-    .label: $label
-}
-proc compile_Gamma_batch {body} {
-    foreach line [split $body \;] {
-        append linebuf $line
-        incr braces_rank [regexp -all {\{} $line]
-        incr braces_rank -[regexp -all {\}} $line]
-	skip {$braces_rank}
-        if {![regexp {^\s*([A-Za-z0-9_^]+)\s*=\s*(.*)$} $linebuf -> name expression]} {
-	    uplevel $linebuf
-	    set linebuf {}
-	    continue
-	}
-	compile_Gamma_expression $expression
-        GammaCommandPopVar $name
-	set linebuf {}
+proc .if {args} {
+    set cond_code_list {}
+    foreach field $args {
+        skip {$field=="else"}
+        skip {$field=="elseif"}
+	lappend cond_code_list $field
     }
+    set else_code {}
+    if {[llength $cond_code_list]%2} {
+        set else_code [lindex $cond_code_list end]
+	set cond_code_list [lrange $cond_code_list 0 end-1]
+    }
+    incr ::GammaConditionCounter
+    set end_label ENDIF$::GammaConditionCounter
+    foreach {cond code} $cond_code_list {
+        Gamma_expression $cond
+        incr ::GammaConditionCounter
+        set do_label IF$::GammaConditionCounter
+	.goto $do_label
+        incr ::GammaConditionCounter
+        set skip_label IF$::GammaConditionCounter
+        .goto $skip_label
+	.label: ::$do_label
+        uplevel $code
+	.goto $end_label
+        .label: ::$skip_label
+    }
+    uplevel $else_code
+    .label: ::$end_label
+    LinkGamma
+}
+proc .while {cond body} {
+    .label: while_label
+    Gamma_expression $cond
+    incr ::GammaConditionCounter
+    set do_label IF$::GammaConditionCounter
+    .goto $do_label
+    incr ::GammaConditionCounter
+    set skip_label IF$::GammaConditionCounter
+    .goto $skip_label
+    .label: ::$do_label
+    uplevel $body
+    .goto $while_label
+    .label: ::$skip_label
+    LinkGamma
+}
+proc .for {init cond step body} {
+    uplevel $init
+    .label: while_label
+    Gamma_expression $cond
+    incr ::GammaConditionCounter
+    set do_label IF$::GammaConditionCounter
+    .goto $do_label
+    incr ::GammaConditionCounter
+    set skip_label IF$::GammaConditionCounter
+    .goto $skip_label
+    .label: ::$do_label
+    uplevel $body
+    uplevel $step
+    .goto $while_label
+    .label: ::$skip_label
+    LinkGamma
 }
 proc .function {args} {
     array unset ::Gamma_function_args
@@ -117,29 +183,42 @@ proc .function {args} {
         }
     }
     regsub -all {\s+} $expression {} expression
-    compile_Gamma_expression $expression
+    Gamma_expression $expression
     GammaCommandReturn [llength [split $arguments ,]]
+    array unset ::Gamma_function_args
 }
 proc .push {something} {
+    if {[info exists ::Gamma_expression_constants($something)]} {
+    	GammaCommandPush $::Gamma_expression_constants($something)
+    	return
+    }
     if {[catch {expr $something+0}]} {
         if {[regexp {^\&(\S+)$} $something -> varname]} {
+	    if {![@ $varname ?]} {
+	        @ $varname !
+		@ $varname = real 0
+	    }
 	    GammaCommandPushPointer $varname
-	    Info: compiler output: GammaCommandPushPointer $varname 
+	    return
+	}
+	if {[info exists ::Gamma_function_args($something)]} {
+	    GammaCommandPushArg $::Gamma_function_args($something)
 	    return
 	}
 	GammaCommandPushVar $something
-	Info: compiler output: GammaCommandPushVar $something
 	return
     }
     GammaCommandPush $something
-    Info: compiler output: GammaCommandPush $something
 }
-proc .property {args} {
+proc .let {args} {
     array unset ::Gamma_function_args
     if {![regexp {^\s*([A-Za-z0-9_^]+)\s*=\s*(.*)$} $args -> name expression]} {
         Error: .property syntax is <var> = <expression>
     }
-    .label: ::property($name,calculation)
+    if {![@ $name ?]} {
+        @ $name !
+	@ $name = real 0
+    }
     foreach switch {unit min max} {
         if {[regexp "^(.*)\\-$switch\\s+(\\S+)(.*)\$" $expression -> pre val post]} {
             set ::property($name,$switch) $val
@@ -147,7 +226,27 @@ proc .property {args} {
         }
     }
     regsub -all {\s+} $expression {} expression
-    compile_Gamma_expression $expression
+    Gamma_expression $expression
+    GammaCommandPopVar $name
+}
+proc .property {args} {
+    array unset ::Gamma_function_args
+    if {![regexp {^\s*([A-Za-z0-9_^]+)\s*=\s*(.*)$} $args -> name expression]} {
+        Error: .property syntax is <var> = <expression>
+    }
+    .label: ::property($name,calculation)
+    if {![@ $name ?]} {
+        @ $name !
+	@ $name = real 0
+    }
+    foreach switch {unit min max} {
+        if {[regexp "^(.*)\\-$switch\\s+(\\S+)(.*)\$" $expression -> pre val post]} {
+            set ::property($name,$switch) $val
+	    set expression "$pre $post"
+        }
+    }
+    regsub -all {\s+} $expression {} expression
+    Gamma_expression $expression
     GammaCommandPopVar $name
     GammaCommandReturn 0
 }
@@ -156,20 +255,36 @@ proc .calculate {var} {
         Error: No such Gamma property: $var
 	exit 
     }
-    GammaCommandGoSub $::property($var,calculation)
+    .run $::property($var,calculation)
+}
+set ::Gamma_expression_counter 0
+proc Gamma_expression {expression} {
+    regsub -all {\s} $expression "" expression
+    set expression [uplevel #0 "subst $expression"]
+    array unset ::Gamma_expression_constants
+    Info: EXPRESSION $expression
+    while {[regexp {^(.*[^0-9_A-Za-z\.]|)([0-9]*\.?[0-9]+)([eE][-+][0-9]+)(.*)$} $expression -> pre mantissa exponenta post]} {
+        set handle "CONSTVALUE_"
+	append handle [array size ::Gamma_expression_constants]
+	set ::Gamma_expression_constants($handle) $mantissa$exponenta
+	set expression "$pre$handle$post"
+        Info: EXPRESSION $expression
+    }
+    compile_Gamma_expression $expression
 }
 proc compile_Gamma_expression {expression} {
     Info: Compiling expression $expression
+    incr ::Gamma_expression_counter
     if {[regexp {^(\&?)\{([^\{\}]*)\}$} $expression -> amp encapsulated_expression]} {
         .push $amp$encapsulated_expression
-	return @
+	return @$::Gamma_expression_counter
     }
     # Deal with parentheses first
-    if {[regexp {^(.*[^a-z]|)([A-Za-z]*)\(([^\(\)]+)\)(.*)$} $expression -> pre func arguments post]} {
+    if {[regexp {^(.*[^A-Za-z0-9_]|)([A-Za-z0-9_]*)\(([^\(\)]+)\)(.*)$} $expression -> pre func arguments post]} {
         if {$func==""} {
 	    # no function call, just parentheses
             compile_Gamma_expression $arguments
-	    return [compile_Gamma_expression "$pre@$post"]
+	    return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
 	}
 	# function call
         foreach arg [split $arguments ,] {
@@ -177,41 +292,48 @@ proc compile_Gamma_expression {expression} {
 	}
 	if {[info exists ::function($func,calculation)]} {
 	    GammaCommandGoSub $::function($func,calculation)
-	    Info: compiler output: GammaCommandGoSub $::function($func,calculation)
-	    GammaCommandDumpStack
-	    return [compile_Gamma_expression "$pre@$post"]
+	    return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
 	}
         set dc GammaCommand
 	append dc [string totitle $func]
         $dc
-	Info: compiler output: $dc
-	return [compile_Gamma_expression "$pre@$post"]
+	return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
     }
-    foreach op {< > <= >= == != + - * /} op_name {LessThan GreaterThan AtMost AtLeast Equal Different Plus Minus Mult Div} {
-        if {[regexp "^(.*)\\${op}(.*)\$" $expression -> pre post]} {
+    foreach op "x7c\\\\x7c x26\\x26 < > <= >= == != + - * /" op_name {Or And LessThan GreaterThan AtMost AtLeast Equal Different Plus Minus Mult Div} {
+        set pattern "^(.*)\\"
+	append pattern $op
+	append pattern "(.+)\$" 
+        if {[regexp $pattern $expression -> pre post]} {
+	#    Info: pattern=$pattern Op=$op Op_name=$op_name
+	    if {![regexp {^@([0-9]+)} $pre -> pre_num]} {
+	        set pre_num $::Gamma_expression_counter
+	    }
+	    if {![regexp {^@([0-9]+)} $post -> post_num]} {
+	        set post_num $::Gamma_expression_counter
+	    }
+	    if {$pre=={}} {
+	        set pre 0
+	    }
 	    compile_Gamma_expression $post
 	    compile_Gamma_expression $pre
+	    if {$post_num>$pre_num && [lsearch {< > <= >= - /} $op]!=-1} {
+	        GammaCommandReverse
+	    }
 	    GammaCommand$op_name
-	    GammaCommandDumpStack
-	    Info: compiler output: GammaCommand$op_name
 	    return
 	}
     }
     # Literal!
-    if {$expression=="@"} return
+    if {[regexp {^@([0-9]+)} $expression -> num]} return
     # A number 
     .push $expression
-    GammaCommandDumpStack
 }
-
-proc LinkGamma {} {
-    foreach label [array names ::GammaAssemblerSecondPass] {
-        skip {![info exists ::$label]}
-        set destination [set ::$label]
-	foreach source $::GammaAssemblerSecondPass($label) {
-	    skip {[SetGamma $source]!=-1}
-	    SetGamma $source $destination
-	}
+set unknown {
+    if {[regexp {^[A-Za-z_/][/A-Za-z0-9_]*\s*=} $args]} {
+        uplevel ".let $args"
+	return
     }
 }
+append unknown [info body unknown]
+proc unknown args $unknown
 

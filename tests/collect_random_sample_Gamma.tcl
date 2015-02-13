@@ -59,11 +59,6 @@ foreach param {L W Vgs Vds Vbs LUT_Ids LUT_gm LUT_ro} {
 .property LUT_Ids=interpolate(L,Vbs,Vds,Vgs,&{/look_up_tables/$::opt(device)/Ids/$::opt(process)})*(W/L)
 .property LUT_gm=interpolate(L,Vbs,Vds,Vgs,&{/look_up_tables/$::opt(device)/gm/$::opt(process)})*(W/L)
 .property LUT_ro=interpolate(L,Vbs,Vds,Vgs,&{/look_up_tables/$::opt(device)/ro/$::opt(process)})*(L/W)
-foreach prop {Ids gm ro} {
-     .label: LUT_$prop
-     .calculate LUT_$prop
-     GammaCommandStop
-}
 
 for {set max_wbyl $opt(max_wbyl)} {$max_wbyl<=$opt(max_wbyl)} {incr max_wbyl} {
     array unset hist
@@ -110,25 +105,25 @@ for {set max_wbyl $opt(max_wbyl)} {$max_wbyl<=$opt(max_wbyl)} {incr max_wbyl} {
 	        Error: Ids=[get_spice_data V(5) 0]
 	        continue
             }	
-	    .run LUT_Ids	
+	    .calculate LUT_Ids	
 #	    Info: LUT_Ids=$LUT_Ids
             ::spice::alter vgs = [expr [@ Vgs]+$epsilon]
             ::spice::op
             set Ids_gm [expr 1e12*[get_spice_data V(5) 0]]
             set gm [expr ($Ids_gm-$Ids)/$epsilon]
-	    .run LUT_gm	
+	    .calculate LUT_gm	
             ::spice::alter vgs = [@ Vgs]
             ::spice::alter vds = [expr [@ Vds]+$epsilon]
             ::spice::op
             set Ids_ro [expr 1e12*[get_spice_data V(5) 0]]
             set ro [expr $epsilon/($Ids_ro-$Ids)]
-	    .run LUT_ro	
+	    .calculate LUT_ro	
             write_bin float [@ Vgs] [@ Vds] [@ Vbs] [@ L] [@ W] [@ LUT_Ids] [@ Ids] [@ LUT_gm] [@ gm] [@ LUT_ro] [@ ro]
             set WbyL [expr [@ W]/[@ L]]
             skip {[catch {set error [expr ([@ LUT_ro]/$ro-1)*100]}]}
 	    
 	    skip {[regexp {[nN]} $error]} 
-	    if {abs($LUT_ro-$ro)<=1e3} {
+	    if {abs([@ LUT_ro]-$ro)<=1e3} {
 	        set error 0
 	    }
             if {[catch {set hist_index [expr int(ceil(abs($error)))]}]} {
