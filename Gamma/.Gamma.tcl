@@ -188,6 +188,7 @@ proc .function {args} {
     array unset ::Gamma_function_args
 }
 proc .push {something} {
+    Info: # Assembly push $something
     if {[info exists ::Gamma_expression_constants($something)]} {
     	GammaCommandPush $::Gamma_expression_constants($something)
     	return
@@ -212,8 +213,9 @@ proc .push {something} {
 }
 proc .let {args} {
     array unset ::Gamma_function_args
-    if {![regexp {^\s*([A-Za-z0-9_^]+)\s*=\s*(.*)$} $args -> name expression]} {
+    if {![regexp {^\s*([A-Za-z0-9_/^]+)\s*=\s*(.*)$} $args -> name expression]} {
         Error: .property syntax is <var> = <expression>
+	return
     }
     if {![@ $name ?]} {
         @ $name !
@@ -259,6 +261,7 @@ proc .calculate {var} {
 }
 set ::Gamma_expression_counter 0
 proc Gamma_expression {expression} {
+    array unset ::Gamma_deffered_expressions
     regsub -all {\s} $expression "" expression
     set expression [uplevel #0 "subst $expression"]
     array unset ::Gamma_expression_constants
@@ -268,63 +271,113 @@ proc Gamma_expression {expression} {
 	append handle [array size ::Gamma_expression_constants]
 	set ::Gamma_expression_constants($handle) $mantissa$exponenta
 	set expression "$pre$handle$post"
-        Info: EXPRESSION $expression
     }
     compile_Gamma_expression $expression
 }
+proc GammaCommandComma args {}
+
 proc compile_Gamma_expression {expression} {
-    Info: Compiling expression $expression
+    Info: # Assembly Compiling expression $expression
     incr ::Gamma_expression_counter
-    if {[regexp {^(\&?)\{([^\{\}]*)\}$} $expression -> amp encapsulated_expression]} {
-        .push $amp$encapsulated_expression
-	return @$::Gamma_expression_counter
+    if {[regexp {^(.*)\&\{([^\{\}]*)\}(.*)$} $expression -> pre encapsulated_expression post]} {
+        set ::Gamma_deffered_expressions($::Gamma_expression_counter) ".push &$encapsulated_expression"
+	return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
+    }
+    if {[regexp {^(.*)\{([^\{\}]*)\}(.*)$} $expression -> pre encapsulated_expression post]} {
+        set ::Gamma_deffered_expressions($::Gamma_expression_counter) ".push $encapsulated_expression"
+	return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
     }
     # Deal with parentheses first
     if {[regexp {^(.*[^A-Za-z0-9_]|)([A-Za-z0-9_]*)\(([^\(\)]+)\)(.*)$} $expression -> pre func arguments post]} {
         if {$func==""} {
 	    # no function call, just parentheses
-            compile_Gamma_expression $arguments
+            set ::Gamma_deffered_expressions($::Gamma_expression_counter) [list compile_Gamma_expression $arguments]
 	    return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
 	}
 	# function call
-        foreach arg [split $arguments ,] {
-	    compile_Gamma_expression $arg
-	}
+#	compile_Gamma_expression $arguments
+        set ::Gamma_deffered_expressions($::Gamma_expression_counter) "compile_Gamma_expression $arguments ; "
 	if {[info exists ::function($func,calculation)]} {
-	    GammaCommandGoSub $::function($func,calculation)
-	    return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
+	    append ::Gamma_deffered_expressions($::Gamma_expression_counter) "GammaCommandGoSub $::function($func,calculation)]"
+	} else {
+            append ::Gamma_deffered_expressions($::Gamma_expression_counter) GammaCommand
+            append ::Gamma_deffered_expressions($::Gamma_expression_counter) [string totitle $func]
 	}
-        set dc GammaCommand
-	append dc [string totitle $func]
-        $dc
 	return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
     }
-    foreach op "x7c\\\\x7c x26\\x26 < > <= >= == != + - * /" op_name {Or And LessThan GreaterThan AtMost AtLeast Equal Different Plus Minus Mult Div} {
+    foreach op ", x7c\\\\x7c x26\\x26 < > <= >= == != + - * /" op_name {Comma Or And LessThan GreaterThan AtMost AtLeast Equal Different Plus Minus Mult Div} {
         set pattern "^(.*)\\"
 	append pattern $op
 	append pattern "(.+)\$" 
         if {[regexp $pattern $expression -> pre post]} {
-	#    Info: pattern=$pattern Op=$op Op_name=$op_name
-	    if {![regexp {^@([0-9]+)} $pre -> pre_num]} {
-	        set pre_num $::Gamma_expression_counter
-	    }
-	    if {![regexp {^@([0-9]+)} $post -> post_num]} {
-	        set post_num $::Gamma_expression_counter
-	    }
 	    if {$pre=={}} {
 	        set pre 0
 	    }
+	    #   Optimizer special cases
+	    if {$op=="-"} {
+	        if {$pre==$post} {
+		    .push 0
+		    return
+		}
+		if {![catch {set equal_zero [expr $post+0]}]} {
+		    if {$equal_zero==0.0} {
+		        compile_Gamma_expression $pre
+			return
+		    }
+		}
+	    }
+	    if {$op=="/"} {
+	        if {$pre==$post} {
+		    .push 1
+		    return
+		}
+		if {![catch {set equal_one [expr $post+0]}]} {
+		    if {$equal_zero==1.0} {
+		        compile_Gamma_expression $pre
+			return
+		    }
+		}
+	    }
+	    if {$op=="+"} {
+		if {![catch {set equal_zero [expr $pre+0]}]} {
+		    if {$equal_zero==0.0} {
+		        compile_Gamma_expression $post
+			return
+		    }
+		}
+		if {![catch {set equal_zero [expr $post+0]}]} {
+		    if {$equal_zero==0.0} {
+		        compile_Gamma_expression $pre
+			return
+		    }
+		}
+	    }
+	    if {$op=="*"} {
+		if {![catch {set equal_zero [expr $pre+0]}]} {
+		    if {$equal_zero==1.0} {
+		        compile_Gamma_expression $post
+			return
+		    }
+		}
+		if {![catch {set equal_zero [expr $post+0]}]} {
+		    if {$equal_zero==1.0} {
+		        compile_Gamma_expression $pre
+			return
+		    }
+		}
+	    }
+	    # Enod of optimizer special cases
 	    compile_Gamma_expression $post
 	    compile_Gamma_expression $pre
-	    if {$post_num>$pre_num && [lsearch {< > <= >= - /} $op]!=-1} {
-	        GammaCommandReverse
-	    }
 	    GammaCommand$op_name
 	    return
 	}
     }
-    # Literal!
-    if {[regexp {^@([0-9]+)} $expression -> num]} return
+    # parenthesized expression
+    if {[regexp {^@([0-9]+)$} $expression -> num]} {
+        uplevel $::Gamma_deffered_expressions($num)
+        return
+    }
     # A number 
     .push $expression
 }
