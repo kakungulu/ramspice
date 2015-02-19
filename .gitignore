@@ -1,3 +1,4 @@
 *.db
 look_up_table.s
 noi_log
+*log*

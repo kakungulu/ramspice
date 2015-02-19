@@ -527,7 +527,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
     void lut_gamma_interpolation_$DIM(void *i_a) {
-        #Info: "Gamma machine's interpolation function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
+     //   #Info: "Gamma machine's interpolation function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
         #tcl set num_of_corners [expr 1<<$DIM]
 	LUT *a=(LUT *)i_a;
         Tcl_Time start_time,end_time; 

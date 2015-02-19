@@ -94,7 +94,7 @@ proc .procedure {name args} {
     uplevel $body
     GammaCommandReturn [llength $interface]
     array unset ::Gamma_function_args
-    set body ""
+    set body "Info: Calling $name\n"
     foreach arg $interface {
         append body "..push $arg\n"
     }
@@ -167,7 +167,7 @@ proc .for {init cond step body} {
 }
 proc .function {args} {
     array unset ::Gamma_function_args
-    if {![regexp {^\s*([A-Za-z0-9_^]+)\s*\(([^\(\)]+)\)=\s*(.*)$} $args -> name arguments expression]} {
+    if {![regexp {^\s*([A-Za-z0-9_^]+)\s*\(([^\(\)]*)\)=\s*(.*)$} $args -> name arguments expression]} {
         Error: .function syntax is <name>(<arg1>,...,<argN>) = <expression>
     }
     .label: ::function($name,calculation)
@@ -263,7 +263,7 @@ set ::Gamma_expression_counter 0
 proc Gamma_expression {expression} {
     array unset ::Gamma_deffered_expressions
     regsub -all {\s} $expression "" expression
-    set expression [uplevel #0 "subst $expression"]
+    set expression [uplevel #0 [list subst $expression]]
     array unset ::Gamma_expression_constants
     Info: EXPRESSION $expression
     while {[regexp {^(.*[^0-9_A-Za-z\.]|)([0-9]*\.?[0-9]+)([eE][-+][0-9]+)(.*)$} $expression -> pre mantissa exponenta post]} {
@@ -276,7 +276,8 @@ proc Gamma_expression {expression} {
 }
 proc GammaCommandComma args {}
 
-proc compile_Gamma_expression {expression} {
+proc compile_Gamma_expression {{expression {}}} {
+    if {$expression=={}} return
     Info: # Assembly Compiling expression $expression
     incr ::Gamma_expression_counter
     if {[regexp {^(.*)\&\{([^\{\}]*)\}(.*)$} $expression -> pre encapsulated_expression post]} {
@@ -288,7 +289,7 @@ proc compile_Gamma_expression {expression} {
 	return [compile_Gamma_expression "$pre@$::Gamma_expression_counter$post"]
     }
     # Deal with parentheses first
-    if {[regexp {^(.*[^A-Za-z0-9_]|)([A-Za-z0-9_]*)\(([^\(\)]+)\)(.*)$} $expression -> pre func arguments post]} {
+    if {[regexp {^(.*[^A-Za-z0-9_]|)([A-Za-z0-9_]*)\(([^\(\)]*)\)(.*)$} $expression -> pre func arguments post]} {
         if {$func==""} {
 	    # no function call, just parentheses
             set ::Gamma_deffered_expressions($::Gamma_expression_counter) [list compile_Gamma_expression $arguments]

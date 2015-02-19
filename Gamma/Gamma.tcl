@@ -1,4 +1,5 @@
 GammaCommand Push {float F} {
+    #Info: "Pushing Constant (%g)" F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex].F=F;
     GammaVirtualMachineStackIndex--;
 }
@@ -22,7 +23,7 @@ GammaCommand Return {int NumOfArguments} {
     GammaVirtualMachineStackArgs=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
     GammaVirtualMachineGosubStackIndex++;
     GammaVirtualMachineBatchProgramCounter=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
-    #Info: "%ld/%ld: Returning to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2
+    #Info: "%ld/%ld: Returning to %ld with value=%g" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+NumOfArguments+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
     GammaVirtualMachineStackIndex+=NumOfArguments;
 }
@@ -55,12 +56,18 @@ GammaCommand Interpolate {} {
     a->gamma_interpolate(a);
 }
 set op_template {
-    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    #Info: "%g@%g=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=F;
     GammaVirtualMachineStackIndex++;
 }
 foreach op {+ - * /} op_name {Plus Minus Mult Div} {
     regsub -all @ $op_template $op body
     GammaOperator $op_name {} $body 
+}
+GammaCommand Limit {} {
+    if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F;
+    if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
 }
 set op_template {
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F@GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I;

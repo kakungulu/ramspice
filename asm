@@ -1,3 +1,7 @@
+Info: Assembly 0: 
+Info: Assembly 0: 
+Info: Assembly 0: ------- ::function(Ids_p,calculation) ------- 
+Info: Assembly 0: 
 Info: # Assembly Compiling expression interpolate(&{/look_up_tables/pch/Ids/ss},{V/mid}-1.8,{V/mid}-1.8,1.8-1.8,{Geometry/Lp})*({Geometry/Wp}/{Geometry/Lp}) 
 Info: # Assembly Compiling expression interpolate(@1,{V/mid}-1.8,{V/mid}-1.8,1.8-1.8,{Geometry/Lp})*({Geometry/Wp}/{Geometry/Lp}) 
 Info: # Assembly Compiling expression interpolate(@1,{V/mid}-1.8,{V/mid}-1.8,1.8-1.8,{Geometry/Lp})*({Geometry/Wp}/@2) 
@@ -48,7 +52,11 @@ Info: # Assembly push &/look_up_tables/pch/Ids/ss
 Info: Assembly 19: 6dbf40 PushPointer 0 
 Info: Assembly 21: 6dbc70 Interpolate 
 Info: Assembly 22: 6dba90 Mult 
-Info: Assembly 23: 6dbe30 PopVar 123473e0 
+Info: Assembly 23: 6dcf90 Return 0 
+Info: Assembly 25: 
+Info: Assembly 25: 
+Info: Assembly 25: ------- ::function(Ids_n,calculation) ------- 
+Info: Assembly 25: 
 Info: # Assembly Compiling expression interpolate(&{/look_up_tables/nch/Ids/ss},{V/vin}-0,{V/mid}-0,0-0,{Geometry/Ln})*({Geometry/Wn}/{Geometry/Ln}) 
 Info: # Assembly Compiling expression interpolate(@28,{V/vin}-0,{V/mid}-0,0-0,{Geometry/Ln})*({Geometry/Wn}/{Geometry/Ln}) 
 Info: # Assembly Compiling expression interpolate(@28,{V/vin}-0,{V/mid}-0,0-0,{Geometry/Ln})*({Geometry/Wn}/@29) 
@@ -91,17 +99,19 @@ Info: # Assembly push &/look_up_tables/nch/Ids/ss
 Info: Assembly 38: 6dbf40 PushPointer 0 
 Info: Assembly 40: 6dbc70 Interpolate 
 Info: Assembly 41: 6dba90 Mult 
-Info: Assembly 42: 6dbe30 PopVar 1237b450 
-Info: # Assembly Compiling expression -{n/Ids}+({V/vin}-0)/r_in+{p/Ids}+({V/vin}-1.8)/(100-r_in) 
-Info: # Assembly Compiling expression -{n/Ids}+({V/vin}-0)/r_in+{p/Ids}+(@53-1.8)/(100-r_in) 
-Info: # Assembly Compiling expression -{n/Ids}+({V/vin}-0)/r_in+@54+(@53-1.8)/(100-r_in) 
-Info: # Assembly Compiling expression -{n/Ids}+(@55-0)/r_in+@54+(@53-1.8)/(100-r_in) 
-Info: # Assembly Compiling expression -@56+(@55-0)/r_in+@54+(@53-1.8)/(100-r_in) 
-Info: # Assembly Compiling expression -@56+(@55-0)/r_in+@54+(@53-1.8)/@57 
-Info: # Assembly Compiling expression -@56+(@55-0)/r_in+@54+@58/@57 
-Info: # Assembly Compiling expression -@56+@59/r_in+@54+@58/@57 
-Info: # Assembly Compiling expression @58/@57 
-Info: # Assembly Compiling expression @57 
+Info: Assembly 42: 6dcf90 Return 0 
+Info: Assembly 44: 
+Info: Assembly 44: 
+Info: Assembly 44: ------- ::function(kcl_step,calculation) ------- 
+Info: Assembly 44: 
+Info: # Assembly Compiling expression +(0-{V/vin})/r_in+(1.8-{V/vin})/(100-r_in) 
+Info: # Assembly Compiling expression +(0-{V/vin})/r_in+(1.8-@53)/(100-r_in) 
+Info: # Assembly Compiling expression +(0-@54)/r_in+(1.8-@53)/(100-r_in) 
+Info: # Assembly Compiling expression +(0-@54)/r_in+(1.8-@53)/@55 
+Info: # Assembly Compiling expression +(0-@54)/r_in+@56/@55 
+Info: # Assembly Compiling expression +@57/r_in+@56/@55 
+Info: # Assembly Compiling expression @56/@55 
+Info: # Assembly Compiling expression @55 
 Info: # Assembly Compiling expression 100-r_in 
 Info: # Assembly Compiling expression r_in 
 Info: # Assembly push r_in 
@@ -110,99 +120,184 @@ Info: # Assembly Compiling expression 100
 Info: # Assembly push 100 
 Info: Assembly 46: 6dc320 Push 100 
 Info: Assembly 48: 6dbb30 Minus 
-Info: # Assembly Compiling expression @58 
-Info: # Assembly Compiling expression @53-1.8 
-Info: # Assembly Compiling expression 1.8 
-Info: # Assembly push 1.8 
-Info: Assembly 49: 6dc320 Push 1.8 
+Info: # Assembly Compiling expression @56 
+Info: # Assembly Compiling expression 1.8-@53 
 Info: # Assembly Compiling expression @53 
 Info: # Assembly push V/vin 
-Info: Assembly 51: 6dc020 PushVar 4a87c136 
+Info: Assembly 49: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression 1.8 
+Info: # Assembly push 1.8 
+Info: Assembly 51: 6dc320 Push 1.8 
 Info: Assembly 53: 6dbb30 Minus 
 Info: Assembly 54: 6db9f0 Div 
-Info: # Assembly Compiling expression -@56+@59/r_in+@54 
-Info: # Assembly Compiling expression @54 
-Info: # Assembly push p/Ids 
-Info: Assembly 55: 6dc020 PushVar 123473e0 
-Info: # Assembly Compiling expression -@56+@59/r_in 
-Info: # Assembly Compiling expression @59/r_in 
+Info: # Assembly Compiling expression +@57/r_in 
+Info: # Assembly Compiling expression @57/r_in 
 Info: # Assembly Compiling expression r_in 
 Info: # Assembly push r_in 
-Info: Assembly 57: 6dc020 PushVar 4a87c136 
-Info: # Assembly Compiling expression @59 
-Info: # Assembly Compiling expression @55-0 
-Info: # Assembly Compiling expression @55 
+Info: Assembly 55: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression @57 
+Info: # Assembly Compiling expression 0-@54 
+Info: # Assembly Compiling expression @54 
 Info: # Assembly push V/vin 
-Info: Assembly 59: 6dc020 PushVar 4a87c136 
-Info: Assembly 61: 6db9f0 Div 
-Info: # Assembly Compiling expression -@56 
-Info: # Assembly Compiling expression @56 
-Info: # Assembly push n/Ids 
-Info: Assembly 62: 6dc020 PushVar 1237b450 
+Info: Assembly 57: 6dc020 PushVar 4a87c136 
 Info: # Assembly Compiling expression 0 
 Info: # Assembly push 0 
-Info: Assembly 64: 6dc320 Push 0 
-Info: Assembly 66: 6dbb30 Minus 
-Info: Assembly 67: 6dbbd0 Plus 
-Info: Assembly 68: 6dbbd0 Plus 
-Info: Assembly 69: 6dbbd0 Plus 
-Info: Assembly 70: 6dbe30 PopVar 122a4d20 
+Info: Assembly 59: 6dc320 Push 0 
+Info: Assembly 61: 6dbb30 Minus 
+Info: Assembly 62: 6db9f0 Div 
+Info: Assembly 63: 6dbbd0 Plus 
+Info: Assembly 64: 6dbe30 PopVar 1242a3b0 
+Info: # Assembly Compiling expression V/vin+CONSTVALUE_0 
+Info: # Assembly Compiling expression CONSTVALUE_0 
+Info: # Assembly push CONSTVALUE_0 
+Info: Assembly 66: 6dc320 Push 0.001 
+Info: # Assembly Compiling expression V/vin 
+Info: # Assembly Compiling expression vin 
+Info: # Assembly push vin 
+Info: Assembly 68: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression V 
+Info: # Assembly push V 
+Info: Assembly 70: 6dc020 PushVar 12362ce0 
+Info: Assembly 72: 6db9f0 Div 
+Info: Assembly 73: 6dbbd0 Plus 
+Info: Assembly 74: 6dbe30 PopVar 12471570 
 Info: # Assembly Compiling expression +(0-{V/vin})/r_in+(1.8-{V/vin})/(100-r_in) 
-Info: # Assembly Compiling expression +(0-{V/vin})/r_in+(1.8-@81)/(100-r_in) 
-Info: # Assembly Compiling expression +(0-@82)/r_in+(1.8-@81)/(100-r_in) 
-Info: # Assembly Compiling expression +(0-@82)/r_in+(1.8-@81)/@83 
-Info: # Assembly Compiling expression +(0-@82)/r_in+@84/@83 
-Info: # Assembly Compiling expression +@85/r_in+@84/@83 
-Info: # Assembly Compiling expression @84/@83 
-Info: # Assembly Compiling expression @83 
+Info: # Assembly Compiling expression +(0-{V/vin})/r_in+(1.8-@80)/(100-r_in) 
+Info: # Assembly Compiling expression +(0-@81)/r_in+(1.8-@80)/(100-r_in) 
+Info: # Assembly Compiling expression +(0-@81)/r_in+(1.8-@80)/@82 
+Info: # Assembly Compiling expression +(0-@81)/r_in+@83/@82 
+Info: # Assembly Compiling expression +@84/r_in+@83/@82 
+Info: # Assembly Compiling expression @83/@82 
+Info: # Assembly Compiling expression @82 
 Info: # Assembly Compiling expression 100-r_in 
 Info: # Assembly Compiling expression r_in 
 Info: # Assembly push r_in 
-Info: Assembly 72: 6dc020 PushVar 4a87c136 
+Info: Assembly 76: 6dc020 PushVar 4a87c136 
 Info: # Assembly Compiling expression 100 
 Info: # Assembly push 100 
-Info: Assembly 74: 6dc320 Push 100 
-Info: Assembly 76: 6dbb30 Minus 
-Info: # Assembly Compiling expression @84 
-Info: # Assembly Compiling expression 1.8-@81 
-Info: # Assembly Compiling expression @81 
+Info: Assembly 78: 6dc320 Push 100 
+Info: Assembly 80: 6dbb30 Minus 
+Info: # Assembly Compiling expression @83 
+Info: # Assembly Compiling expression 1.8-@80 
+Info: # Assembly Compiling expression @80 
 Info: # Assembly push V/vin 
-Info: Assembly 77: 6dc020 PushVar 4a87c136 
+Info: Assembly 81: 6dc020 PushVar 12471570 
 Info: # Assembly Compiling expression 1.8 
 Info: # Assembly push 1.8 
-Info: Assembly 79: 6dc320 Push 1.8 
-Info: Assembly 81: 6dbb30 Minus 
-Info: Assembly 82: 6db9f0 Div 
-Info: # Assembly Compiling expression +@85/r_in 
-Info: # Assembly Compiling expression @85/r_in 
+Info: Assembly 83: 6dc320 Push 1.8 
+Info: Assembly 85: 6dbb30 Minus 
+Info: Assembly 86: 6db9f0 Div 
+Info: # Assembly Compiling expression +@84/r_in 
+Info: # Assembly Compiling expression @84/r_in 
 Info: # Assembly Compiling expression r_in 
 Info: # Assembly push r_in 
-Info: Assembly 83: 6dc020 PushVar 4a87c136 
-Info: # Assembly Compiling expression @85 
-Info: # Assembly Compiling expression 0-@82 
-Info: # Assembly Compiling expression @82 
+Info: Assembly 87: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression @84 
+Info: # Assembly Compiling expression 0-@81 
+Info: # Assembly Compiling expression @81 
 Info: # Assembly push V/vin 
-Info: Assembly 85: 6dc020 PushVar 4a87c136 
+Info: Assembly 89: 6dc020 PushVar 12471570 
 Info: # Assembly Compiling expression 0 
 Info: # Assembly push 0 
-Info: Assembly 87: 6dc320 Push 0 
-Info: Assembly 89: 6dbb30 Minus 
-Info: Assembly 90: 6db9f0 Div 
-Info: Assembly 91: 6dbbd0 Plus 
-Info: Assembly 92: 6dbe30 PopVar 123b2410 
-Info: # Assembly Compiling expression -{p/Ids}+{n/Ids} 
-Info: # Assembly Compiling expression -{p/Ids}+@103 
-Info: # Assembly Compiling expression -@104+@103 
+Info: Assembly 91: 6dc320 Push 0 
+Info: Assembly 93: 6dbb30 Minus 
+Info: Assembly 94: 6db9f0 Div 
+Info: Assembly 95: 6dbbd0 Plus 
+Info: Assembly 96: 6dbe30 PopVar 1246fcd0 
+Info: # Assembly Compiling expression {V/vin}-CONSTVALUE_0*k2/(k2-k1) 
+Info: # Assembly Compiling expression @102-CONSTVALUE_0*k2/(k2-k1) 
+Info: # Assembly Compiling expression @102-CONSTVALUE_0*k2/@103 
+Info: # Assembly Compiling expression CONSTVALUE_0*k2/@103 
+Info: # Assembly Compiling expression k2/@103 
 Info: # Assembly Compiling expression @103 
-Info: # Assembly push n/Ids 
-Info: Assembly 94: 6dc020 PushVar 1237b450 
-Info: # Assembly Compiling expression -@104 
-Info: # Assembly Compiling expression @104 
-Info: # Assembly push p/Ids 
-Info: Assembly 96: 6dc020 PushVar 123473e0 
+Info: # Assembly Compiling expression k2-k1 
+Info: # Assembly Compiling expression k1 
+Info: # Assembly push k1 
+Info: Assembly 98: 6dc020 PushVar 1242a3b0 
+Info: # Assembly Compiling expression k2 
+Info: # Assembly push k2 
+Info: Assembly 100: 6dc020 PushVar 1246fcd0 
+Info: Assembly 102: 6dbb30 Minus 
+Info: # Assembly Compiling expression k2 
+Info: # Assembly push k2 
+Info: Assembly 103: 6dc020 PushVar 1246fcd0 
+Info: Assembly 105: 6db9f0 Div 
+Info: # Assembly Compiling expression CONSTVALUE_0 
+Info: # Assembly push CONSTVALUE_0 
+Info: Assembly 106: 6dc320 Push 0.001 
+Info: Assembly 108: 6dba90 Mult 
+Info: # Assembly Compiling expression @102 
+Info: # Assembly push V/vin 
+Info: Assembly 109: 6dc020 PushVar 12471570 
+Info: Assembly 111: 6dbb30 Minus 
+Info: Assembly 112: 6dbe30 PopVar 12471570 
+Info: # Assembly Compiling expression -Ids_p()+Ids_n() 
+Info: # Assembly Compiling expression Ids_n() 
+Info: # Assembly push Ids_n() 
+Info: Assembly 114: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression -Ids_p() 
+Info: # Assembly Compiling expression Ids_p() 
+Info: # Assembly push Ids_p() 
+Info: Assembly 116: 6dc020 PushVar 4a87c136 
 Info: # Assembly Compiling expression 0 
 Info: # Assembly push 0 
-Info: Assembly 98: 6dc320 Push 0 
-Info: Assembly 100: 6dbb30 Minus 
-Info: Assembly 101: 6dbbd0 Plus 
-Info: Assembly 102: 6dbe30 PopVar 123b0170 
+Info: Assembly 118: 6dc320 Push 0 
+Info: Assembly 120: 6dbb30 Minus 
+Info: Assembly 121: 6dbbd0 Plus 
+Info: Assembly 122: 6dbe30 PopVar 1242a3b0 
+Info: # Assembly Compiling expression V/mid+CONSTVALUE_0 
+Info: # Assembly Compiling expression CONSTVALUE_0 
+Info: # Assembly push CONSTVALUE_0 
+Info: Assembly 124: 6dc320 Push 0.001 
+Info: # Assembly Compiling expression V/mid 
+Info: # Assembly Compiling expression mid 
+Info: # Assembly push mid 
+Info: Assembly 126: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression V 
+Info: # Assembly push V 
+Info: Assembly 128: 6dc020 PushVar 12362ce0 
+Info: Assembly 130: 6db9f0 Div 
+Info: Assembly 131: 6dbbd0 Plus 
+Info: Assembly 132: 6dbe30 PopVar 12362d20 
+Info: # Assembly Compiling expression -Ids_p()+Ids_n() 
+Info: # Assembly Compiling expression Ids_n() 
+Info: # Assembly push Ids_n() 
+Info: Assembly 134: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression -Ids_p() 
+Info: # Assembly Compiling expression Ids_p() 
+Info: # Assembly push Ids_p() 
+Info: Assembly 136: 6dc020 PushVar 4a87c136 
+Info: # Assembly Compiling expression 0 
+Info: # Assembly push 0 
+Info: Assembly 138: 6dc320 Push 0 
+Info: Assembly 140: 6dbb30 Minus 
+Info: Assembly 141: 6dbbd0 Plus 
+Info: Assembly 142: 6dbe30 PopVar 1246fcd0 
+Info: # Assembly Compiling expression {V/mid}-CONSTVALUE_0*k2/(k2-k1) 
+Info: # Assembly Compiling expression @129-CONSTVALUE_0*k2/(k2-k1) 
+Info: # Assembly Compiling expression @129-CONSTVALUE_0*k2/@130 
+Info: # Assembly Compiling expression CONSTVALUE_0*k2/@130 
+Info: # Assembly Compiling expression k2/@130 
+Info: # Assembly Compiling expression @130 
+Info: # Assembly Compiling expression k2-k1 
+Info: # Assembly Compiling expression k1 
+Info: # Assembly push k1 
+Info: Assembly 144: 6dc020 PushVar 1242a3b0 
+Info: # Assembly Compiling expression k2 
+Info: # Assembly push k2 
+Info: Assembly 146: 6dc020 PushVar 1246fcd0 
+Info: Assembly 148: 6dbb30 Minus 
+Info: # Assembly Compiling expression k2 
+Info: # Assembly push k2 
+Info: Assembly 149: 6dc020 PushVar 1246fcd0 
+Info: Assembly 151: 6db9f0 Div 
+Info: # Assembly Compiling expression CONSTVALUE_0 
+Info: # Assembly push CONSTVALUE_0 
+Info: Assembly 152: 6dc320 Push 0.001 
+Info: Assembly 154: 6dba90 Mult 
+Info: # Assembly Compiling expression @129 
+Info: # Assembly push V/mid 
+Info: Assembly 155: 6dc020 PushVar 12362d20 
+Info: Assembly 157: 6dbb30 Minus 
+Info: Assembly 158: 6dbe30 PopVar 12362d20 
+Info: Assembly 160: 6dcf90 Return 0 
