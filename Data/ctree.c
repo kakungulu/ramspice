@@ -3832,7 +3832,7 @@ int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
             }
         }
         if (argv[i][0]=='-') break;
-        #Info: "Sourcing Tcl script: %s" argv[i]
+        #Info: "Running RAMSpice Script: %s" argv[i]
         if (Tcl_EvalFile(interp,argv[i])==TCL_ERROR) {
             Tcl_Eval(interp,"puts $errorInfo");
         }
