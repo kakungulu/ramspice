@@ -2048,6 +2048,7 @@ int create_context(char *i_key) {
         while ((i_key[i]!='/')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
         context_name_buffer[j]=0;
         j=0;
+	#Info: "Create context: %s" context_name_buffer
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
                 //                #Error: "(create_context) No such context: %s, failed at %s" i_key context_name_buffer
@@ -2473,6 +2474,30 @@ copy_ctree_structure(Tcl_Interp *interp,char *target,char *key,char *argv[]) {
     }
     return TCL_OK;
 }
+void delete_context(context *c) {
+    struct rusage* memory = malloc(sizeof(struct rusage));
+    getrusage(RUSAGE_SELF, memory);
+    if (c->value_type==ctype_array) {
+        delete_array((LUT *)c->value.v);
+        free(c);
+	return;
+    }
+    ordinal size=c->num_of_children;
+    ordinal i;
+    #Info: "Deleting context %s (%d children) Mem=[eng %ld B]" c->name size memory->ru_maxrss
+    for (i=0;i<size;i++) delete_context(c->children[i]);
+    if (c->value_type==ctype_string) {
+    	free(c->value.v);
+    }
+    free(c);
+}
+void delete_array(LUT *a) {
+    if (a->content) free(a->content);
+//    if (a->hit) free(a->hit);
+//    if (a->hit_bytecode) free(a->hit_bytecode);
+    if (a->LIT) free(a->LIT);
+    free(a);
+}
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -2577,6 +2602,24 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         } else {
             tcl_append_int(interp,0);
         }
+        return TCL_OK;
+    }
+    if (strcmp(argv[2],"delete")==0) {
+        if (argc!=3) {
+            #Error: "(ctree) usage: @ <context> delete"
+            return TCL_ERROR;
+        }
+	context *d=c->parent;
+	int i=0,j=0;
+	for (i=0;i<d->num_of_children;i++) {
+	    if (d->children[i]=c) j++;
+	    if (j>=d->num_of_children) break;
+	    d->children[i]=d->children[j];
+	    j++;
+	}
+	d->num_of_children--;
+        delete_context(c);
+	Context=Ctree;
         return TCL_OK;
     }
     if (strcmp(argv[2],"cd")==0) {

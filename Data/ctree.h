@@ -159,6 +159,8 @@ typedef union {
    float d;
    long l;
 } DL;
+void delete_context(context *);
+void delete_array(LUT *);
 LUT *get_LUT(char *i_context);
 LUT *get_LUT_quiet(char *i_context);
 node *new_node();
