@@ -1,13 +1,14 @@
 # \
 exec $RAMSPICE/ramspice $0 $argv
 get_opts
+default ::opt(from) test
 
 set ::html_body {}
 proc Style {name config} {
     regsub -all @ {
-        append ::html_body "<p class=\"@\">\n"
-        append ::html_body "$args\n"
-        append ::html_body "</p>\n"
+        HTML "<p class=\"@\">\n"
+        HTML "$args\n"
+        HTML "</p>\n"
     } $name ::Style($name,code)
     foreach {field value} $config {
         if {$field=="inherit"} {
@@ -22,7 +23,12 @@ proc Style {name config} {
     Info: defining $name
     proc $name args $::Style($name,code)
 }
-
+proc HTML {args} {
+    if {[llength $args]==1} {
+        set args [lindex $args 0]
+    }
+    append ::html_body "$args"
+}
 set ::report_index_list 0
 set unknown {
     if {[regexp {^(\*+)(.*)$} $args -> bullet payload]} {
@@ -56,6 +62,13 @@ proc generate_report {filename} {
             puts $O "        $field: $::Style($key);"
         }
         puts $O "    \}"
+        puts $O "    $style \{"
+        foreach key [array names ::Style $style,*] {
+            skip {$key=="$style,code"}
+            set field [lindex [split $key ,] end]
+            puts $O "        $field: $::Style($key);"
+        }
+        puts $O "    \}"
     }
     puts $O </style>
     puts $O </head>
@@ -74,14 +87,12 @@ proc generate_report {filename} {
 Style Body {
     font-family "GaramondNo8"
     white-space pre-wrap
-    font-size 12px
+    font-size 14px
     line-height 200%
     code {
         set text [lindex $args 0]
         regsub -all {\s+} [join [split [uplevel [list subst $text]] \n]] " " text
-        append ::html_body "<p class=\"Body\">\n"
-        append ::html_body "$text\n"
-        append ::html_body "</p>\n"
+        HTML "<p class=\"Body\">$text</p>"
     }
 }
 Style Chapter {
@@ -89,9 +100,9 @@ Style Chapter {
     font-size 36px
     code {
         regsub -all {\s+} [join [split $args \n]] " " text
-        append ::html_body "<p class=\"Chapter\">\n"
-        append ::html_body "Chapter $::report_index: $text\n"
-        append ::html_body "</p>\n"
+        HTML "<p class=\"Chapter\">\n"
+        HTML "Chapter $::report_index: $text\n"
+        HTML "</p>\n"
     }
 }
 Style Title {
@@ -99,12 +110,14 @@ Style Title {
     font-size 18px
     code {
         regsub -all {\s+} [join [split $args \n]] " " text
-        append ::html_body "<p class=\"Chapter\">\n"
-        append ::html_body "$::report_index $text\n"
-        append ::html_body "</p>\n"
+        HTML "<p class=\"Chapter\">\n"
+        HTML "$::report_index $text</p>\n"
     }
 }
 Style CodeTitle {
+    inherit Title
+}
+Style TableTitle {
     inherit Title
 }
 Style Code {
@@ -116,9 +129,9 @@ Style Code {
 	set code_title $::report_index
 	append code_title " "
 	append code_title [lrange $args 0 end-1]
-        append ::html_body "<p class=\"CodeTitle\">\n"
-        append ::html_body $code_title
-        append ::html_body "</p>\n"
+        HTML "<p class=\"CodeTitle\">\n"
+        HTML $code_title
+        HTML "</p>\n"
 
 	set text [lindex $args end]
         regsub -all {\<} $text "\\&#60;" text
@@ -131,14 +144,42 @@ Style Code {
 	    }
 	    append final_text "$line\n"
 	}
-        append ::html_body "<p class=\"Code\">\n"
-        append ::html_body "$final_text\n"
-        append ::html_body "</p>\n"
+        HTML "<p class=\"Code\">\n"
+        HTML "$final_text\n"
+        HTML "</p>\n"
     }
 }
 
-
+Style table {
+    display table
+    border-collapse separate
+    border-spacing 0
+    border-color black
+    border "\"1pt solid black\""
+    code {
+        set title [lindex $args 0]
+	set header [lrange $args 1 end-1]
+	set content [lindex $args end]
+        HTML "<p class=\"TableTitle\">Table $::report_index: $title</p>"
+	HTML <table border=1>
+	HTML <tr>
+	foreach head $header {
+	    HTML "<td><b>$head</b></td>"
+	}
+	set i 0
+	foreach entry $content {
+	    if {$i%[llength $header]==0} {
+	        HTML </tr><tr>
+	    }
+	    HTML "<td>$entry</td>"
+	    incr i
+	}
+	HTML </tr>
+	HTML </table>
+    }
+}
 ######################################## Test text
+if {$::opt(from)=="test"} {
 * Chapter Introduction
 Body {
     Electronic design automation tools played <b>[clock format [clock seconds]]</b> a central role in enabling the Moore's Law miniaturization of VLSI integrated circuits. Designers' productivity in the digital 
@@ -171,6 +212,9 @@ Body {
             Info: $msg
         }
     }
+}
+} else {
+    source $::opt(from)
 }
 generate_report $::opt(to)
 exit

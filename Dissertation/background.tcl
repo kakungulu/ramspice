@@ -20,11 +20,20 @@ An investigation of the reasons as to why analog design automation failed to rea
 the return on investment comparison between proposed tools cost (license+hardware×run-time) and human hours. However, the reasons for the industry's inacceptance of analog design tools
  are many and some are outside the scope of pure technical analysis. When we analyze a product's desireablity,
 we need to consider the issue of product-quality. According to the UN's Industrial Development Organization (UNIDO) product quality can be defined as 
-"its ability to fulfil the customer's needs and expectations" [Ref: http://www.unido.org/fileadmin/media/documents/pdf/tcb_product_quality.pdf:11]. 
+"its ability to fulfil the customer's needs and expectations" [Ref: http://www.unido.org/fileadmin/media/documents/pdf/tcb_product_quality.pdf#page=11]. 
 Unfortunately for the analog domain, both needs and expectations were derived from automation acheivements on the digital domain. Countless promises of analog synthesis and static analog analysis 
 were broken on the most important issue: customers' expectations. 
-In the past decade, a new development in the software industry presents an opportunity to a new class of design automation tools: online software suites (a.k.a. web-apps), which make use
-of a shared computing resource, commonly refered to as "the cloud". This segment of software products is inherently different from customer-premise software, even if declared to perform the same 
-function. The differences between user-equipment and cloud software is summarized in the following table:
+In the past decade, a new development in the software industry presented an opportunity to a new class of design automation tools: online software suites (a.k.a. web-apps), which make use
+of shared and remote computation pools, commonly refered to as "the cloud". This segment of software products is inherently different from customer-premise software, even if declared to perform the same 
+function. The differences between customer-equipment and cloud software is summarized in the following table:
 }
-Table 
+*** table "Comparison of Features and Expectations from Design Tools" Feature "Web App" "Licensed Tool" {
+    "Solution Time" "Seconds" "Minutes to Days"
+    "Accuracy" "Useful, but not production-ready" "Production sign-off level"
+    "License Cost" "Free to nominal for premium plan" "1-100KUSD per annum"
+    Availability "Anywhere, on any web device" "Within VPN, on customer's PC"
+    "Customer Involvement" "Minimal" "Extensive" 
+    Support "Behind the scenes bug fixs & updates" "Driven by Application Engineers"
+    "Tool Development" "Mix of R&D and Croud-Sourced" "Proprietary and Patented Vendor R&D"
+    "Privacy" "Limited by User Agreement for Sharing and Anonymity" "Protected and Guaranteed by Laws and Contracts"
+}
