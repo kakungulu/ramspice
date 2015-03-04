@@ -1957,7 +1957,7 @@ ordinal add_sub_context(context *i_parent,context *i_child) {
 }
 int resolve_context(char *i_key,context **i_context,float **array_entry) {
     context *temp_context=Context;
-    if ((i_key[0]=='/')||(i_key[0]=='%')) temp_context=Ctree;
+    if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0;
     // #Info: "Resolving Context %s from %x" i_key temp_context
@@ -2041,7 +2041,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
 }
 int create_context(char *i_key) {
     context *temp_context=Context;
-    if ((i_key[0]=='/')||(i_key[0]=='%')) temp_context=Ctree;
+    if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0,n=0;
     while (i_key[i]) {
@@ -2434,7 +2434,7 @@ node *add_real_context(char *i_key,node **i_node,CTYPE i_ctype) {
 LUT *get_LUT(char *i_context) {
     context *c=Context;
     float *array_entry;
-    if ((i_context[0]=='/')||(i_context[0]=='%')) {
+    if ((i_context[0]=='/')||(i_context[0]==':')) {
         c=Ctree;
     }
     if (!(resolve_context(i_context,&c,&array_entry))) {
@@ -2446,7 +2446,7 @@ LUT *get_LUT(char *i_context) {
 LUT *get_LUT_quiet(char *i_context) {
     node *c=Context;
     float *array_entry;
-    if ((i_context[0]=='/')||(i_context[0]=='%')) {
+    if ((i_context[0]=='/')||(i_context[0]==':')) {
         c=Ctree;
     }
     if (!(resolve_context(i_context,&c,&array_entry))) {
@@ -2511,7 +2511,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     Tcl_ResetResult(interp);
     context *c=Context;
     float *array_entry;
-    if ((argv[1][0]=='/')||(argv[1][0]=='%')) {
+    if ((argv[1][0]=='/')||(argv[1][0]==':')) {
         c=ctree;
     }
     // "exists" and "create" require an exception to the rule other commands require, that the context given as 1st arg must be valid.

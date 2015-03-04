@@ -164,19 +164,19 @@ proc .compile_circuit {} {
 #        add_kcl_entry $s $d "Gds_$name"
         set ::transistors($name,Vgs) [Vdiff $Vg $Vs]
         @ Gds_$name = real 1
-	add_kcl $s $s "+\{$name:go\}"
-	add_kcl $s $d "-\{$name:go\}"
-	add_kcl $d $s "-\{$name:go\}"
-	add_kcl $d $d "+\{$name:go\}"
+	add_kcl $s $s "+$name:go"
+	add_kcl $s $d "-$name:go"
+	add_kcl $d $s "-$name:go"
+	add_kcl $d $d "+$name:go"
 	default ::idc($d,$s)
-	append ::idc($d,$s) "-\{$name:Ideq\}"
-	add_kcl $s $s "+\{$name:gm\}"
-	add_kcl $s $g "-\{$name:gm\}"
-	add_kcl $d $s "-\{$name:gm\}"
-	add_kcl $d $g "+\{$name:gm\}"
-        set ::Ids_equations($name) "interpolate(&{/look_up_tables/$type/Ids/$::opt(process)},[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-{$name:gm}*[Vdiff $Vg $Vs]-{$name:go}*[Vdiff $Vb $Vs]"
-        set ::gm_equations($name) "interpolate(&{/look_up_tables/$type/gm/$::opt(process)},[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)"
-        set ::go_equations($name) "($W/$L)/interpolate(&{/look_up_tables/$type/ro/$::opt(process)},[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)"
+	append ::idc($d,$s) "-$name:Ideq"
+	add_kcl $s $s "+$name:gm"
+	add_kcl $s $g "-$name:gm"
+	add_kcl $d $s "-$name:gm"
+	add_kcl $d $g "+$name:gm"
+        set ::Ids_equations($name) "interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vg $Vs]-$name:go*[Vdiff $Vb $Vs]"
+        set ::gm_equations($name) "interpolate(&:look_up_tables:$type:gm:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)"
+        set ::go_equations($name) "($W/$L)/interpolate(&:look_up_tables:$type:ro:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)"
         @ $name:Ideq = real 0
         @ $name:go = real 1
         @ $name:gm = real 1
