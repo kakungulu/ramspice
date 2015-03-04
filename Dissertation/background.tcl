@@ -1,8 +1,11 @@
-* Chapter Background 
-** Title Introduction
+####   Common Characters
+set ::MULT "&#215;"
+
+* Chapter Introduction
+** Title Background
 Body {
 Chip design disciplines could not have kept up with miniaturization generations if it 
-wasn't for the imrovements in design automation software. The human effort that characterized early generations of integrated-circuits can not be scaled up with the number of transistors
+wasn't for the improvements in design automation software. The human effort that characterized early generations of integrated-circuits can not be scaled up with the number of transistors
 per chip and the increasing complexity introduced by physical limitations of shrinking geometry. This progress of integrated-circuit technology together with tool algorithms and computation 
 power has been more or less steady in time, but not equal between design domains. Digital design, especially in the ASIC segment, progressed much faster than analog design. The industry 
 adapted to the analog lag by assigning minimal functionality to the analog parts of the system and keeping a relative high ratio of designers per transistor on the analog modules. Where 
@@ -17,7 +20,7 @@ between the two domains is in the lack of synthesis tools for analog design. The
 process. So far, analog design automation focused on two aspects that showed promising marketability: simulation and flow-management. Actual synthesis received mostly academic attention, 
 which sometime translated to temporary industry success, but more often failed or was ignored completely.
 An investigation of the reasons as to why analog design automation failed to reach a significant breakthrough since the advent of SPICE in the early 1970's can be simplified to 
-the return on investment comparison between proposed tools cost (license+hardware×run-time) and human hours. However, the reasons for the industry's inacceptance of analog design tools
+the return on investment comparison between proposed tools cost (license+hardware${::MULT}run-time) and human hours. However, the reasons for the industry's inacceptance of analog design tools
  are many and some are outside the scope of pure technical analysis. When we analyze a product's desireablity,
 we need to consider the issue of product-quality. According to the UN's Industrial Development Organization (UNIDO) product quality can be defined as 
 "its ability to fulfil the customer's needs and expectations" [Ref: http://www.unido.org/fileadmin/media/documents/pdf/tcb_product_quality.pdf#page=11]. 
@@ -25,15 +28,16 @@ Unfortunately for the analog domain, both needs and expectations were derived fr
 were broken on the most important issue: customers' expectations. 
 In the past decade, a new development in the software industry presented an opportunity to a new class of design automation tools: online software suites (a.k.a. web-apps), which make use
 of shared and remote computation pools, commonly refered to as "the cloud". This segment of software products is inherently different from customer-premise software, even if declared to perform the same 
-function. The differences between customer-equipment and cloud software is summarized in the following table:
-}
-*** table "Comparison of Features and Expectations from Design Tools" Feature "Web App" "Licensed Tool" {
-    "Solution Time" "Seconds" "Minutes to Days"
+function. The differences between customer-equipment and cloud software is summarized in the following table:}
+*** table "Comparison of Features and Expectations from Design Tools" Feature "Web Tool" "Licensed Tool" {
+    "Run-Time" "Seconds" "Minutes to days"
     "Accuracy" "Useful, but not production-ready" "Production sign-off level"
     "License Cost" "Free to nominal for premium plan" "1-100KUSD per annum"
     Availability "Anywhere, on any web device" "Within VPN, on customer's PC"
-    "Customer Involvement" "Minimal" "Extensive" 
-    Support "Behind the scenes bug fixs & updates" "Driven by Application Engineers"
-    "Tool Development" "Mix of R&D and Croud-Sourced" "Proprietary and Patented Vendor R&D"
-    "Privacy" "Limited by User Agreement for Sharing and Anonymity" "Protected and Guaranteed by Laws and Contracts"
+    "Design Effort" "Minimal" "Extensive" 
+    Support "Behind the scenes bug fixes, updates" "Driven by application engineers"
+    Development "Mix of R&D and crowdsourced" "Proprietary and patented vendor R&D"
+    Privacy "Balanced sharing and anonymity" "Protected by laws and contracts"
 }
+
+

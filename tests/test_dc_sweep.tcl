@@ -1,42 +1,6 @@
 # \
 exec $RAMSPICE/ramspice $0 $argv
 
-proc eng {value unit} {
-    if {[string match *n* $value]} {
-        return $value$unit
-    }
-    if {[catch {expr $value}]} {
-        return $value$unit
-    }
-    if {$value==0.0} {
-        return 0
-    }
-    set sign {}
-    if {$value<0.0} {
-        set value [expr -$value]
-        set sign -
-    }
-    if {$value>1.0 && $value<1000.0} {
-        regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} $value {\1} value
-        return $sign$value$unit
-    }
-    if {$unit=="%"} {    
-        regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} $value {\1} value
-        return $sign$value$unit
-    }
-    set mag [expr int(log($value)/log(1000))]
-    if {$value<1.0} {
-        set mag [expr -$mag]
-        set mag_qual [lindex {m u n p} $mag]
-        set value [expr $value*pow(1000,$mag+1)]
-    } else {
-        set mag_qual [lindex {K M G T} $mag-1]
-        set value [expr $value/pow(1000,$mag)]
-    }
-    regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} $value {\1} value
-    append value $mag_qual 
-    return $sign$value$unit
-}
 foreach arg [lrange $argv 2 end] {
     if {[regexp {^\-(\S+)$} $arg -> found_key]} {
         set key $found_key

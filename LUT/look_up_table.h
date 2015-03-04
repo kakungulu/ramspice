@@ -23,6 +23,7 @@ typedef struct {
 #For: {set i 0} {$i<$::MAXDIM} {incr i} {
     float lut_interpolation_$i(void *a,float *coord);
     void lut_gamma_interpolation_$i(void *a);
+    void lut_gamma_gradient_$i(void *a);
     float lut_cluster_interpolation_$i(LUT *a,float *coord,cluster **i_cluster);
 }
 

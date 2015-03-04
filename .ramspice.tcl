@@ -107,6 +107,15 @@ proc vInfo: {args} {
     }
     Info: $text
 }
+proc ladd {listname item} {
+    upvar $listname list
+    if {![info exists list]} {
+        set list $item
+	return
+    }
+    if {[lsearch $list $item]!=-1} return
+    lappend list $item
+}
 proc wait_for_forked {forked_processes_var} {
     upvar $forked_processes_var forked_processes
     set wait 1

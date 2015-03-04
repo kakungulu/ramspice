@@ -5,10 +5,15 @@ proc GammaOperator {name interface i_body} {
 }
 proc GammaCommand {name interface i_body} {
  #   puts "Info: Declaring Gamma command: $name"
+    regsub -all {@(.)\(([^\)]+)\)} $i_body "GammaVirtualMachineStack\[GammaVirtualMachineStackIndex+\\2\].\\1" i_body
     if {[lsearch $::Gamma_operators $name]==-1} {
-        set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (!GammaVirtualMachineTempSkip) \{\n    #Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n FC FCUNION;\n"
+        set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (!GammaVirtualMachineTempSkip) \{\n    "
+#	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body " FC FCUNION;\n"
     } else {
-        set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (1) \{\n    #Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n FC FCUNION;\n"
+        set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (1) \{\n    "
+#	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body " FC FCUNION;\n"
     }
     set i 0
     foreach var_declaration [split $interface ,] {
@@ -23,6 +28,9 @@ proc GammaCommand {name interface i_body} {
         }
         set var_name [lindex $var_declaration end]
         switch $var_type {
+            string {
+                append body "        char *$var_name=(char *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+$i].P;\n"
+            } 
             LUT {
                 append body "        LUT *$var_name=(LUT *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+$i].P;\n"
             } 
@@ -88,6 +96,13 @@ proc GammaTclInterface {} {
 	            puts $O "    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=(void *)(&(GammaContext$i->value.s));"
 		    append info_pattern "%x "
 		    append info_list "(&(GammaContext$i->value.s)) "
+		}
+                string {
+	            puts $O "    char *new_name=(char *)malloc(sizeof(char)*(strlen(argv\[$i\])+1));"
+	            puts $O "    sprintf(new_name,\"%s\",argv\[$i\]);"
+	            puts $O "    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=new_name;"
+		    append info_pattern "%s "
+		    append info_list "argv\[$i\] "
 		}
                 LUT {
 	            puts $O "    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=get_LUT(argv\[$i\]);"

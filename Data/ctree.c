@@ -992,6 +992,7 @@ void context_load(context *c) {
 	        if (a->dim==$dim) {
 		    a->interpolate=lut_interpolation_$dim;
 		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+		    a->gamma_gradient=lut_gamma_gradient_$dim;
 		}    
 	    }
             ordinal volume=1;
@@ -1105,6 +1106,7 @@ int array_load(char *filename) {
 	    if (a->dim==$dim) {
 	        a->interpolate=lut_interpolation_$dim;
 		a->gamma_interpolate=lut_gamma_interpolation_$dim;
+                a->gamma_gradient=lut_gamma_gradient_$dim;
 	    }	
 	}
         a->LIT=NULL;
@@ -1955,14 +1957,14 @@ ordinal add_sub_context(context *i_parent,context *i_child) {
 }
 int resolve_context(char *i_key,context **i_context,float **array_entry) {
     context *temp_context=Context;
-    if (i_key[0]=='/') temp_context=Ctree;
+    if ((i_key[0]=='/')||(i_key[0]=='%')) temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0;
     // #Info: "Resolving Context %s from %x" i_key temp_context
     while (i_key[i]) {
-        while ((i_key[i]=='/')&&(i_key[i])) i++;
+        while (((i_key[i]=='/')||(i_key[i]==':'))&&(i_key[i])) i++;
         if (i_key[i]==0) break;
-        while ((i_key[i]!='/')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
+        while ((i_key[i]!='/')&&(i_key[i]!=':')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
         context_name_buffer[j]=0;
         // #Info: "Resolving SubContext %s from %x" context_name_buffer temp_context
         j=0;
@@ -2039,16 +2041,15 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
 }
 int create_context(char *i_key) {
     context *temp_context=Context;
-    if (i_key[0]=='/') temp_context=Ctree;
+    if ((i_key[0]=='/')||(i_key[0]=='%')) temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0,n=0;
     while (i_key[i]) {
-        while ((i_key[i]=='/')&&(i_key[i])) i++;
+        while (((i_key[i]=='/')||(i_key[i]==':'))&&(i_key[i])) i++;
         if (i_key[i]==0) break;
-        while ((i_key[i]!='/')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
+        while ((i_key[i]!='/')&&(i_key[i]!=':')&&(i_key[i])) context_name_buffer[j++]=i_key[i++];
         context_name_buffer[j]=0;
         j=0;
-	#Info: "Create context: %s" context_name_buffer
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
                 //                #Error: "(create_context) No such context: %s, failed at %s" i_key context_name_buffer
@@ -2085,6 +2086,7 @@ int create_context(char *i_key) {
 	        if (a->dim==$dim) {
 		    a->interpolate=lut_interpolation_$dim;
 		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+                    a->gamma_gradient=lut_gamma_gradient_$dim;
 		}
 	    }
             ordinal volume=1;
@@ -2205,7 +2207,7 @@ int resolve_key(char *i_key,node **i_node,float **array_entry) {
         }
     }
     for (i=0;i<len;i++) {
-        if (key[i]!='/') continue;
+        if ((key[i]!='/')&&(key[i]!=':')) continue;
         key[i]=0;
         argc++;
     }
@@ -2368,6 +2370,7 @@ node *add_array_context(char *i_key,node **i_node) {
     	if (a->dim==$dim) {
 	    a->interpolate=lut_interpolation_$dim;
 	    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+            a->gamma_gradient=lut_gamma_gradient_$dim;
 	}    
     }
     ordinal volume=1;
@@ -2431,7 +2434,7 @@ node *add_real_context(char *i_key,node **i_node,CTYPE i_ctype) {
 LUT *get_LUT(char *i_context) {
     context *c=Context;
     float *array_entry;
-    if (i_context[0]=='/') {
+    if ((i_context[0]=='/')||(i_context[0]=='%')) {
         c=Ctree;
     }
     if (!(resolve_context(i_context,&c,&array_entry))) {
@@ -2443,7 +2446,7 @@ LUT *get_LUT(char *i_context) {
 LUT *get_LUT_quiet(char *i_context) {
     node *c=Context;
     float *array_entry;
-    if (i_context[0]=='/') {
+    if ((i_context[0]=='/')||(i_context[0]=='%')) {
         c=Ctree;
     }
     if (!(resolve_context(i_context,&c,&array_entry))) {
@@ -2508,7 +2511,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     Tcl_ResetResult(interp);
     context *c=Context;
     float *array_entry;
-    if (argv[1][0]=='/') {
+    if ((argv[1][0]=='/')||(argv[1][0]=='%')) {
         c=ctree;
     }
     // "exists" and "create" require an exception to the rule other commands require, that the context given as 1st arg must be valid.

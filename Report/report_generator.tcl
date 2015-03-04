@@ -77,7 +77,7 @@ proc generate_report {filename} {
     puts $O </body>
     puts $O </html>
     close $O
-    if {[catch {exec /usr/bin/wkhtmltopdf-amd64 toc /tmp/tmp.html /tmp/tmp.html $filename} msg]} {
+    if {[catch {exec /usr/bin/wkhtmltopdf-amd64 --footer-center "\[page\]" /tmp/tmp.html $filename} msg]} {
         Warning: $msg
     }
 }
@@ -156,6 +156,7 @@ Style table {
     border-spacing 0
     border-color black
     border "\"1pt solid black\""
+    font-family Helvetica
     code {
         set title [lindex $args 0]
 	set header [lrange $args 1 end-1]
@@ -170,8 +171,10 @@ Style table {
 	foreach entry $content {
 	    if {$i%[llength $header]==0} {
 	        HTML </tr><tr>
+	        HTML "<td><b>$entry</b></td>"
+	    } else {
+	        HTML "<td>$entry</td>"
 	    }
-	    HTML "<td>$entry</td>"
 	    incr i
 	}
 	HTML </tr>
