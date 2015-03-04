@@ -2,3 +2,7 @@
 look_up_table.s
 noi_log
 *log*
+*.info
+*.stats
+temp*
+
