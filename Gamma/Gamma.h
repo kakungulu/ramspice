@@ -11,9 +11,11 @@ void GammaCommandTestVar(void);
 void GammaCommandTcl(void);
 void GammaCommandPushVar(void);
 void GammaCommandPushPointer(void);
+void GammaCommandPushLUT(void);
 void GammaCommandPopVar(void);
 void GammaCommandPop(void);
 void GammaCommandInterpolate(void);
+void GammaCommandInterpolateg(void);
 void GammaCommandPlus(void);
 void GammaCommandMinus(void);
 void GammaCommandMult(void);
@@ -56,6 +58,7 @@ static int tcl_gamma_Log10(ClientData clientData,Tcl_Interp *interp,int argc,cha
 static int tcl_gamma_And(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Reverse(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Default(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_gamma_PushLUT(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Stop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Abs(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Pop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
@@ -79,6 +82,7 @@ static int tcl_gamma_Plus(ClientData clientData,Tcl_Interp *interp,int argc,char
 static int tcl_gamma_GreaterThan(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Branch(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_AtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_gamma_Interpolateg(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Different(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Limit(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Interpolate(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);

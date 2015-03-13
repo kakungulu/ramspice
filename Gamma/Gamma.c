@@ -123,6 +123,19 @@ void GammaCommandPushPointer() {
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
      FC FCUNION;
+        float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
+
+    // #Info: "Pushing pointer %x" C 
+    GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].P=C;
+    GammaVirtualMachineStackIndex--;
+    }
+    GammaVirtualMachineBatchProgramCounter+=2;
+}
+void GammaCommandPushLUT() {
+    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
+    GammaVirtualMachineSkip=0;
+    if (!GammaVirtualMachineTempSkip) {
+     FC FCUNION;
         LUT *C=(LUT *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
     // #Info: "Pushing pointer %x" C 
@@ -164,6 +177,19 @@ void GammaCommandInterpolate() {
     LUT *a=(LUT *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P;
     // #Info: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_interpolate(a);
+    }
+    GammaVirtualMachineBatchProgramCounter+=1;
+}
+void GammaCommandInterpolateg() {
+    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
+    GammaVirtualMachineSkip=0;
+    if (!GammaVirtualMachineTempSkip) {
+     FC FCUNION;
+
+    // #Info: "Accessing LUT at %x" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P
+    LUT *a=(LUT *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P;
+    // #Info: "Calling interpolation %x" a->gamma_interpolate
+    a->gamma_gradient(a);
     }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -674,6 +700,17 @@ int tcl_gamma_Default(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     #Info: "Assembly %ld: %x Default %x %g " GammaVirtualMachineBatchProgramSize-3 GammaCommandDefault (&(GammaContext1->value.s)) strtof(argv[2],NULL) 
     return TCL_OK;
 }
+int tcl_gamma_PushLUT(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    FC FCUNION;
+    if (argc!=2) {
+        #Error: "%s requires the following arguments: (LUT C)" argv[0]
+    }
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandPushLUT;
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=get_LUT(argv[1]);
+
+    #Info: "Assembly %ld: %x PushLUT %x " GammaVirtualMachineBatchProgramSize-2 GammaCommandPushLUT get_LUT(argv[1]) 
+    return TCL_OK;
+}
 int tcl_gamma_Stop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     FC FCUNION;
     if (argc!=1) {
@@ -763,12 +800,14 @@ int tcl_gamma_PushVar(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
 int tcl_gamma_PushPointer(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     FC FCUNION;
     if (argc!=2) {
-        #Error: "%s requires the following arguments: (LUT C)" argv[0]
+        #Error: "%s requires the following arguments: (var C)" argv[0]
     }
     GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandPushPointer;
-    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=get_LUT(argv[1]);
+    context *GammaContext1;
+    resolve_context(argv[1],&(GammaContext1),NULL);
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=(void *)(&(GammaContext1->value.s));
 
-    #Info: "Assembly %ld: %x PushPointer %x " GammaVirtualMachineBatchProgramSize-2 GammaCommandPushPointer get_LUT(argv[1]) 
+    #Info: "Assembly %ld: %x PushPointer %x " GammaVirtualMachineBatchProgramSize-2 GammaCommandPushPointer (&(GammaContext1->value.s)) 
     return TCL_OK;
 }
 int tcl_gamma_DistAtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
@@ -903,6 +942,15 @@ int tcl_gamma_AtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     #Info: "Assembly %ld: %x AtLeast " GammaVirtualMachineBatchProgramSize-1 GammaCommandAtLeast 
     return TCL_OK;
 }
+int tcl_gamma_Interpolateg(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    FC FCUNION;
+    if (argc!=1) {
+        #Error: "%s requires the following arguments: ()" argv[0]
+    }
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandInterpolateg;
+    #Info: "Assembly %ld: %x Interpolateg " GammaVirtualMachineBatchProgramSize-1 GammaCommandInterpolateg 
+    return TCL_OK;
+}
 int tcl_gamma_Different(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     FC FCUNION;
     if (argc!=1) {
@@ -945,6 +993,7 @@ Tcl_CreateCommand(interp, "GammaCommandLog10", tcl_gamma_Log10, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandAnd", tcl_gamma_And, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandReverse", tcl_gamma_Reverse, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandDefault", tcl_gamma_Default, NULL, NULL);
+Tcl_CreateCommand(interp, "GammaCommandPushLUT", tcl_gamma_PushLUT, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandStop", tcl_gamma_Stop, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandAbs", tcl_gamma_Abs, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandPop", tcl_gamma_Pop, NULL, NULL);
@@ -968,6 +1017,7 @@ Tcl_CreateCommand(interp, "GammaCommandPlus", tcl_gamma_Plus, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandGreaterThan", tcl_gamma_GreaterThan, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandBranch", tcl_gamma_Branch, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandAtLeast", tcl_gamma_AtLeast, NULL, NULL);
+Tcl_CreateCommand(interp, "GammaCommandInterpolateg", tcl_gamma_Interpolateg, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandDifferent", tcl_gamma_Different, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandLimit", tcl_gamma_Limit, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandInterpolate", tcl_gamma_Interpolate, NULL, NULL);

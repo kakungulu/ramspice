@@ -49,7 +49,12 @@ GammaCommand PushVar {var C} {
     @F(0)=*C;
     GammaVirtualMachineStackIndex--;
 }
-GammaCommand PushPointer {LUT C} {
+GammaCommand PushPointer {var C} {
+    // #Info: "Pushing pointer %x" C 
+    @P(0)=C;
+    GammaVirtualMachineStackIndex--;
+}
+GammaCommand PushLUT {LUT C} {
     // #Info: "Pushing pointer %x" C 
     @P(0)=C;
     GammaVirtualMachineStackIndex--;
@@ -67,6 +72,12 @@ GammaCommand Interpolate {} {
     LUT *a=(LUT *)@P(1);
     // #Info: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_interpolate(a);
+}
+GammaCommand Interpolateg {} {
+    // #Info: "Accessing LUT at %x" @P(1)
+    LUT *a=(LUT *)@P(1);
+    // #Info: "Calling interpolation %x" a->gamma_interpolate
+    a->gamma_gradient(a);
 }
 set op_template {
     float F=@F(1)@O@F(2);

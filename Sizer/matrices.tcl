@@ -2,13 +2,6 @@
 exec $RAMSPICE/ramspice $0 $argv
 get_opts
 
-proc evaluate {varname} {
-    upvar $varname var
-    if {[catch {set val [expr $var]}]} {
-        return 
-    }
-    set var $val 
-}
 proc deti {M i y} {
     return [det $M 0 {} $i $y]
 }

@@ -30,23 +30,6 @@ proc HTML {args} {
     append ::html_body "$args"
 }
 set ::report_index_list 0
-set unknown {
-    if {[regexp {^(\*+)(.*)$} $args -> bullet payload]} {
-        set indent [string length $bullet]
-        incr indent -1
-        set index [lindex $::report_index_list $indent]
-        if {$index=={}} {
-            set index 0
-        }
-        incr index
-        incr indent -1
-        set ::report_index_list [concat [lrange $::report_index_list 0 $indent] $index]
-        set ::report_index [join $::report_index_list .]
-        return [uplevel $payload]
-    }
-}
-append unknown [info body unknown]
-proc unknown args $unknown
 
 proc generate_report {filename} {
     set O [open /tmp/tmp.html w]

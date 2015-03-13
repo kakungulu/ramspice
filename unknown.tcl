@@ -1,8 +1,56 @@
 proc unknown {args} {
     variable ::tcl::UnknownPending
     global auto_noexec auto_noload env tcl_interactive
+    
+    # Bus notation support
     if {[regexp {^[0-9]+$} $args]} {
         return "\[$args\]"
+    }
+    
+    # polish to expression conversion
+    if {[regexp {^expr(\S+)\s} $args -> op]} {
+        return [concat $op [lrange $args 1 end]]
+    }
+    
+    # Support for Spice cards
+    if {[regexp {^[mM](\S+)\s+(.*)$} $args -> name arguments]} {
+        eval "add_transistor $name $arguments"
+        return
+    }
+    if {[regexp {^[vV](\S+)\s+(.*)$} $args -> name arguments]} {
+        eval "add_vdc $name $arguments"
+        return
+    }
+    if {[regexp {^[iI](\S+)\s+(.*)$} $args -> name arguments]} {
+        eval "add_idc $name $arguments"
+        return
+    }
+    if {[regexp {^[rR](\S+)\s+(.*)$} $args -> name arguments]} {
+        eval "add_resistor $name $arguments"
+        return
+    }
+    if {[regexp {^([A-Za-z_/:][:/A-Za-z0-9_]*)\s*=>\s*(.*)$} $args -> var expression]} {
+        set ::DEF($var) $expression
+	return
+    }
+    if {[regexp {^[A-Za-z_/:][:/A-Za-z0-9_]*\s*=} $args]} {
+        uplevel ".let $args"
+	return
+    }
+    
+    # Report generator indentation
+    if {[regexp {^(\*+)(.*)$} $args -> bullet payload]} {
+        set indent [string length $bullet]
+        incr indent -1
+        set index [lindex $::report_index_list $indent]
+        if {$index=={}} {
+            set index 0
+        }
+        incr index
+        incr indent -1
+        set ::report_index_list [concat [lrange $::report_index_list 0 $indent] $index]
+        set ::report_index [join $::report_index_list .]
+        return [uplevel $payload]
     }
     # If the command word has the form "namespace inscope ns cmd"
     # then concatenate its arguments onto the end and evaluate it.

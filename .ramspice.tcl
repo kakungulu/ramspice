@@ -515,6 +515,14 @@ namespace eval SPICE {
 proc ::SPICE::end {} {
     Info: finished reading circuit
 }
+proc evaluate {args} {
+    foreach varname $args {
+        upvar $varname var_$varname
+        if {![catch {set retval [expr [set var_$varname]]}]} {
+            set var_$varname $retval
+        }
+    }
+}
 proc ::SPICE::process_line_buf {} {
     upvar line_buf line_buf
     if {[regexp {^\s*\.(.*)} $line_buf -> code]} {
@@ -542,25 +550,25 @@ proc ::SPICE::include {filename} {
     ::SPICE::process_line_buf
     close $I
 }
-set unknown {
-    if {[regexp {^[A-Za-z][0-9_]+\s} $args]} {
-        return [uplevel [concat add_instance $args]]
-    }
-    if {[regexp {^[A-Za-z]_\S+\s} $args]} {
-        return [uplevel [concat add_instance $args]]
-    }
-    if {[regexp {^\.(.*)$} $args -> code]} {
-        if {![catch {set retval [uplevel "::SPICE::$code"]}]} {
-            return $retval
-        }
-        return [uplevel $code]
-    }
-    if {[regexp {^\s*([^\s=]+)\s*=\s*(.*)$} $args -> var expression]} {
-        return [uplevel "set $var \[expr \{$expression\}\]"]
-    }
-}
-append unknown [info body unknown]
-proc unknown args $unknown
+### set unknown {
+###     if {[regexp {^[A-Za-z][0-9_]+\s} $args]} {
+###         return [uplevel [concat add_instance $args]]
+###     }
+###     if {[regexp {^[A-Za-z]_\S+\s} $args]} {
+###         return [uplevel [concat add_instance $args]]
+###     }
+###     if {[regexp {^\.(.*)$} $args -> code]} {
+###         if {![catch {set retval [uplevel "::SPICE::$code"]}]} {
+###             return $retval
+###         }
+###         return [uplevel $code]
+###     }
+###     if {[regexp {^\s*([^\s=]+)\s*=\s*(.*)$} $args -> var expression]} {
+###         return [uplevel "set $var \[expr \{$expression\}\]"]
+###     }
+### }
+### append unknown [info body unknown]
+### proc unknown args $unknown
 
 proc circuit: {args} {
     Info: creating new circuit: $args
@@ -592,7 +600,6 @@ proc ::SPICE::repeat {num code} {
         uplevel $code
     }
 }
-source $::env(RAMSPICE)/Skill/gen_skill.tcl
 
 proc constrain {body} {
     foreach line [split $body \n] {

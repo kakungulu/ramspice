@@ -190,7 +190,7 @@ proc .function {args} {
     array unset ::Gamma_function_args
 }
 proc .push {something} {
-    Info: # Assembly push $something
+    # Info: # Assembly push $something
     if {[info exists ::Gamma_expression_constants($something)]} {
     	GammaCommandPush $::Gamma_expression_constants($something)
     	return
@@ -201,7 +201,11 @@ proc .push {something} {
 	        @ $varname !
 		@ $varname = real 0
 	    }
-	    GammaCommandPushPointer $varname
+	    if {[@ $varname is_array]} {
+	        GammaCommandPushLUT $varname
+	    } else {
+	        GammaCommandPushPointer $varname
+	    }
 	    return
 	}
 	if {[info exists ::Gamma_function_args($something)]} {
@@ -261,12 +265,19 @@ proc .property {args} {
     GammaCommandPopVar $name
     GammaCommandReturn 0
 }
+proc .calc {var} {
+    .calculate $var
+}
 proc .calculate {var} {
-    if {![info exists ::property($var,calculation)]} {
-        Error: No such Gamma property: $var
-	exit 
+    if {[info exists ::property($var,calculation)]} {
+        .run $::property($var,calculation)
     }
-    .run $::property($var,calculation)
+    if {[info exists ::DEF($var)]} {
+        .let $var=$::DEF($var)
+	return
+    }
+    Error: No such Gamma property: $var
+    exit 
 }
 set ::Gamma_expression_counter 0
 proc Gamma_expression {expression} {
@@ -284,10 +295,9 @@ proc Gamma_expression {expression} {
     compile_Gamma_expression $expression
 }
 proc GammaCommandComma args {}
-
 proc compile_Gamma_expression {{expression {}}} {
     if {$expression=={}} return
-    Info: # Assembly Compiling expression $expression
+    # Info: # Assembly Compiling expression $expression
     incr ::Gamma_expression_counter
     if {[regexp {^(.*)\&\{([^\{\}]*)\}(.*)$} $expression -> pre encapsulated_expression post]} {
         set ::Gamma_deffered_expressions($::Gamma_expression_counter) ".push &$encapsulated_expression"
@@ -336,46 +346,46 @@ proc compile_Gamma_expression {{expression {}}} {
 		    }
 		}
 	    }
-	    if {$op=="/"} {
-	        if {$pre==$post} {
-		    .push 1
-		    return
-		}
-		if {![catch {set equal_one [expr $post+0]}]} {
-		    if {$equal_zero==1.0} {
-		        compile_Gamma_expression $pre
-			return
-		    }
-		}
-	    }
-	    if {$op=="+"} {
-		if {![catch {set equal_zero [expr $pre+0]}]} {
-		    if {$equal_zero==0.0} {
-		        compile_Gamma_expression $post
-			return
-		    }
-		}
-		if {![catch {set equal_zero [expr $post+0]}]} {
-		    if {$equal_zero==0.0} {
-		        compile_Gamma_expression $pre
-			return
-		    }
-		}
-	    }
-	    if {$op=="*"} {
-		if {![catch {set equal_zero [expr $pre+0]}]} {
-		    if {$equal_zero==1.0} {
-		        compile_Gamma_expression $post
-			return
-		    }
-		}
-		if {![catch {set equal_zero [expr $post+0]}]} {
-		    if {$equal_zero==1.0} {
-		        compile_Gamma_expression $pre
-			return
-		    }
-		}
-	    }
+	 if {$op=="/"} {
+	     if {$pre==$post} {
+		 .push 1
+		 return
+	     }
+	     if {![catch {set equal_one [expr $post+0]}]} {
+		 if {$equal_one==1.0} {
+		     compile_Gamma_expression $pre
+		     return
+		 }
+	     }
+	 }
+	 if {$op=="+"} {
+	     if {![catch {set equal_zero [expr $pre+0]}]} {
+		 if {$equal_zero==0.0} {
+		     compile_Gamma_expression $post
+		     return
+		 }
+	     }
+	     if {![catch {set equal_zero [expr $post+0]}]} {
+		 if {$equal_zero==0.0} {
+		     compile_Gamma_expression $pre
+		     return
+		 }
+	     }
+	 }
+	 if {$op=="*"} {
+	     if {![catch {set equal_zero [expr $pre+0]}]} {
+		 if {$equal_zero==1.0} {
+		     compile_Gamma_expression $post
+		     return
+		 }
+	     }
+	     if {![catch {set equal_zero [expr $post+0]}]} {
+		 if {$equal_zero==1.0} {
+		     compile_Gamma_expression $pre
+		     return
+		 }
+	     }
+	 }
 	    # Enod of optimizer special cases
 	    compile_Gamma_expression $post
 	    compile_Gamma_expression $pre
@@ -391,12 +401,3 @@ proc compile_Gamma_expression {{expression {}}} {
     # A number 
     .push $expression
 }
-set unknown {
-    if {[regexp {^[A-Za-z_/:][:/A-Za-z0-9_]*\s*=} $args]} {
-        uplevel ".let $args"
-	return
-    }
-}
-append unknown [info body unknown]
-proc unknown args $unknown
-

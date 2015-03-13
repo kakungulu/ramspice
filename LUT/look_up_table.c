@@ -624,10 +624,12 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             }
             #tcl incr weighing_dim
         }
-	GammaVirtualMachineStackIndex++;
+	GammaVirtualMachineStackIndex+=$DIM;
 	#For: {set i 0} {$i<$DIM} {incr i} { 
-            GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1+$i].F=gradient_buffer${i}_0*a->physical_factor[$i];
+            *((float *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1+$i].P)=gradient_buffer${i}_0*a->physical_factor[$i];
 	}    
+	GammaVirtualMachineStackIndex+=$DIM;
+        GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=interpolation_buffer0/a->hypercube_volume;
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
         get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
