@@ -13,6 +13,9 @@ proc foreach_fork {args} {
     uplevel $cmd
 }
 set ::auto_context_index 0
+proc . {} {
+    return [string repeat .... [info level]]
+}
 proc ^ {args} {
     set text $args
     if {[llength $args]==1} {

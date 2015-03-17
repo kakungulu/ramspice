@@ -15,8 +15,10 @@ default ::opt(ref) 100e-6
 default ::opt(limit) 10
 default ::opt(np) 1
 default ::opt(source) Tech_DB/tsmc040/4d/5:7.5:4:6/
+default ::opt(source) Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
+source $::env(RAMSPICE)/Sizer/polynomials.tcl
 foreach dev {nch pch} {
     @ /look_up_tables/$dev !
     foreach param {ids gm ro} {
@@ -148,10 +150,24 @@ proc add_idc {name m p value} {
     ladd ::all_nodes $m
     ladd ::all_nodes $p
 }
+set ::dependent_nodes(0) 1
 proc add_vdc {name m p value} {
     set ::vdc($m,$p) $value
     ladd ::all_nodes $m
     ladd ::all_nodes $p
+    if {[info exists ::dependent_nodes($m)]} {
+        Info: $p depends on $m ($value)
+        set ::dependent_nodes($p) {}
+	$p:Next=>$m+$value
+	$p:V=>$p:Next
+	@ $p:Next = real 0
+    } elseif {[info exists ::dependent_nodes($p)]} {
+        Info: $m depends on $p ($value)
+        set ::dependent_nodes($m) {}
+	$m:Next=>$p+$value
+	$m:V=>$m:Next
+	@ $m:Next = real 0
+    }
 }
 array set ::all_resistors {}
 set ::all_nodes {}
@@ -278,6 +294,14 @@ proc .compile_spec {} {
         }
     }
     set ::DERMODE $original_der_mode
+}
+proc tmp_sort {t1 t2} {
+    regsub tmp $t1 {} i1
+    regsub tmp $t2 {} i2
+    if {int($i1)>int($i2)} {
+        return 1
+    }	
+    return 0
 }
 proc .compile_circuit {} {
     set ::independent_nodes {}
@@ -420,14 +444,22 @@ proc .compile_circuit {} {
     }
     puts $HTML </table>
     puts $HTML <h3>
-    puts $HTML [det ::KCL]
+    detp ::KCL g
+    set poly [present_poly g Gtotal]
+    Gtotal=>$poly
+    Info: Gtotal=$poly
+    puts $HTML Gtotal=$poly
     puts $HTML </h3>
     @ 0:V = real 0
     set i 0
     # Define Data Dependencies
     foreach node $::independent_nodes {
-        puts $HTML "$node:Next=([det ::KCL 0 {} $i $y])/Gtotal<br>"
-        $node:Next=>[det ::KCL 0 {} $i $y]/Gtotal
+        skip {[info exists ::dependent_nodes($node)]}
+	detp ::KCL p 0 {} $i $y
+	set poly [present_poly p $node:Next]
+        $node:Next=>($poly)/Gtotal
+        puts $HTML "$node:Next=($poly)/Gtotal<br>"
+	Info: $node:Next=$poly
         $node:V=>limit($node:Next,0,$::opt(topv))
         incr i
     }
@@ -439,17 +471,14 @@ proc .compile_circuit {} {
         Gds_$name=>$::G_equations($name)
         .default Gds_$name 1e+0
     }
-    Gtotal=>[det ::KCL]
-    
+    set needed_temps {}
+    foreach key [array names ::NEEDED] {
+    	skip {$::NEEDED($key)==0}
+    	lappend needed_temps $::CSE($key)
+    }
+    set needed_temps [lsort -command tmp_sort $needed_temps]
     .procedure operating_point {} {
         .for {i=0} {i<$::opt(limit)} {i=i+1} {
-	    .calculate Gtotal
-            foreach node $::independent_nodes {
-	        .calculate $node:Next
-            }
-            foreach node $::independent_nodes {
-                .calculate $node:V
-            }
             foreach name [array names ::Ids_equations] {
 		.calculate $name:gm
 		.calculate $name:go
@@ -458,6 +487,16 @@ proc .compile_circuit {} {
 		} else {
                     $name:Ideq=$::Ids_equations($name)
 		}
+            }
+	    foreach temp $needed_temps {
+	        .calculate $temp
+	    }
+	    .calculate Gtotal
+            foreach node $::independent_nodes {
+	        .calculate $node:Next
+            }
+            foreach node $::independent_nodes {
+                .calculate $node:V
             }
             foreach name [array names ::G_equations] {
                 .calculate Gds_$name
@@ -513,7 +552,7 @@ if {0} {
     v1 0 vdd $::opt(topv)
     mp_1 ref ref vdd vdd pch L=1e-6 W=2e-6
     i1 0 ref $::opt(ref)
-} elseif {0} {
+} elseif {1} {
 #    mp_1 outm outm vdd vdd pch L=1e-6 W=2e-6
     mp_1 outm outm vdd vdd pch
     mp_2 outp outm vdd vdd pch

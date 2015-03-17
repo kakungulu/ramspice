@@ -25,7 +25,6 @@ proc flat_expression {equation} {
 proc expr+ {X Y} {
     set retval "$X+$Y"
     evaluate X Y retval
-    # Info: Merging $retval
     if {![catch {expr $X==0}]} {
         if {$X==0} {
 	    set retval $Y
@@ -47,7 +46,6 @@ proc expr+ {X Y} {
 proc expr* {X Y} {
     set retval "$X*$Y"
     evaluate X Y retval
-    # Info: Merging $retval
     if {$X==0} {
     	return 0
     }
@@ -84,7 +82,6 @@ proc expr- {X {Y {}}} {
         set retval "-$X"
     }
     evaluate X Y retval
-    # Info: Merging $retval
     if {$X==$Y} {
         return 0
     }
@@ -101,12 +98,10 @@ proc expr- {X {Y {}}} {
 }
 proc expr, {X Y} {
     return "$X,$Y"
-    # Info: Merging $retval
 }    
 proc expr/ {X Y} {
     set retval "$X/$Y"
     evaluate X Y
-    # Info: Merging $retval
     if {$X==$Y} {
         return 0
     }
@@ -126,7 +121,6 @@ proc expr/ {X Y} {
     return $retval
 }
 proc analyse_expr {{expression {}}} {
-    Info: Analizing $expression 
     incr ::Gamma_expression_counter
     while {[regexp {^(.*[^0-9])([0-9]+\.?[0-9]*e[\+\-]?[0-9]+)(.*)$} $expression -> pre const post]} {
         set counter $::Gamma_expression_counter
@@ -158,61 +152,8 @@ proc analyse_expr {{expression {}}} {
     }
     return $expression
 }
-proc synthesize_minterms {{expression {}}} {
-    if {[llength $expression]<=1} {
-        set expression [lindex $expression 0]
-    }	
-    if {[llength $expression]<=1} {
-        return $expression
-    }	
-    set op [lindex $expression 0] 
-    switch $op {
-        + {
-	    set pre [synthesize_minterms [lindex $expression 1]]
-	    set post [synthesize_minterms [lindex $expression 2]]
-	    return [concat $pre $post]
-	}
-        - {
-	    if {[llength $expression]==2} {
-	        set post [synthesize_minterms [lindex $expression 1]]
-	        set final_list {}
-	        foreach term_post $post {
-	            lappend final_list "-1,$term_post"
-	        }
-	        return [lsort $final_list]
-	    }
-	    set pre [synthesize_minterms [lindex $expression 1]]
-	    set post [synthesize_minterms [lindex $expression 2]]
-	    set final_list $pre
-	    foreach term_post $post {
-	        lappend final_list "-1,$term_post"
-	    }
-	    return [lsort $final_list]
-	}
-	* {
-	    set pre [synthesize_minterms [lindex $expression 1]]
-	    set post [synthesize_minterms [lindex $expression 2]]
-	    set final_list {}
-	    foreach term_pre $pre {
-	        foreach term_post $post {
-		    set pre_list [lsort [split $term_pre ,] ]
-		    set post_list [lsort [split $term_post ,] ]
-		    lappend final_list [join [lsort [concat $pre_list $post_list]] ,]
-		}
-	    }
-	    return [lsort $final_list]
-	}
-	default {
-	    Error: Operation $op not yet supported
-	    exit
-	}
-    }
-}
 proc simplify_minterms {up_term} {
     upvar $up_term derived_term
-    foreach term [array names derived_term] {
-        Info: [string repeat .... [info level]] $derived_term($term)*$term
-    }
     if {[array size derived_term]==0} {
         return 0
     }
@@ -265,7 +206,6 @@ proc simplify_minterms {up_term} {
     }
     set internal_term [simplify_minterms in]
     set external_term [simplify_minterms out]
-#    Info: internal_term=$internal_term external_term=$external_term
     if {![catch {set external_factor [expr $external_term]}]} {
 	if {$external_factor==0} {
             set external_term ""
@@ -278,7 +218,6 @@ proc simplify_minterms {up_term} {
     } else {
         set external_term "+$external_term"
     }
-    Info: internal_term=$internal_term external_term=$external_term
     if {![catch {set internal_factor [expr $internal_term]}]} {
 	if {$internal_factor==0} {
             return $external_term
@@ -315,7 +254,6 @@ proc derive_polynomial {var {expression {}}} {
     }
     set retval {}
 #    foreach t [array names term] {
-#        Info: [string repeat .... [info level]] $term($t)*$t
 #    }
     foreach key [array names term] {
         set rank 0
@@ -336,9 +274,6 @@ proc derive_polynomial {var {expression {}}} {
 	set final_key [join $final_minterm ,]
 	set derived_term($final_key) $factor
     }
-    foreach t [array names derived_term] {
-        Info: [string repeat .... [info level]] $derived_term($t)*$t
-    }
     regsub -all {\(\+} [simplify_minterms derived_term] "(" retval
     regsub -all {\+\-} $retval "-" retval
     return $retval 
@@ -351,7 +286,6 @@ proc synthesize_expr {{expression {}}} {
     if {[llength $expression]<=1} {
         return $expression
     }	
-    # Info: synthesize_expr $expression
     set op [lindex $expression 0] 
     switch $op {
         func {
@@ -367,32 +301,24 @@ proc synthesize_expr {{expression {}}} {
     }
 }
 proc derive_expr {var expression} {
-    Info: Deriving $expression /d$var
     if {[llength $expression]==1} {
         set expression [lindex $expression 0]
     }
     if {$expression=={}} {
-    	Info: Empty
     	return {}
     } 
     if {[llength $expression]==1} {
-        Info: Atom=$expression
-        # Info: Atom: $expression
         if {$expression==$var} {
-	    Info: The deriving var
 	    return 1
 	} 
 	default ::DERMODE first
 	if {[info exists ::DER($expression,$var,$::DERMODE)]} {
-	    Info: $::DERMODE order derivative predefined
 	    return $::DER($expression,$var,$::DERMODE)
 	}
 	if {[info exists ::DER($expression,*,$::DERMODE)]} {
-	    Info: $::DERMODE order derivative predefined
 	    return $::DER($expression,*,$::DERMODE)
 	}
 	if {[info exists ::DEF($expression)]} {
-	    Info: dependency derivative: $::DEF($expression)
 	    return [derive_expr $var [analyse_expr $::DEF($expression)]]
 	}
         return 0
@@ -452,10 +378,8 @@ proc beatufy_expression {varname} {
 }
 proc derive_expression {var expression} {
     set analyzed [analyse_expr $expression]
-    Info: analyzed=$analyzed
     if {[llength $analyzed]==1} {
         set analyzed [lindex $analyzed 0]
-        Info: analyzed=$analyzed
     }
     set retval [derive_expr $var $analyzed]
     beatufy_expression retval

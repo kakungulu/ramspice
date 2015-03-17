@@ -75,7 +75,6 @@ proc det {
 	} else {
 	    set entry $M($row,$i)
 	}
-#	Info: ${M_var}($row,$i)=$entry
 	skip {$entry==0} 
 	set next_ignore_columes [concat $ignore_columes $i]
 	set next_det [det M $next_row $next_ignore_columes $replace_column $replacement_column]
@@ -99,6 +98,49 @@ proc det {
     }
     evaluate retval
     return $retval
+}
+set ::p_index 0
+proc detp {
+    M_var 
+    p
+    {row 0} 
+    {ignore_columes {}} 
+    {replace_column -1} 
+    {replacement_column {}}
+} {
+    upvar $M_var M
+    set dim $M(dim)
+    if {$row==$dim} {
+        set ::POLY($p@) 1.0
+        return
+    }
+    start_poly $p 
+    set next_row $row
+    incr next_row
+    set factor -1
+    for {set i 0} {$i<$dim} {incr i} {
+        skip {[lsearch $ignore_columes $i]!=-1}
+	set factor [expr 0-$factor]
+	skip {![info exists M($row,$i)]&&$i!=$replace_column} 
+	if {$i==$replace_column} {
+	    set entry [lindex $replacement_column $row]
+	} else {
+	    set entry $M($row,$i)
+	}
+	skip {$entry==0} 
+	set next_ignore_columes [concat $ignore_columes $i]
+	incr ::p_index
+	set next_p ${p}_$::p_index
+	detp M $next_p $next_row $next_ignore_columes $replace_column $replacement_column
+	if {[zero_poly $next_p]} {
+	    remove_poly $next_p
+	    continue
+	}
+	start_poly entry $entry
+	mult_poly entry $next_p m
+	acc_poly $p m $factor
+	remove_poly $next_p
+    }
 }
 proc Ax_y {A_var x_var y} {
     upvar $A_var A
