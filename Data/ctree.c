@@ -2648,12 +2648,12 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             return TCL_ERROR;
         }
         int i;
-        char *buf=(char *)malloc(sizeof(char)*(16+strlen(argv[4])+strlen(argv[3])+strlen(c->children[i]->name)));
+        char buf[1024*1024];
         for (i=0;i<c->num_of_children;i++)  {
-            sprintf(buf,"set %s %s ; %s",argv[3],c->children[i]->name,argv[4]);
+            sprintf(buf,"set %s %s",argv[3],c->children[i]->name);
             Tcl_Eval(interp,buf);
+            Tcl_Eval(interp,argv[4]);
         }
-        free(buf);
         return TCL_OK;
     }
     if (strcmp(argv[2],"path")==0) {

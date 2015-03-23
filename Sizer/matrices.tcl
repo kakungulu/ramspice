@@ -42,6 +42,93 @@ proc derive {var {expression {}}} {
 }
     
 }
+proc inv {M_var N_var} {
+    upvar $M_var M
+    upvar $N_var N
+    set N(dim) $M(dim)
+    set global_det [det M]
+    set factor 1.0
+    for {set i 0} {$i<$M(dim)} {incr i} {
+        for {set j 0} {$j<$M(dim)} {incr j} {
+	    set factor [expr pow(-1,$i+$j)]
+	    set det $factor*([detij M $i $j])/($global_det)
+	    evaluate det
+	    skip {$det==0}
+	    set N($j,$i) $det
+	}
+    }
+}
+proc inv_no_det {M_var N_var} {
+    upvar $M_var M
+    upvar $N_var N
+    set N(dim) $M(dim)
+    set factor 1.0
+    for {set i 0} {$i<$M(dim)} {incr i} {
+        for {set j 0} {$j<$M(dim)} {incr j} {
+	    set det $factor*([detij M $i $j])
+	    evaluate det
+	    set factor [expr -$factor]
+	    skip {$det==0}
+	    set N($j,$i) $det
+	}
+    }
+}
+proc mat_mult {M_var N_var O_var} {
+    upvar $M_var M
+    upvar $N_var N
+    upvar $O_var O
+    for {set i 0} {[array names M $i,*]!={}} {incr i} {
+         for {set j 0} {[array names N *,$j]!={}} {incr j} {
+	     set acc 0.0
+	     for {set k 0} {[array names N $k,*]!={}} {incr k} {
+	         skip {![info exists M($i,$k)]}
+	         skip {![info exists N($k,$j)]}
+		 set acc [expr $acc+$M($i,$k)*$N($k,$j)]
+	     }
+	     skip {$acc==0.0}
+	     set O($i,$j) $acc
+	 }
+    }
+    set O(dim) $M(dim)
+}
+proc mat_print {M_var } {
+    upvar $M_var M
+    Info: $M_var=
+    for {set i 0} {$i<$M(dim)} {incr i} {
+        for {set j 0} {$j<$M(dim)} {incr j} {
+	    if {![info exists M($i,$j)]} {
+	        puts -nonewline 0.0
+	    } elseif {abs($M($i,$j))<1e-12} {
+	        puts -nonewline 0.0
+	    } else {
+	        puts -nonewline $M($i,$j)
+	    }
+	    puts -nonewline "\t"
+	}
+        puts ""
+    } 
+}
+proc transpose {M_var N_var} {
+    upvar $M_var M
+    upvar $N_var N
+    set N(dim) $M(dim)
+    foreach keyM [array names M *,*] {
+        lassign [split $keyM ,] im jm
+        set N($jm,$im) $M($keyM)
+    }
+    	   
+}
+proc pseudo_inv {M_var N_var} {
+    upvar $M_var M
+    upvar $N_var N
+    transpose M Mt
+    mat_print Mt
+    mat_mult Mt M MtM
+    mat_print MtM
+    inv MtM MtMi
+    mat_print MtMi
+    mat_mult MtMi Mt N
+}
 proc det {
     M_var 
     {row 0} 
@@ -98,6 +185,28 @@ proc det {
     }
     evaluate retval
     return $retval
+}
+proc detij {
+    M_var 
+    ignore_row 
+    ignore_column
+} {
+    upvar $M_var M
+    foreach key [array names M *,*] {
+        lassign [split $key ,] i j
+	skip {$i==$ignore_row}
+	skip {$j==$ignore_column}
+	if {$i>$ignore_row} {
+	    incr i -1
+	}
+	if {$j>$ignore_column} {
+	    incr j -1
+	}
+	set N($i,$j) $M($key)
+    }
+    set N(dim) $M(dim)
+    incr N(dim) -1
+    return [det N]
 }
 set ::p_index 0
 proc detp {

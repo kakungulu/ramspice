@@ -8,11 +8,11 @@ proc GammaCommand {name interface i_body} {
     regsub -all {@(.)\(([^\)]+)\)} $i_body "GammaVirtualMachineStack\[GammaVirtualMachineStackIndex+\\2\].\\1" i_body
     if {[lsearch $::Gamma_operators $name]==-1} {
         set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (!GammaVirtualMachineTempSkip) \{\n    "
-#	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
 	append body " FC FCUNION;\n"
     } else {
         set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (1) \{\n    "
-#	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
 	append body " FC FCUNION;\n"
     }
     set i 0

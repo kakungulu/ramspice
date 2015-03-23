@@ -45,12 +45,12 @@ GammaCommand Tcl {string Code} {
     }
 }
 GammaCommand PushVar {var C} {
-    // #Info: "Pushing var %x (%g)" C *C
+    #Info: "Pushing var %x (%g) to %d" C *C GammaVirtualMachineStackIndex
     @F(0)=*C;
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushPointer {var C} {
-    // #Info: "Pushing pointer %x" C 
+    #Info: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
     @P(0)=C;
     GammaVirtualMachineStackIndex--;
 }
@@ -81,7 +81,7 @@ GammaCommand Interpolateg {} {
 }
 set op_template {
     float F=@F(1)@O@F(2);
-    // #Info: "%g@%g=%g" @F(1) @F(2) F
+    #Info: "%g@O%g=%g  =>  %d" @F(1) @F(2) F GammaVirtualMachineStackIndex+2
     @F(2)=F;
     GammaVirtualMachineStackIndex++;
 }

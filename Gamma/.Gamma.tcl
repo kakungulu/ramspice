@@ -127,6 +127,7 @@ proc .if {args} {
         set skip_label IF$::GammaConditionCounter
         .goto $skip_label
 	.label: ::$do_label
+	# Info: Conditioned Code=$code
         uplevel $code
 	.goto $end_label
         .label: ::$skip_label
@@ -241,8 +242,10 @@ proc .let {args} {
         }
     }
     regsub -all {\s+} $expression {} expression
+    .tcl "Info: Calculating $name"
     Gamma_expression $expression
     GammaCommandPopVar $name
+    .tp $name
 }
 proc .property {args} {
     array unset ::Gamma_function_args
@@ -269,6 +272,7 @@ proc .calc {var} {
     .calculate $var
 }
 proc .calculate {var} {
+    Info: Calculating $var
     if {[info exists ::property($var,calculation)]} {
         .run $::property($var,calculation)
     }

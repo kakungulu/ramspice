@@ -34,108 +34,110 @@ proc .property {name args} {
     set current_switch arguments
     foreach arg $args {
         if {[regexp {^\-(\S+)$} $arg -> switch]} {
-	    set current_switch $switch
-	    default opt($current_switch) {}
-	    continue
-	}
-	lappend opt($current_switch) $arg
+            set current_switch $switch
+            default opt($current_switch) {}
+            continue
+        }
+        lappend opt($current_switch) $arg
     }
-    default opt(to_display) $name
-    default opt(from_display) value
+    default opt(to_display) @
+    default opt(from_display) @
     default opt(unit) {}
     if {![info exists opt(expression)]} {
         Error: property requires a -expression switch
-	exit
+        exit
     }
     set opt(expression) [flat_expression $opt(expression)]
     foreach field [array names opt] {
-	set ::properties($name,$field) $opt($field)
+        set ::properties($name,$field) $opt($field)
     }
+    @ property/$name = real 0
+    property/$name=>$opt(expression)
     set ::DERMODE $original_der_mode
 }
 proc .spec {name op value} {
     if {![info exists ::properties($name,expression)]} {
         Error: $name is not a defined property you can use in a spec. Start with: .property $name -expression <expression>
-	exit
+        exit
     }
     set useful_op 1
     foreach previous_entry [array names ::specification $name,*] {
         set previous_op [lindex [split $previous_entry ,] 1]
-	
-	switch $op {
-	    "=" {
-	        switch $previous_op {
-		    "=" {
-		        if {$::specification($previous_entry)!=$value} {
-			    Error: Conflicting specification! $name can't be both $value and $::specification($previous_entry)
-			    exit
-			}
-		    }
-		    "<" {
-		        if {$::specification($previous_entry)<$value} {
-			    Error: Conflicting specification! $name can't be both $value and less than $::specification($previous_entry)
-			    exit
-			}
-		        array unset ::specification $previous_entry
-		    }
-		    ">" {
-		        if {$::specification($previous_entry)>$value} {
-			    Error: Conflicting specification! $name can't be both $value and greater than $::specification($previous_entry)
-			    exit
-			}
-		        array unset ::specification $previous_entry
-		    }
-		}
-	    }
-	    "<" {
-	        switch $previous_op {
-		    "=" {
-		        if {$::specification($previous_entry)>$value} {
-			    Error: Conflicting specification! $name can't be less than $value and equal to $::specification($previous_entry)
-			    exit
-			}
-			set useful_op 0
-		    }
-		    "<" {
-		        if {$::specification($previous_entry)<$value} {
-			    set useful_op 0
-			} else {
-			    array unset ::specification $previous_entry
-			}
-		    }
-		    ">" {
-		        if {$::specification($previous_entry)>$value} {
-			    Error: Conflicting specification! $name can't be less than $value and greater than $::specification($previous_entry)
-			    exit
-			}
-		    }
-		}
-	    }
-	    ">" {
-	        switch $previous_op {
-		    "=" {
-		        if {$::specification($previous_entry)<$value} {
-			    Error: Conflicting specification! $name can't be greater than $value and equal to $::specification($previous_entry)
-			    exit
-			}
-			set useful_op 0
-		    }
-		    ">" {
-		        if {$::specification($previous_entry)>$value} {
-			    set useful_op 0
-			} else {
-			    array unset ::specification $previous_entry
-			}
-		    }
-		    "<" {
-		        if {$::specification($previous_entry)<$value} {
-			    Error: Conflicting specification! $name can't be greater than $value and less than $::specification($previous_entry)
-			    exit
-			}
-		    }
-		}
-	    }
-	}
+        
+        switch $op {
+            "=" {
+                switch $previous_op {
+                    "=" {
+                        if {$::specification($previous_entry)!=$value} {
+                            Error: Conflicting specification! $name can't be both $value and $::specification($previous_entry)
+                            exit
+                        }
+                    }
+                    "<" {
+                        if {$::specification($previous_entry)<$value} {
+                            Error: Conflicting specification! $name can't be both $value and less than $::specification($previous_entry)
+                            exit
+                        }
+                        array unset ::specification $previous_entry
+                    }
+                    ">" {
+                        if {$::specification($previous_entry)>$value} {
+                            Error: Conflicting specification! $name can't be both $value and greater than $::specification($previous_entry)
+                            exit
+                        }
+                        array unset ::specification $previous_entry
+                    }
+                }
+            }
+            "<" {
+                switch $previous_op {
+                    "=" {
+                        if {$::specification($previous_entry)>$value} {
+                            Error: Conflicting specification! $name can't be less than $value and equal to $::specification($previous_entry)
+                            exit
+                        }
+                        set useful_op 0
+                    }
+                    "<" {
+                        if {$::specification($previous_entry)<$value} {
+                            set useful_op 0
+                        } else {
+                            array unset ::specification $previous_entry
+                        }
+                    }
+                    ">" {
+                        if {$::specification($previous_entry)>$value} {
+                            Error: Conflicting specification! $name can't be less than $value and greater than $::specification($previous_entry)
+                            exit
+                        }
+                    }
+                }
+            }
+            ">" {
+                switch $previous_op {
+                    "=" {
+                        if {$::specification($previous_entry)<$value} {
+                            Error: Conflicting specification! $name can't be greater than $value and equal to $::specification($previous_entry)
+                            exit
+                        }
+                        set useful_op 0
+                    }
+                    ">" {
+                        if {$::specification($previous_entry)>$value} {
+                            set useful_op 0
+                        } else {
+                            array unset ::specification $previous_entry
+                        }
+                    }
+                    "<" {
+                        if {$::specification($previous_entry)<$value} {
+                            Error: Conflicting specification! $name can't be greater than $value and less than $::specification($previous_entry)
+                            exit
+                        }
+                    }
+                }
+            }
+        }
     }
     if {$useful_op} {
         set ::specification($name,$op) $value
@@ -158,15 +160,15 @@ proc add_vdc {name m p value} {
     if {[info exists ::dependent_nodes($m)]} {
         Info: $p depends on $m ($value)
         set ::dependent_nodes($p) {}
-	$p:Next=>$m+$value
-	$p:V=>$p:Next
-	@ $p:Next = real 0
+        $p:Next=>$m+$value
+        $p:V=>$p:Next
+        @ $p:Next = real $::opt(topv)
     } elseif {[info exists ::dependent_nodes($p)]} {
         Info: $m depends on $p ($value)
         set ::dependent_nodes($m) {}
-	$m:Next=>$p+$value
-	$m:V=>$m:Next
-	@ $m:Next = real 0
+        $m:Next=>$p+$value
+        $m:V=>$m:Next
+        @ $m:Next = real $::opt(topv)
     }
 }
 array set ::all_resistors {}
@@ -227,70 +229,72 @@ proc add_kcl {i j element} {
     append ::KCL($i,$j) $element
     regsub {^\++} $::KCL($i,$j)  {} ::KCL($i,$j)
 }
+@ property/quality = real 0
 proc .compile_spec {} {
     set original_der_mode $::DERMODE
     set ::DERMODE second
     .procedure calculate_step {} {
+        Info: Calculating Step [array get ::specification]
         @ input foreach_child input {
-	    input:$input:step=0
+            Info: Input=$input
+            input:$input:step=0
             foreach spec [array names ::specification] {
-	        lassign [split $spec ,] name op
-	        switch $op {
-	            "=" {
-		        .if {$name>=$::specification($spec)} {
-		            input:$input:step=(1-$::specification($spec)/$name)/([derive_expression $input $::properties($name,expression)])
-		        } else {
-		            input:$input:step=(1-$name/$::specification($spec))/([derive_expression $input $::properties($name,expression)])
-		        }
-		    }
-	            "<" {
-		        .if {$name>=$::specification($spec)} {
-		            input:$input:step=(1-$::specification($spec)/$name)/([derive_expression $input $::properties($name,expression)])
-		        }
-		    }
-	            ">" {
-		        .if {$name<=$::specification($spec)} {
-		            input:$input:step=(1-$name/$::specification($spec))/([derive_expression $input $::properties($name,expression)])
-		        }
-		    }
-	        }
-	    }
+                Info: Compiling Spec: $spec $::specification($spec)
+                lassign [split $spec ,] name op
+                switch $op {
+                    "=" {
+                        .if {property:$name>=$::specification($spec)} {
+                            .let input:$input:step=(1-$::specification($spec)/property:$name)/([derive_expression input:$input $::properties($name,expression)])
+                        } else {
+                            .let input:$input:step=(1-property:$name/$::specification($spec))/([derive_expression input:$input $::properties($name,expression)])
+                        }
+                    }
+                    "<" {
+                        .if {property:$name>=$::specification($spec)} {
+                            .let input:$input:step=(1-$::specification($spec)/property:$name)/([derive_expression input:$input $::properties($name,expression)])
+                        }
+                    }
+                    ">" {
+                        .if {property:$name<=$::specification($spec)} {
+                            .let input:$input:step=(1-property:$name/$::specification($spec))/([derive_expression input:$input $::properties($name,expression)])
+                        }
+                    }
+                }
+            }
         }
     }
     .procedure apply_step {} {
         step_factor=step_divider*step_size
         @ input foreach_child input {
-	    input:$input=limit(input:$input+input:$input:size,$input:min,$input:max)
+            input:$input=limit(input:$input+input:$input:step,$input:min,$input:max)
         }
     }
     .procedure quality {} {
-        quality=0
+        property/quality=0
         set calculated_properties {}
         foreach spec [array names ::specification] {
-	    lassign [split $spec ,] name op
-	    if {[lsearch $calculated_properties $name]==-1} {
-	        $name=$::properties($name,expression)
-	        lappend calculated_properties $name
-	    }
-	    switch $op {
-	        "=" {
-		    .if {$name>=$::specification($spec)} {
-		        quality=quality+($::specification($spec)/$name-1)*($::specification($spec)/$name-1)
-		    } else {
-		        quality=quality+($name/$::specification($spec)-1)*($name/$::specification($spec)-1)
-		    }
-		}
-	        "<" {
-		    .if {$name>=$::specification($spec)} {
-		        quality=quality+($::specification($spec)/$name-1)*($::specification($spec)/$name-1)
-		    }
-		}
-	        ">" {
-		    .if {$name<=$::specification($spec)} {
-		        quality=quality+($name/$::specification($spec)-1)*($name/$::specification($spec)-1)
-		    }
-		}
-	    }
+            lassign [split $spec ,] name op
+            if {[lsearch $calculated_properties $name]==-1} {
+                .calculate property/$name
+                lappend calculated_properties $name
+            }
+            regsub -all @ $::properties($name,from_display) $::specification($spec) th
+            evaluate th
+            switch $op {
+                "=" {
+                    property:quality=property:quality+abs(property:$name/$th-1)
+                }
+                "<" {
+                    .if {property:$name>=$th} {
+                        property:quality=property:quality+abs(property:$name/$th-1)
+                    }
+                }
+                ">" {
+                    .if {property:$name<=$th} {
+                        property:quality=property:quality+abs(property:$name/$th-1)
+                    }
+                }
+            }
         }
     }
     set ::DERMODE $original_der_mode
@@ -322,10 +326,10 @@ proc .compile_circuit {} {
                 set V($node) $node:V
             }
         }
-	if {[catch {set G [expr 1.0/$::all_resistors($res_nodes)]}]} {
+        if {[catch {set G [expr 1.0/$::all_resistors($res_nodes)]}]} {
             set ::G_equations(${m}_${p}) 1.0/$::all_resistors($res_nodes)
-	    set G Gds_${m}_${p}
-	}
+            set G Gds_${m}_${p}
+        }
         add_kcl $m $m $G
         add_kcl $p $p $G
         add_kcl $p $m -$G
@@ -344,48 +348,48 @@ proc .compile_circuit {} {
                 set V$node_name $::vdc($node)
             } else {
                 set V$node_name $node:V
- #               @ $node:V = real [expr $::opt(topv)]
-                @ $node:V = real 0.8
-                @ $node:Next = real 0
+                #               @ $node:V = real [expr $::opt(topv)]
+                @ $node:V = real $::opt(topv)
+                @ $node:Next = real $::opt(topv)
             }
         }
-#        add_kcl_entry $s $d "Gds_$name"
+        #        add_kcl_entry $s $d "Gds_$name"
         set ::transistors($name,Vgs) [Vdiff $Vg $Vs]
         @ Gds_$name = real 1
-	add_kcl $s $s "+$name:go"
-	add_kcl $s $d "-$name:go"
-	add_kcl $d $s "-$name:go"
-	add_kcl $d $d "+$name:go"
-	default ::idc($d,$s)
-	append ::idc($d,$s) "-$name:Ideq"
-	add_kcl $s $s "+$name:gm"
-	add_kcl $s $g "-$name:gm"
-	add_kcl $d $s "-$name:gm"
-	add_kcl $d $g "+$name:gm"
+        add_kcl $s $s "+$name:go"
+        add_kcl $s $d "-$name:go"
+        add_kcl $d $s "-$name:go"
+        add_kcl $d $d "+$name:go"
+        default ::idc($d,$s)
+        append ::idc($d,$s) "-$name:Ideq"
+        add_kcl $s $s "+$name:gm"
+        add_kcl $s $g "-$name:gm"
+        add_kcl $d $s "-$name:gm"
+        add_kcl $d $g "+$name:gm"
         set ::Ids_equations($name) "interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vg $Vs]-$name:go*[Vdiff $Vb $Vs]"
         set ::gm_equations($name) "interpolateg(&:look_up_tables:$type:gm:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dgm_dvgs,&$name:dgm_dvds,&$name:dgm_dvbs,&$name:dgm_dl)*($W/$L)"
         set ::go_equations($name) "($W/$L)/interpolateg(&:look_up_tables:$type:ro:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dro_dvgs,&$name:dro_dvds,&$name:dro_dvbs,&$name:dro_dl)"
         @ $name:Ideq = real 0
         @ $name:go = real 1
         @ $name:gm = real 1
-	define_derivative $name:gm * first 0
-	define_derivative $name:gm $W second "$name:gm/$W"
-	define_derivative $name:gm $L second "($name:dgm_dl-$name:gm/$L)*($W/$L)"
-	define_derivative $name:go * first 0
-	define_derivative $name:go $W second "$name:go/$W"
-	define_derivative $name:go $L second "-$name:go*($name:dro_dl*$name:go*($L/$W)+1/$L)"
+        define_derivative $name:gm * first 0
+        define_derivative $name:gm $W second "$name:gm/$W"
+        define_derivative $name:gm $L second "($name:dgm_dl-$name:gm/$L)*($W/$L)"
+        define_derivative $name:go * first 0
+        define_derivative $name:go $W second "$name:go/$W"
+        define_derivative $name:go $L second "-$name:go*($name:dro_dl*$name:go*($L/$W)+1/$L)"
     }
     foreach idc_pair [array names ::idc] {
         lassign [split $idc_pair ,] m p
         foreach node [list $m $p] sign {+ -} {
             skip {$node==0} 
-	    set index [lsearch $::independent_nodes $node]
+            set index [lsearch $::independent_nodes $node]
             default ::KCL($index)
-	    regsub -all {\-\-} "$sign$::idc($idc_pair)" {+} entry
-	    regsub -all {\-\+} $entry {-} entry
-	    regsub {^\++} $entry {+} entry
+            regsub -all {\-\-} "$sign$::idc($idc_pair)" {+} entry
+            regsub -all {\-\+} $entry {-} entry
+            regsub {^\++} $entry {+} entry
             append ::KCL($index) "$entry"
-	    regsub {^\++} $::KCL($index)  {} ::KCL($index)
+            regsub {^\++} $::KCL($index)  {} ::KCL($index)
         }
     }
     set all_vdc [array names ::vdc]
@@ -434,7 +438,7 @@ proc .compile_circuit {} {
                 puts $HTML $::KCL($i,$j)
             } else {
                 puts $HTML 0
-	    }
+            }
             puts $HTML </td>
         }
         puts $HTML <td>
@@ -455,17 +459,17 @@ proc .compile_circuit {} {
     # Define Data Dependencies
     foreach node $::independent_nodes {
         skip {[info exists ::dependent_nodes($node)]}
-	detp ::KCL p 0 {} $i $y
-	set poly [present_poly p $node:Next]
+        detp ::KCL p 0 {} $i $y
+        set poly [present_poly p $node:Next]
         $node:Next=>($poly)/Gtotal
         puts $HTML "$node:Next=($poly)/Gtotal<br>"
-	Info: $node:Next=$poly
+        Info: $node:Next=$poly
         $node:V=>limit($node:Next,0,$::opt(topv))
         incr i
     }
     foreach name [array names ::Ids_equations] {
-	$name:gm=>$::gm_equations($name)
-	$name:go=>$::go_equations($name)
+        $name:gm=>$::gm_equations($name)
+        $name:go=>$::go_equations($name)
     }
     foreach name [array names ::G_equations] {
         Gds_$name=>$::G_equations($name)
@@ -473,27 +477,27 @@ proc .compile_circuit {} {
     }
     set needed_temps {}
     foreach key [array names ::NEEDED] {
-    	skip {$::NEEDED($key)==0}
-    	lappend needed_temps $::CSE($key)
+        skip {$::NEEDED($key)==0}
+        lappend needed_temps $::CSE($key)
     }
     set needed_temps [lsort -command tmp_sort $needed_temps]
     .procedure operating_point {} {
         .for {i=0} {i<$::opt(limit)} {i=i+1} {
             foreach name [array names ::Ids_equations] {
-		.calculate $name:gm
-		.calculate $name:go
-		.if {$::transistors($name,Vgs)<6e-1} {
+                .calculate $name:gm
+                .calculate $name:go
+                .if {$::transistors($name,Vgs)<6e-1} {
                     $name:Ideq=0
-		} else {
+                } else {
                     $name:Ideq=$::Ids_equations($name)
-		}
+                }
             }
-	    foreach temp $needed_temps {
-	        .calculate $temp
-	    }
-	    .calculate Gtotal
+            foreach temp $needed_temps {
+                .calculate $temp
+            }
+            .calculate Gtotal
             foreach node $::independent_nodes {
-	        .calculate $node:Next
+                .calculate $node:Next
             }
             foreach node $::independent_nodes {
                 .calculate $node:V
@@ -530,13 +534,13 @@ proc add_transistor {name d g s b type args} {
     foreach field {L W} {
         if {![info exists ::transistors($name,$field)]} {
             set ::transistors($name,$field) input:$field$class
-            @ input:$field$class = real 0
+            @ input:$field$class = real 3.6e-8
         } elseif {[regexp {^\((.*)\)$} $::transistors($name,$field) -> guide]} {
             set ::transistors($name,$field) input:$field$class
             @ input:$field$class = real $guide
-	} else {
-	    
-	}
+        } else {
+            
+        }
     }
 }
 default ::opt(iref) 40e-6
@@ -552,8 +556,8 @@ if {0} {
     v1 0 vdd $::opt(topv)
     mp_1 ref ref vdd vdd pch L=1e-6 W=2e-6
     i1 0 ref $::opt(ref)
-} elseif {1} {
-#    mp_1 outm outm vdd vdd pch L=1e-6 W=2e-6
+} elseif {0} {
+    #    mp_1 outm outm vdd vdd pch L=1e-6 W=2e-6
     mp_1 outm outm vdd vdd pch
     mp_2 outp outm vdd vdd pch
     mnin_1 outm inp sink 0 nch
@@ -567,7 +571,7 @@ if {0} {
     @ input:pos = real [expr $::opt(topv)/2]
     @ input:neg = real [expr $::opt(topv)/2]
     #    rload outp 0 1e+7
-    .property Adc -expression (derive(outp:V,pos_input)-derive(outp:V,neg_input))/Gtotal -to_display 20*log10(value) -from_display pow(10,Adc/20) -unit dB
+    .property Adc -expression (derive(outp:V,pos_input)-derive(outp:V,neg_input))/Gtotal -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
 } elseif {0} {
     vs1 0 1 0.5
     vs2 0 3 $::opt(topv)
@@ -580,28 +584,71 @@ if {0} {
     vm 2 3 0.5
     r1 0 3 100
 } else {
-    iref 0 vbias input:ref_current
-    @ input:ref_current = real -$::opt(iref)
+    iref 0 vbias parameter:ref_current
+    @ parameter:ref_current = real -$::opt(iref)
     vdd 0 vdd $::opt(topv)
-    mn_ref  vbias vbias 0 0 nch L=1e-6 W=2e-6
-    .property Adc -expression derive(vbias:V,input:ref_current) -to_display 20*log10(value) -from_display pow(10,Adc/20) -unit dB
+    mn_ref  vbias vbias 0 0 nch W=parameter:WbyL*input:L L=input:L
+    @ parameter/WbyL = real 1
+    @ input/L = real 360e-9
+    .property Adc -expression n_ref:gm/n_ref:go -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
 }
 .compile_circuit
 
-Info: Adc=$::properties(Adc,expression)
-.spec Adc < 20
-.spec Adc > 10
-.spec Adc < 25
-.spec Adc < 15
+.spec Adc < 40
+.spec Adc > 30
 .compile_spec
 #exit
 @ inp:V = real [expr $::opt(topv)/2]
 @ inm:V = real [expr $::opt(topv)/2]
 set box {}
+for {set k 0} {$k<80} {incr k} {
+    operating_point
+    quality
+    calculate_step
+    @ input foreach_child c {
+        if {[@ input:$c:step ?]} {
+            set step [expr 1-[@ input:$c:step]]
+            @ input:$c = real [expr [@ input:$c]*$step]
+        }
+    }
+}
 operating_point
+quality
+
+##### Print Results
 @ . foreach_child node {
     skip {![@ $node:V ?]}
     append box V$node=[eng [@ $node:V] V]
+    append box \n
+}    
+@ property foreach_child node {
+    if {[info exists ::properties($node,to_display)]} {
+        regsub -all @ $::properties($node,to_display) [@ property/$node] value
+        evaluate value
+        if {[info exists ::properties($node,unit)]} {
+            append box "property $node=[eng $value $::properties($node,unit)]"
+        } else {
+            append box "property $node=$value"
+        }
+    } else {
+        append box "property $node=[@ property/$node]"
+    }
+    append box \n
+}   
+@ . foreach_child c {
+    @ $c foreach_child g {
+        if {[string match g* $g]} {
+            append box "$c:$g = [eng [@ $c/$g] Mho]\n"
+        } elseif {[string match r* $g]} {
+            append box "$c:$g = [eng [@ $c/$g] Ohm]\n"
+        }
+    }
+} 
+@ input foreach_child c {
+    append box "INPUT $c=[@ input:$c]"
+    if {[@ input:$c:step ?]} {
+        append box ", step=[@ input:$c:step]"
+    }
     append box \n
 }    
 textbox $box

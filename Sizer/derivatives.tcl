@@ -324,6 +324,7 @@ proc derive_expr {var expression} {
         return 0
     }	
     set op [lindex $expression 0] 
+    Info: op=$op
     switch $op {
         func {
 	    set func [lindex $expression 1]
@@ -334,14 +335,14 @@ proc derive_expr {var expression} {
 	    }
 	    return [uplevel [concat d_${func} $var [split $arguments ,]]]
 	}
-	* {
+	"*" {
 	    set pre [synthesize_expr [lindex $expression 1]]
 	    set post [synthesize_expr [lindex $expression 2]]
 	    set dpre [derive_expr $var  [lindex $expression 1]]
 	    set dpost [derive_expr $var  [lindex $expression 2]]
 	    return "[expr+ [expr* $pre $dpost] [expr* $dpre $post]]"
 	}
-	/ {
+	"/" {
 	    set pre [synthesize_expr [lindex $expression 1]]
 	    set post [synthesize_expr [lindex $expression 2]]
 	    set dpre [derive_expr $var  [lindex $expression 1]]

@@ -34,6 +34,7 @@ proc unknown {args} {
 	return
     }
     if {[regexp {^[A-Za-z_/:][:/A-Za-z0-9_]*\s*=} $args]} {
+        Info: Gamma Calculation $args
         uplevel ".let $args"
 	return
     }

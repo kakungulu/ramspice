@@ -519,11 +519,13 @@ proc ::SPICE::end {} {
     Info: finished reading circuit
 }
 proc evaluate {args} {
+    set i 0
     foreach varname $args {
-        upvar $varname var_$varname
-        if {![catch {set retval [expr [set var_$varname]]}]} {
-            set var_$varname $retval
-        }
+        upvar $varname var_$i
+        if {![catch {set retval [expr 1.0*[set var_$i]]} msg]} {
+            set var_$i $retval
+	}
+	incr i
     }
 }
 proc ::SPICE::process_line_buf {} {
