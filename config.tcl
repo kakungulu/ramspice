@@ -161,3 +161,8 @@ array set ::sizer_parameter_dim {
 set ::GammaVirtualMachineBatchSize [expr 1024*1024*16]
 set ::GammaVirtualMachineStackSize [expr 1024*1024*16]
 set ::GammaVirtualMachineGosubStackSize [expr 1024*1024]
+# Types to support vectors and vectors of pointers
+set ::vector_types {ordinal float int}
+set ::vector_pointer_types {char PAT_entry}
+
+

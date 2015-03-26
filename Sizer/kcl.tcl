@@ -235,28 +235,28 @@ proc .compile_spec {} {
     set ::DERMODE second
     .procedure calculate_step {} {
         Info: Calculating Step [array get ::specification]
-        @ input foreach_child input {
-            Info: Input=$input
-            input:$input:step=0
+        @ size foreach_child value {
+            Info: Size=$value
+            size:$value:step=0
             foreach spec [array names ::specification] {
                 Info: Compiling Spec: $spec $::specification($spec)
                 lassign [split $spec ,] name op
                 switch $op {
                     "=" {
                         .if {property:$name>=$::specification($spec)} {
-                            .let input:$input:step=(1-$::specification($spec)/property:$name)/([derive_expression input:$input $::properties($name,expression)])
+                            .let size:$value:step=(1-$::specification($spec)/property:$name)/([derive_expression size:$value $::properties($name,expression)])
                         } else {
-                            .let input:$input:step=(1-property:$name/$::specification($spec))/([derive_expression input:$input $::properties($name,expression)])
+                            .let size:$value:step=(1-property:$name/$::specification($spec))/([derive_expression size:$value $::properties($name,expression)])
                         }
                     }
                     "<" {
                         .if {property:$name>=$::specification($spec)} {
-                            .let input:$input:step=(1-$::specification($spec)/property:$name)/([derive_expression input:$input $::properties($name,expression)])
+                            .let size:$value:step=(1-$::specification($spec)/property:$name)/([derive_expression size:$value $::properties($name,expression)])
                         }
                     }
                     ">" {
                         .if {property:$name<=$::specification($spec)} {
-                            .let input:$input:step=(1-property:$name/$::specification($spec))/([derive_expression input:$input $::properties($name,expression)])
+                            .let size:$value:step=(1-property:$name/$::specification($spec))/([derive_expression size:$value $::properties($name,expression)])
                         }
                     }
                 }
@@ -265,8 +265,8 @@ proc .compile_spec {} {
     }
     .procedure apply_step {} {
         step_factor=step_divider*step_size
-        @ input foreach_child input {
-            input:$input=limit(input:$input+input:$input:step,$input:min,$input:max)
+        @ size foreach_child value {
+            size:$value=limit(size:$value+size:$value:step,$size:min,$size:max)
         }
     }
     .procedure quality {} {
@@ -533,11 +533,11 @@ proc add_transistor {name d g s b type args} {
     set class [lindex [split $name _] 0]
     foreach field {L W} {
         if {![info exists ::transistors($name,$field)]} {
-            set ::transistors($name,$field) input:$field$class
-            @ input:$field$class = real 3.6e-8
+            set ::transistors($name,$field) size:$field$class
+            @ size:$field$class = real 3.6e-8
         } elseif {[regexp {^\((.*)\)$} $::transistors($name,$field) -> guide]} {
-            set ::transistors($name,$field) input:$field$class
-            @ input:$field$class = real $guide
+            set ::transistors($name,$field) size:$field$class
+            @ size:$field$class = real $guide
         } else {
             
         }
@@ -566,10 +566,10 @@ if {0} {
     mn_ref  vbias vbias 0 0 nch
     iref  vbias vdd $::opt(iref)
     vdd 0 vdd $::opt(topv)
-    vinp 0 inp input:pos
-    vinm 0 inm input:neg
-    @ input:pos = real [expr $::opt(topv)/2]
-    @ input:neg = real [expr $::opt(topv)/2]
+    vinp 0 inp size:pos
+    vinm 0 inm size:neg
+    @ size:pos = real [expr $::opt(topv)/2]
+    @ size:neg = real [expr $::opt(topv)/2]
     #    rload outp 0 1e+7
     .property Adc -expression (derive(outp:V,pos_input)-derive(outp:V,neg_input))/Gtotal -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
 } elseif {0} {
@@ -587,9 +587,9 @@ if {0} {
     iref 0 vbias parameter:ref_current
     @ parameter:ref_current = real -$::opt(iref)
     vdd 0 vdd $::opt(topv)
-    mn_ref  vbias vbias 0 0 nch W=parameter:WbyL*input:L L=input:L
+    mn_ref  vbias vbias 0 0 nch W=parameter:WbyL*size:L L=size:L
     @ parameter/WbyL = real 1
-    @ input/L = real 360e-9
+    @ size/L = real 360e-9
     .property Adc -expression n_ref:gm/n_ref:go -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
 }
 .compile_circuit
@@ -605,10 +605,10 @@ for {set k 0} {$k<80} {incr k} {
     operating_point
     quality
     calculate_step
-    @ input foreach_child c {
-        if {[@ input:$c:step ?]} {
-            set step [expr 1-[@ input:$c:step]]
-            @ input:$c = real [expr [@ input:$c]*$step]
+    @ size foreach_child c {
+        if {[@ size:$c:step ?]} {
+            set step [expr 1-[@ size:$c:step]]
+            @ size:$c = real [expr [@ size:$c]*$step]
         }
     }
 }
@@ -644,10 +644,10 @@ quality
         }
     }
 } 
-@ input foreach_child c {
-    append box "INPUT $c=[@ input:$c]"
-    if {[@ input:$c:step ?]} {
-        append box ", step=[@ input:$c:step]"
+@ size foreach_child c {
+    append box "Size $c=[@ size:$c]"
+    if {[@ size:$c:step ?]} {
+        append box ", step=[@ size:$c:step]"
     }
     append box \n
 }    

@@ -26,6 +26,130 @@ IFfrontEnd nutmeginfo = {
     OUTendDomain,
     OUTattributes
 };
+
+#Foreach: type $::vector_pointer_types {
+    vector_pointer_$type *new_vector_pointer_$type() {
+        vector_pointer_$type *v=(vector_pointer_$type *)malloc(sizeof(vector_pointer_$type));
+	v->max_num_of=8;
+	v->content=($type **)malloc(sizeof($type *)*v->max_num_of);
+	v->num_of=0;
+	return(v);
+    } 
+    void add_entry_vector_pointer_$type(vector_pointer_$type *v,$type *e) {
+        if (v->num_of>=v->max_num_of) {
+	    v->max_num_of*=2;
+	    $type **new_content=($type **)malloc(sizeof($type *)*v->max_num_of);
+	    ordinal i;
+	    for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
+	    free(v->content);
+	    v->content=new_content;
+	}
+	v->content[v->num_of]=e;
+	v->num_of++;
+    }
+    $type *get_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i) {
+        if ((i>=v->num_of)||(i<0)) {
+	    #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
+	    return(v->content[0]);
+	}
+	return(v->content[i]);
+    }
+    int delete_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i) {
+        if ((i>=v->num_of)||(i<0)) {
+	    #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
+	    return(-1);
+	}
+	v->content[i]=v->content[v->num_of-1];
+	v->num_of--;
+	return(v->num_of);
+    }
+    void write_vector_pointer_$type(FILE *O,vector_pointer_$type *v) {
+        write_ordinal(O,v->num_of);
+	ordinal i;
+	for (i=0;i<v->num_of;i++) write_pointer_$type(O,v->content[i]);
+    }
+    vector_pointer_$type *read_vector_pointer_$type() {
+        vector_pointer_$type *v=new_vector_pointer_$type();
+	ordinal length=read_ordinal();
+	ordinal i;
+	for (i=0;i<length;i++) add_entry_vector_pointer_$type(v,read_pointer_$type());
+	return(v);
+    }
+}
+#Foreach: type $::vector_types {
+    vector_$type *new_vector_$type() {
+        vector_$type *v=(vector_$type *)malloc(sizeof(vector_$type));
+	v->max_num_of=8;
+	v->content=($type *)malloc(sizeof($type)*v->max_num_of);
+	v->num_of=0;
+	return(v);
+    } 
+    void add_entry_vector_$type(vector_$type *v,$type e) {
+        if (v->num_of>=v->max_num_of) {
+	    v->max_num_of*=2;
+	    $type *new_content=($type *)malloc(sizeof($type)*v->max_num_of);
+	    ordinal i;
+	    for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
+	    free(v->content);
+	    v->content=new_content;
+	}
+	v->content[v->num_of]=e;
+	v->num_of++;
+    }
+    $type get_entry_vector_$type(vector_$type *v,ordinal i) {
+        if ((i>=v->num_of)||(i<0)) {
+	    #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
+	    return(v->content[0]);
+	}
+	return(v->content[i]);
+    }
+    int delete_entry_vector_$type(vector_$type *v,ordinal i) {
+        if ((i>=v->num_of)||(i<0)) {
+	    #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
+	    return(-1);
+	}
+	v->content[i]=v->content[v->num_of-1];
+	v->num_of--;
+	return(v->num_of);
+    }
+    void write_vector_$type(FILE *O,vector_$type *v) {
+        write_ordinal(O,v->num_of);
+	ordinal i;
+	for (i=0;i<v->num_of;i++) write_$type(O,v->content[i]);
+    }
+    vector_$type *read_vector_$type() {
+        vector_$type *v=new_vector_$type();
+	ordinal length=read_ordinal();
+	ordinal i;
+	for (i=0;i<length;i++) add_entry_vector_$type(v,read_$type());
+	return(v);
+    }
+}
+void write_pointer_PAT_entry(FILE *O,PAT_entry *p) {
+    write_vector_float(O,p->sizes);
+    write_vector_float(O,p->properties);
+}
+PAT_entry *read_pointer_PAT_entry() {
+    PAT_entry *p=(PAT_entry *)malloc(sizeof(PAT_entry));
+    p->sizes=read_vector_float();
+    p->properties=read_vector_float();
+    return(p);
+}
+void write_pointer_PAT(FILE *O,PAT *p) {
+    write_vector_pointer_PAT_entry(O,p->content);
+    write_vector_pointer_char(O,p->sizes);
+    write_vector_pointer_char(O,p->properties);
+    write_vector_float(O,p->margins);
+}
+PAT *read_pointer_PAT() {
+    PAT *p=(PAT *)malloc(sizeof(PAT));
+    p->content=read_vector_pointer_PAT_entry();
+    p->sizes=read_vector_pointer_char();
+    p->properties=read_vector_pointer_char();
+    p->margins=read_vector_float();
+    return(p);
+}
+
 static Tcl_Interp *spice_interp;
 static int
 _run(int argc, char **argv)
@@ -952,7 +1076,8 @@ void context_save(context *c,FILE *O) {
         if (c->value_type==ctype_string) write_string(O,c->value.v);
         if (c->value_type==ctype_real) write_float(O,c->value.s);
         if (c->value_type==ctype_integer) write_ordinal(O,c->value.o);
-        if (c->value_type==ctype_array) {
+        if (c->value_type==ctype_PAT) write_pointer_PAT(O,(PAT *)c->value.v);
+        if (c->value_type==ctype_LUT) {
             LUT *a=(LUT *)c->value.v;
             write_string(O,a->name);
             write_ordinal(O,a->dim);
@@ -984,7 +1109,8 @@ void context_load(context *c) {
         if (value_type==ctype_string) copy_string(c->value.v);
         if (value_type==ctype_real) c->value.s=read_float();
         if (value_type==ctype_integer) c->value.o=read_ordinal();
-        if (value_type==ctype_array) {
+        if (value_type==ctype_PAT) c->value.v=read_pointer_PAT();
+        if (value_type==ctype_LUT) {
             LUT *a=(LUT *)malloc(sizeof(LUT));
             copy_string(a->name);
             a->dim=read_ordinal();
@@ -1063,12 +1189,13 @@ void context_load(context *c) {
                 for (i=0;i<L->volume*(a->dim+1);i++) L->content[i]=read_float();
                 #Info: "Done loading attached LIT[%ld]" L->volume*(a->dim+1)
             }
-            next_context=new_context(c,name,a,ctype_array);
+            next_context=new_context(c,name,a,ctype_LUT);
         } else {
             next_context=new_context(c,name,c->value.v,value_type);
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
+	#Info: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context);
         break;
@@ -1994,7 +2121,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
                 return 0;
             }
             temp_context=next_context;
-            if (temp_context->value_type!=ctype_array) {
+            if (temp_context->value_type!=ctype_LUT) {
                 #Error: "(resolve_context) No such array: %s" temp_context->name
                 return 0;
             }
@@ -2039,6 +2166,14 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
     *i_context=temp_context;
     return 1;
 }
+PAT *new_PAT() {
+    PAT *p=(PAT *)malloc(sizeof(PAT));
+    p->content=new_vector_pointer_PAT_entry();
+    p->sizes=new_vector_pointer_char();
+    p->properties=new_vector_pointer_char();
+    p->margins=new_vector_float();
+    return(p);
+}
 int create_context(char *i_key) {
     context *temp_context=Context;
     if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
@@ -2061,7 +2196,8 @@ int create_context(char *i_key) {
         if (strcmp(context_name_buffer,".")==0) continue;
         int k=0;
         while ((context_name_buffer[k])&&(context_name_buffer[k]!='(')) k++;
-        if (context_name_buffer[k]=='(') {
+	// New PAT
+        if ((context_name_buffer[k]=='(')&&(context_name_buffer[k+1]=='(')) {
             context_name_buffer[k]=0;
             int l;
             context *next_context=NULL;
@@ -2071,7 +2207,48 @@ int create_context(char *i_key) {
                     break;
                 }
             }
-            if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_array);
+            if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_PAT);
+            temp_context=next_context;
+            PAT *p=new_PAT();
+            temp_context->value.v=p;
+            add_entry_vector_pointer_char(p->sizes,&(context_name_buffer[k+2]));
+            for (l=k+2;context_name_buffer[l]!='|';l++) if (context_name_buffer[l]==',') {
+	        add_entry_vector_pointer_char(p->sizes,&(context_name_buffer[l+1]));
+                context_name_buffer[l]=0;
+            }		
+            context_name_buffer[l++]=0;
+            add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l]));
+            for (;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') {
+	        add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l+1]));
+                context_name_buffer[l]=0;
+            }		
+            context_name_buffer[l]=0;
+	    for (l=0;l<p->sizes->num_of;l++) p->sizes->content[l]=strdup(p->sizes->content[l]);
+	    for (l=0;l<p->properties->num_of;l++) {
+	        int colon=0;
+		float margin=0;
+		while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) colon++;
+		if (p->properties->content[l][colon]=='?') {
+		    margin=atof(&(p->properties->content[l][colon+1]));
+		    if (p->properties->content[l][0]=='-') margin=-margin;
+		    p->properties->content[l][colon]=0;
+		}
+		add_entry_vector_float(p->margins,margin);
+	        p->properties->content[l]=strdup(p->properties->content[l]);
+	    }
+            #Info: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
+            continue;
+	} else if (context_name_buffer[k]=='(') {
+            context_name_buffer[k]=0;
+            int l;
+            context *next_context=NULL;
+            for (l=0;l<temp_context->num_of_children;l++) {
+                if (strcmp(context_name_buffer,temp_context->children[l])==0) {
+                    next_context=temp_context->children[l];
+                    break;
+                }
+            }
+            if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_LUT);
             temp_context=next_context;
             LUT *a=(LUT *)malloc(sizeof(LUT));
             a->name=strdup(context_name_buffer);
@@ -2121,7 +2298,7 @@ int create_context(char *i_key) {
             } 
             a->LIT=NULL;
             a->hit=NULL;
-            #Info: "new array: %s (size: %ld*%ld=[eng %ld B]) %x" temp_context->name volume sizeof(float) volume*sizeof(float) a
+            #Info: "new lookup table: %s (size: %ld*%ld=[eng %ld B]) %x" temp_context->name volume sizeof(float) volume*sizeof(float) a
             continue;
         }
         context *next_context=NULL;
@@ -2345,7 +2522,7 @@ node *add_array_context(char *i_key,node **i_node) {
         LUT *a=(LUT *)malloc(sizeof(LUT));
         a->name=(*i_node)->name;
         (*i_node)->value=(void *)a;
-        (*i_node)->ctype=ctype_array;
+        (*i_node)->ctype=ctype_LUT;
         return(NULL);
     }
     int argc=1;
@@ -2408,7 +2585,7 @@ node *add_array_context(char *i_key,node **i_node) {
     a->LIT=NULL;
     a->hit=NULL;
     (*i_node)->value=(void *)a;
-    (*i_node)->ctype=ctype_array;
+    (*i_node)->ctype=ctype_LUT;
     return(NULL);
 }
 node *add_real_context(char *i_key,node **i_node,CTYPE i_ctype) {
@@ -2430,6 +2607,29 @@ node *add_real_context(char *i_key,node **i_node,CTYPE i_ctype) {
     printf("Adding name %s (copy of %s)\n",temp_node->name,key);
     add_child(*i_node,temp_node);
     return(temp_node);
+}
+PAT *get_PAT(char *i_context) {
+    context *c=Context;
+    float *array_entry;
+    if ((i_context[0]=='/')||(i_context[0]==':')) {
+        c=Ctree;
+    }
+    if (!(resolve_context(i_context,&c,&array_entry))) {
+        #Error: "(get_PAT) no such context %s" i_context
+        return NULL;
+    }
+    return (PAT *)c->value.v;
+}
+PAT *get_PAT_quiet(char *i_context) {
+    node *c=Context;
+    float *array_entry;
+    if ((i_context[0]=='/')||(i_context[0]==':')) {
+        c=Ctree;
+    }
+    if (!(resolve_context(i_context,&c,&array_entry))) {
+        return NULL;
+    }
+    return (PAT *)c->value;
 }
 LUT *get_LUT(char *i_context) {
     context *c=Context;
@@ -2480,7 +2680,7 @@ copy_ctree_structure(Tcl_Interp *interp,char *target,char *key,char *argv[]) {
 void delete_context(context *c) {
     struct rusage* memory = malloc(sizeof(struct rusage));
     getrusage(RUSAGE_SELF, memory);
-    if (c->value_type==ctype_array) {
+    if (c->value_type==ctype_LUT) {
         delete_array((LUT *)c->value.v);
         free(c);
 	return;
@@ -2501,6 +2701,86 @@ void delete_array(LUT *a) {
     if (a->LIT) free(a->LIT);
     free(a);
 }
+vector_int *pat_front(PAT *p,vector_float *sizes,vector_float *properties) {
+    vector_int *front=new_vector_int();
+    for (i=0;i<p->content->num_of;i++) add_entry_vector_int(front,i);
+    ordinal i,ii,j;
+    if (sizes->num_of!=p->sizes->num_of) {
+        #Error: "Tried to match front to PAT with incompatible number of sizes."
+	return(front);
+    }
+    if (properties->num_of!=p->properties->num_of) {
+        #Error: "Tried to match front to PAT with incompatible number of properties."
+	return(front);
+    }
+    // Negate all properties that are "less is better"
+    for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
+    for (i=0;i<p->content->num_of;i++) for (ii=0;ii<p->content->num_of;ii++) {
+        int dominates=1;
+        int significantly_better=0;
+	int dominated=1;
+        int significantly_worse=0;
+	for (j=0;j<p->properties->num_of;j++) {
+	    if (isnan(p->content->content[ii]->properties->content[j])) continue;
+	    if (isnan(p->content->content[i]->properties->content[j])) continue;
+	    if (p->content->content[ii]->properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
+	    if (p->content->content[ii]->properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
+	    if (p->content->content[ii]->properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
+	    if (p->content->content[ii]->properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
+	}
+	if (dominated&&significantly_worse) {
+	}    
+	if (dominates&&significantly_better) {
+	}    
+    }
+    
+    return(front); 
+}
+ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
+    ordinal i,j;
+    if (sizes->num_of!=p->sizes->num_of) {
+        #Error: "Tried to add an entry to PAT with incompatible number of sizes."
+	return(-1);
+    }
+    if (properties->num_of!=p->properties->num_of) {
+        #Error: "Tried to add an entry to PAT with incompatible number of properties."
+	return(-1);
+    }
+    // Negate all properties that are "less is better"
+    for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
+    for (i=0;i<p->content->num_of;i++) {
+        int dominates=1;
+        int significantly_better=0;
+	int dominated=1;
+        int significantly_worse=0;
+	for (j=0;j<p->properties->num_of;j++) {
+	    if (isnan(properties->content[j])) continue;
+	    if (isnan(p->content->content[i]->properties->content[j])) continue;
+	    if (properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
+	    if (properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
+	    if (properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
+	    if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
+	}
+	if (dominated&&significantly_worse) {
+	    #Info: "Needless"
+	    return(0);
+	}    
+	// If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
+	// Don't move on until you cleared the last entry that was put in place, hence the i--.
+	if (dominates&&significantly_better) {
+	    #Info: "Better than %ld" i
+	    delete_entry_vector_pointer_PAT_entry(p->content,i--);
+	}    
+    }
+    PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
+    pe->sizes=new_vector_float();
+    for (i=0;i<sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes->content[i]);
+    pe->properties=new_vector_float();
+    for (i=0;i<properties->num_of;i++) add_entry_vector_float(pe->properties,properties->content[i]);
+    add_entry_vector_pointer_PAT_entry(p->content,pe);
+    return(p->content->num_of);
+}
+
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -2548,7 +2828,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             tcl_append_int(interp,c->value.o);
             return TCL_OK;
         }
-        if (c->value_type==ctype_array) {
+        if (c->value_type==ctype_LUT) {
             if (array_entry==NULL) {
                 #Error: "(ctree) invalid array access %s" argv[1]
                 return TCL_ERROR;
@@ -2559,9 +2839,110 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         #Error: "(ctree) ccontext has unrecognized value_type."
         return TCL_ERROR;
     }
+    if (strcmp(argv[2],"PAT")==0) {
+        if (c->value_type!=ctype_PAT) {
+	    #Error: "(ctree) The PAT command is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+	    return TCL_ERROR;
+	}
+	if (argc<4) {
+	    #Error: "(ctree) The PAT command requires a sub-command: size, index, delete, foreach"
+	    return TCL_ERROR;
+	}
+	PAT *p=(PAT *)c->value.v;
+        if (strcmp(argv[3],"size")==0) {
+	    tcl_append_int(interp,p->content->num_of);
+            return TCL_OK;
+	}
+        if (strcmp(argv[3],"properties")==0) {
+	    ordinal i;
+	    for (i=0;i<p->properties->num_of;i++) Tcl_AppendElement(interp,p->properties->content[i]);
+            return TCL_OK;
+	}
+        if (strcmp(argv[3],"sizes")==0) {
+	    ordinal i;
+	    for (i=0;i<p->sizes->num_of;i++) Tcl_AppendElement(interp,p->sizes->content[i]);
+            return TCL_OK;
+	}
+        if (strcmp(argv[3],"margins")==0) {
+	    ordinal i;
+	    for (i=0;i<p->margins->num_of;i++) tcl_append_float(interp,p->margins->content[i]);
+            return TCL_OK;
+	}
+        if (strcmp(argv[3],"index")==0) {
+            if (argc!=5) {
+	        #Error: "(ctree) The PAT entry sub-command requires an index"
+	        return TCL_ERROR;
+	    }
+	    ordinal i,j;
+	    j=atoi(argv[4]);
+	    for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
+	    for (i=0;i<p->properties->num_of;i++) tcl_append_float(interp,p->content->content[j]->properties->content[i]);
+            return TCL_OK;
+	}
+        if (strcmp(argv[3],"delete")==0) {
+            if (argc!=5) {
+	        #Error: "(ctree) The PAT delete sub-command requires an index"
+	        return TCL_ERROR;
+	    }
+	    ordinal j;
+	    j=atoi(argv[4]);
+	    delete_entry_vector_pointer_PAT_entry(p->content,j);
+            return TCL_OK;
+	}
+	#Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]
+	return TCL_ERROR;
+    }
+    if (strcmp(argv[2],">>>")==0) {
+        if (c->value_type!=ctype_PAT) {
+	    #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+	    return TCL_ERROR;
+	}
+	if (argc!=5) {
+	    #Error: "(ctree) The >>> operator requires a list of sizes and a list of properties."
+	    return TCL_ERROR;
+	}
+        int ARGC;
+        char **ARGV;
+        Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
+	vector_float *sizes=new_vector_float();
+	ordinal i;
+	for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
+	free(ARGV);
+        Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
+	vector_float *properties=new_vector_float();
+	for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+	free(ARGV);
+	vector_int *front=pat_front((PAT *)c->value.v,sizes,properties);
+	for (i=0;i<front->num_of;i++) tcl_append_int(interp,front->content[i]);
+	free(front);
+        return TCL_OK;
+    }
+    if (strcmp(argv[2],"<<<")==0) {
+        if (c->value_type!=ctype_PAT) {
+	    #Error: "(ctree) The <<< operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+	    return TCL_ERROR;
+	}
+	if (argc!=5) {
+	    #Error: "(ctree) The <<< operator requires a list of sizes and a list of properties."
+	    return TCL_ERROR;
+	}
+        int ARGC;
+        char **ARGV;
+        Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
+	vector_float *sizes=new_vector_float();
+	int i;
+	for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
+	free(ARGV);
+        Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
+	vector_float *properties=new_vector_float();
+	for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+	free(ARGV);
+	tcl_append_int(interp,add_pat_entry((PAT *)c->value.v,sizes,properties));
+        return TCL_OK;
+    }
     if (strcmp(argv[2],"=")==0) {
         if (argc==4) {
-            if (c->value_type==ctype_array) {
+            if (c->value_type==ctype_LUT) {
                 if (array_entry==NULL) {
                     #Error: "(ctree) invalid array access %s" argv[1]
                     return TCL_ERROR;
@@ -2600,7 +2981,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) usage: @ <context> is_array"
             return TCL_ERROR;
         }
-        if (c->value_type==ctype_array) {
+        if (c->value_type==ctype_LUT) {
             tcl_append_int(interp,1);
         } else {
             tcl_append_int(interp,0);
@@ -2685,7 +3066,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         return TCL_OK;
     }
     if (strcmp(argv[2],"calc")==0) {
-        if (c->value_type!=ctype_array) {
+        if (c->value_type!=ctype_LUT) {
             #Error: "(ctree) @ calc requires an array context"
             return TCL_ERROR;
         }

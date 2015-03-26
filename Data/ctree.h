@@ -69,7 +69,8 @@ typedef enum {
     ctype_character,
     ctype_string,
     ctype_real,
-    ctype_array,
+    ctype_LUT,
+    ctype_PAT,
     ctype_node
 } CTYPE;
 typedef struct context context;
@@ -139,6 +140,50 @@ typedef struct {
     float (*gamma_interpolate)(void *a);
     float (*gamma_gradient)(void *a);
 } LUT;
+
+#Foreach: type $::vector_types {
+    typedef struct {
+        $type *content;
+	ordinal num_of;
+	ordinal max_num_of;
+    } vector_$type;
+    vector_$type *new_vector_$type();
+    void add_entry_vector_$type(vector_$type *v,$type e);
+    $type get_entry_vector_$type(vector_$type *v,ordinal i);
+    int delete_entry_vector_$type(vector_$type *v,ordinal i);
+    void write_vector_$type(FILE *O,vector_$type *v);
+    vector_$type *read_vector_$type();
+}
+typedef struct {
+    vector_float *sizes;
+    vector_float *properties;
+} PAT_entry;
+void write_pointer_PAT_entry(FILE *O,PAT_entry *p);
+PAT_entry *read_pointer_PAT_entry();
+#Foreach: type $::vector_pointer_types {
+    typedef struct {
+        $type **content;
+	ordinal num_of;
+	ordinal max_num_of;
+    } vector_pointer_$type;
+    vector_pointer_$type *new_vector_pointer_$type();
+    void add_entry_vector_pointer_$type(vector_pointer_$type *v,$type *e);
+    $type *get_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i);
+    int delete_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i);
+    void write_vector_pointer_$type(FILE *O,vector_pointer_$type *v);
+    vector_pointer_$type *read_vector_pointer_$type();
+}
+typedef struct {
+    vector_pointer_PAT_entry *content;
+    vector_pointer_char *sizes;
+    vector_pointer_char *properties;
+    vector_float *margins;
+} PAT;
+PAT *new_PAT();
+void write_pointer_PAT(FILE *O,PAT *p);
+PAT *read_pointer_PAT();
+ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties);
+
 float global_coord[$MAXDIM];
 void serial_LUT(LUT *i_LUT);
 void serial_read_LUT(LUT *i_LUT);
@@ -164,6 +209,8 @@ void delete_context(context *);
 void delete_array(LUT *);
 LUT *get_LUT(char *i_context);
 LUT *get_LUT_quiet(char *i_context);
+PAT *get_PAT(char *i_context);
+PAT *get_PAT_quiet(char *i_context);
 node *new_node();
 context *new_context(context *i_parent, char *i_name,void *i_value,CTYPE i_type);
 int resolve_string_char(char i_char,node **i_node);

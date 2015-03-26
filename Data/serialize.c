@@ -48,6 +48,16 @@ void get_float(float *f) {
     file_size_countdown-=BYTES_PER_FLOAT;
     *f=fabs(F.F);
 }
+void write_int(FILE *O,int i_int) {
+    if (O==NULL) {
+        O=OpenFileForWriting;
+    }
+    so_union sob;
+    sob.o=i_int;
+    int i=0;
+    for(;i<4;i++) fprintf(O,"%c",sob.b[i]);
+    // #Info: "Writing Integer %ld" i_int
+}
 void write_ordinal(FILE *O,ordinal i_ordinal) {
     if (O==NULL) {
         O=OpenFileForWriting;
@@ -57,6 +67,14 @@ void write_ordinal(FILE *O,ordinal i_ordinal) {
     int i=0;
     for(;i<4;i++) fprintf(O,"%c",sob.b[i]);
     // #Info: "Writing Integer %ld" i_ordinal
+}
+int read_int() {
+    so_union sob;
+    int i=0;
+    for(;i<4;i++) sob.b[i]=fgetc(OpenFileForReading);
+    file_size_countdown-=4;
+    // #Info: "Reading Integer %ld (%ld)" sob.o file_size_countdown
+    return sob.o; 
 }
 ordinal read_ordinal() {
     so_union sob;
@@ -77,7 +95,29 @@ void write_string(FILE *O,char *i_string) {
     for(;i<length;i++) fprintf(O,"%c",i_string[i]);
     // #Info: "Writing String %s" i_string
 }
+void write_pointer_char(FILE *O,char *i_string) {
+    // #Info: "Writing String:"
+    if (O==NULL) {
+        O=OpenFileForWriting;
+    }
+    ordinal length=strlen(i_string);
+    write_ordinal(O,length);
+    int i=0;
+    for(;i<length;i++) fprintf(O,"%c",i_string[i]);
+    // #Info: "Writing String %s" i_string
+}
 char *copy_string() {
+    // #Info: "Reading String:" 
+    ordinal length=read_ordinal();
+    char *new_string=(char *)malloc(sizeof(char)*length+1);
+    int i=0;
+    for(;i<length;i++) new_string[i]=fgetc(OpenFileForReading);
+    new_string[i]=0;
+    // #Info: "Reading String %s" new_string
+    file_size_countdown-=length;
+    return new_string;
+}
+char *read_pointer_char() {
     // #Info: "Reading String:" 
     ordinal length=read_ordinal();
     char *new_string=(char *)malloc(sizeof(char)*length+1);

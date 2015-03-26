@@ -1,4 +1,12 @@
 source $::env(RAMSPICE)/unknown.tcl
+proc args {args_var} {
+    upvar $args_var args
+    if {[llength $args]==1} {
+        set args [lindex $args 0]
+    }
+    foreach arg $args {
+    }
+}
 proc foreach_fork {args} {
     set ::main_process 1
     set body {
