@@ -94,7 +94,7 @@ void GammaCommandTestVar() {
         char *VarName=(char *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
         float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+2].P;
 
-    #Info: "Test Point %s=%g (%ld:)" VarName *C GammaVirtualMachineBatchProgramCounter
+    #Info: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
     }
     GammaVirtualMachineBatchProgramCounter+=3;
 }
@@ -176,6 +176,28 @@ void GammaCommandPop() {
  FC FCUNION;
 
     GammaVirtualMachineStackIndex++;
+    }
+    GammaVirtualMachineBatchProgramCounter+=1;
+}
+void GammaCommandPolynomial() {
+    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
+    GammaVirtualMachineSkip=0;
+    if (!GammaVirtualMachineTempSkip) {
+    #Info: "%ld: Polynomial" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+
+    ordinal i=1;
+    float total=0;
+    GammaVirtualMachineBatchProgramCounter++;
+    while (GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter].P) {
+        float coeff=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter++].F;
+        while (GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter].P) {
+	    float *F=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter++].P;
+	    coeff*=*F;
+	}    
+	total+=coeff;
+    }
+    GammaVirtualMachineBatchProgramCounter++;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -727,6 +749,15 @@ int tcl_gamma_Reverse(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     #Info: "Assembly %ld: %x Reverse " GammaVirtualMachineBatchProgramSize-1 GammaCommandReverse 
     return TCL_OK;
 }
+int tcl_gamma_Polynomial(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    FC FCUNION;
+    if (argc!=1) {
+        #Error: "%s requires the following arguments: ()" argv[0]
+    }
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandPolynomial;
+    #Info: "Assembly %ld: %x Polynomial " GammaVirtualMachineBatchProgramSize-1 GammaCommandPolynomial 
+    return TCL_OK;
+}
 int tcl_gamma_Default(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     FC FCUNION;
     if (argc!=3) {
@@ -1034,6 +1065,7 @@ Tcl_CreateCommand(interp, "GammaCommandPushArg", tcl_gamma_PushArg, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandLog10", tcl_gamma_Log10, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandAnd", tcl_gamma_And, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandReverse", tcl_gamma_Reverse, NULL, NULL);
+Tcl_CreateCommand(interp, "GammaCommandPolynomial", tcl_gamma_Polynomial, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandDefault", tcl_gamma_Default, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandPushLUT", tcl_gamma_PushLUT, NULL, NULL);
 Tcl_CreateCommand(interp, "GammaCommandStop", tcl_gamma_Stop, NULL, NULL);

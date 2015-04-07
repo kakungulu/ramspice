@@ -242,51 +242,68 @@ proc .let {args} {
         }
     }
     regsub -all {\s+} $expression {} expression
-    .tcl "Info: Calculating $name"
+#    .tcl "Info: Calculating $name"
     Gamma_expression $expression
     GammaCommandPopVar $name
-    .tp $name
+#    .tp $name
 }
-proc .property {args} {
-    array unset ::Gamma_function_args
-    if {![regexp {^\s*([A-Za-z0-9_:^]+)\s*=\s*(.*)$} $args -> name expression]} {
-        Error: .property syntax is <var> = <expression>
-    }
-    .label: ::property($name,calculation)
-    if {![@ $name ?]} {
-        @ $name !
-	@ $name = real 0
-    }
-    foreach switch {unit min max} {
-        if {[regexp "^(.*)\\-$switch\\s+(\\S+)(.*)\$" $expression -> pre val post]} {
-            set ::property($name,$switch) $val
-	    set expression "$pre $post"
-        }
-    }
-    regsub -all {\s+} $expression {} expression
-    Gamma_expression $expression
-    GammaCommandPopVar $name
-    GammaCommandReturn 0
-}
+### proc .property {args} {
+###     array unset ::Gamma_function_args
+###     if {![regexp {^\s*([A-Za-z0-9_:^]+)\s*=\s*(.*)$} $args -> name expression]} {
+###         Error: .property syntax is <var> = <expression>
+###     }
+###     .label: ::property($name,calculation)
+###     if {![@ $name ?]} {
+###         @ $name !
+### 	@ $name = real 0
+###     }
+###     foreach switch {unit min max} {
+###         if {[regexp "^(.*)\\-$switch\\s+(\\S+)(.*)\$" $expression -> pre val post]} {
+###             set ::property($name,$switch) $val
+### 	    set expression "$pre $post"
+###         }
+###     }
+###     regsub -all {\s+} $expression {} expression
+###     Gamma_expression $expression
+###     GammaCommandPopVar $name
+###     GammaCommandReturn 0
+### }
 proc .calc {var} {
     .calculate $var
 }
 proc .calculate {var} {
-    Info: Calculating $var
     if {[info exists ::property($var,calculation)]} {
         .run $::property($var,calculation)
+    }
+    if {[info exists ::property($var,expression)]} {
+        .run $::property($var,expression)
+    }
+    if {[info exists ::DEF($var)]} {
+        .let $var=$::DEF($var)
+	return
+    }
+    set var [file tail $var]
+    if {[info exists ::property($var,calculation)]} {
+        .run $::property($var,calculation)
+    }
+    if {[info exists ::property($var,expression)]} {
+        .run $::property($var,expression)
     }
     if {[info exists ::DEF($var)]} {
         .let $var=$::DEF($var)
 	return
     }
     Error: No such Gamma property: $var
+    for {set i 1} {$i<[info level]} {incr i} {
+        Info: $i) [info level $i]
+    }
     exit 
 }
 set ::Gamma_expression_counter 0
 proc Gamma_expression {expression} {
     array unset ::Gamma_deffered_expressions
     regsub -all {\s} $expression "" expression
+    regsub -all {\-\-} $expression + expression
     set expression [uplevel [list subst $expression]]
     array unset ::Gamma_expression_constants
     Info: EXPRESSION $expression

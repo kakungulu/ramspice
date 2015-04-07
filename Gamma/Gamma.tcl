@@ -37,7 +37,7 @@ GammaCommand PushArg {int Arg} {
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand TestVar {string VarName,var C} {
-    #Info: "Test Point %s=%g (%ld:)" VarName *C GammaVirtualMachineBatchProgramCounter
+    #Info: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
 }
 GammaCommand Tcl {string Code} {
     if (Tcl_Eval(interp,Code)==TCL_ERROR) {
@@ -66,6 +66,20 @@ GammaCommand PopVar {var C} {
 }
 GammaCommand Pop {} {
     GammaVirtualMachineStackIndex++;
+}
+GammaCommand Polynomial {} {
+    ordinal i=1;
+    float total=0;
+    GammaVirtualMachineBatchProgramCounter++;
+    while (GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter].P) {
+        float coeff=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter++].F;
+        while (GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter].P) {
+	    float *F=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter++].P;
+	    coeff*=*F;
+	}    
+	total+=coeff;
+    }
+    GammaVirtualMachineBatchProgramCounter++;
 }
 GammaCommand Interpolate {} {
     // #Info: "Accessing LUT at %x" @P(1)

@@ -14,6 +14,7 @@ void GammaCommandPushPointer(void);
 void GammaCommandPushLUT(void);
 void GammaCommandPopVar(void);
 void GammaCommandPop(void);
+void GammaCommandPolynomial(void);
 void GammaCommandInterpolate(void);
 void GammaCommandInterpolateg(void);
 void GammaCommandPlus(void);
@@ -57,6 +58,7 @@ static int tcl_gamma_PushArg(ClientData clientData,Tcl_Interp *interp,int argc,c
 static int tcl_gamma_Log10(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_And(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Reverse(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_gamma_Polynomial(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Default(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_PushLUT(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Stop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);

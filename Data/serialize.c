@@ -142,7 +142,7 @@ void open_to_read(char *i_filename) {
     OpenFileForReading=fopen(i_filename,"r");
     if (OpenFileForReading==NULL) {
         #Error: "Couldn't open file %s" i_filename
-        exit;
+        exit(1);
     }
     struct stat st;
     stat(i_filename, &st);

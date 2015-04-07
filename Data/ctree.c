@@ -30,99 +30,99 @@ IFfrontEnd nutmeginfo = {
 #Foreach: type $::vector_pointer_types {
     vector_pointer_$type *new_vector_pointer_$type() {
         vector_pointer_$type *v=(vector_pointer_$type *)malloc(sizeof(vector_pointer_$type));
-	v->max_num_of=8;
-	v->content=($type **)malloc(sizeof($type *)*v->max_num_of);
-	v->num_of=0;
-	return(v);
+        v->max_num_of=8;
+        v->content=($type **)malloc(sizeof($type *)*v->max_num_of);
+        v->num_of=0;
+        return(v);
     } 
     void add_entry_vector_pointer_$type(vector_pointer_$type *v,$type *e) {
         if (v->num_of>=v->max_num_of) {
-	    v->max_num_of*=2;
-	    $type **new_content=($type **)malloc(sizeof($type *)*v->max_num_of);
-	    ordinal i;
-	    for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
-	    free(v->content);
-	    v->content=new_content;
-	}
-	v->content[v->num_of]=e;
-	v->num_of++;
+            v->max_num_of*=2;
+            $type **new_content=($type **)malloc(sizeof($type *)*v->max_num_of);
+            ordinal i;
+            for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
+            free(v->content);
+            v->content=new_content;
+        }
+        v->content[v->num_of]=e;
+        v->num_of++;
     }
     $type *get_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i) {
         if ((i>=v->num_of)||(i<0)) {
-	    #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
-	    return(v->content[0]);
-	}
-	return(v->content[i]);
+            #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
+            return(v->content[0]);
+        }
+        return(v->content[i]);
     }
     int delete_entry_vector_pointer_$type(vector_pointer_$type *v,ordinal i) {
         if ((i>=v->num_of)||(i<0)) {
-	    #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
-	    return(-1);
-	}
-	v->content[i]=v->content[v->num_of-1];
-	v->num_of--;
-	return(v->num_of);
+            #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
+            return(-1);
+        }
+        v->content[i]=v->content[v->num_of-1];
+        v->num_of--;
+        return(v->num_of);
     }
     void write_vector_pointer_$type(FILE *O,vector_pointer_$type *v) {
         write_ordinal(O,v->num_of);
-	ordinal i;
-	for (i=0;i<v->num_of;i++) write_pointer_$type(O,v->content[i]);
+        ordinal i;
+        for (i=0;i<v->num_of;i++) write_pointer_$type(O,v->content[i]);
     }
     vector_pointer_$type *read_vector_pointer_$type() {
         vector_pointer_$type *v=new_vector_pointer_$type();
-	ordinal length=read_ordinal();
-	ordinal i;
-	for (i=0;i<length;i++) add_entry_vector_pointer_$type(v,read_pointer_$type());
-	return(v);
+        ordinal length=read_ordinal();
+        ordinal i;
+        for (i=0;i<length;i++) add_entry_vector_pointer_$type(v,read_pointer_$type());
+        return(v);
     }
 }
 #Foreach: type $::vector_types {
     vector_$type *new_vector_$type() {
         vector_$type *v=(vector_$type *)malloc(sizeof(vector_$type));
-	v->max_num_of=8;
-	v->content=($type *)malloc(sizeof($type)*v->max_num_of);
-	v->num_of=0;
-	return(v);
+        v->max_num_of=8;
+        v->content=($type *)malloc(sizeof($type)*v->max_num_of);
+        v->num_of=0;
+        return(v);
     } 
     void add_entry_vector_$type(vector_$type *v,$type e) {
         if (v->num_of>=v->max_num_of) {
-	    v->max_num_of*=2;
-	    $type *new_content=($type *)malloc(sizeof($type)*v->max_num_of);
-	    ordinal i;
-	    for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
-	    free(v->content);
-	    v->content=new_content;
-	}
-	v->content[v->num_of]=e;
-	v->num_of++;
+            v->max_num_of*=2;
+            $type *new_content=($type *)malloc(sizeof($type)*v->max_num_of);
+            ordinal i;
+            for (i=0;i<v->num_of;i++) new_content[i]=v->content[i];
+            free(v->content);
+            v->content=new_content;
+        }
+        v->content[v->num_of]=e;
+        v->num_of++;
     }
     $type get_entry_vector_$type(vector_$type *v,ordinal i) {
         if ((i>=v->num_of)||(i<0)) {
-	    #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
-	    return(v->content[0]);
-	}
-	return(v->content[i]);
+            #Error: "Attempted accessing vector outside boundaries %ld/%ld" i v->num_of
+            return(v->content[0]);
+        }
+        return(v->content[i]);
     }
     int delete_entry_vector_$type(vector_$type *v,ordinal i) {
         if ((i>=v->num_of)||(i<0)) {
-	    #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
-	    return(-1);
-	}
-	v->content[i]=v->content[v->num_of-1];
-	v->num_of--;
-	return(v->num_of);
+            #Error: "Attempted deleting entry from vector outside boundaries %ld/%ld" i v->num_of
+            return(-1);
+        }
+        v->content[i]=v->content[v->num_of-1];
+        v->num_of--;
+        return(v->num_of);
     }
     void write_vector_$type(FILE *O,vector_$type *v) {
         write_ordinal(O,v->num_of);
-	ordinal i;
-	for (i=0;i<v->num_of;i++) write_$type(O,v->content[i]);
+        ordinal i;
+        for (i=0;i<v->num_of;i++) write_$type(O,v->content[i]);
     }
     vector_$type *read_vector_$type() {
         vector_$type *v=new_vector_$type();
-	ordinal length=read_ordinal();
-	ordinal i;
-	for (i=0;i<length;i++) add_entry_vector_$type(v,read_$type());
-	return(v);
+        ordinal length=read_ordinal();
+        ordinal i;
+        for (i=0;i<length;i++) add_entry_vector_$type(v,read_$type());
+        return(v);
     }
 }
 void write_pointer_PAT_entry(FILE *O,PAT_entry *p) {
@@ -641,19 +641,19 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
-	float w;
+        float w;
         if (factor_mode) {
             for (i=0;i<d->v_length;i++) {
-	        w=factor/d->v_realdata[i];
-	        write_float(O,w);
-	    }	
+                w=factor/d->v_realdata[i];
+                write_float(O,w);
+            }	
         } else {
             for (i=0;i<d->v_length;i++) {
-	        w=d->v_realdata[i]*factor;
-	        write_float(O,w);
-	    }	
+                w=d->v_realdata[i]*factor;
+                write_float(O,w);
+            }	
         }
-	/*
+        /*
         for (i=0;i<d->v_length;i++) {
             if (isnan(d->v_realdata[i])) {
                 #Error: "%s(%d)=%g" d->v_name i d->v_realdata[i]
@@ -661,7 +661,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
                 #Info: "%s(%d)=%g" d->v_name i d->v_realdata[i]*factor
             }
         }
-	*/
+        */
         d = d->v_next;
     }
     fclose(O);
@@ -749,7 +749,7 @@ save_characterization_slice_differential (ClientData clientData,Tcl_Interp *inte
             continue;
         }
         ordinal final_offset=initial_offset;
-	for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
+        for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
         free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
@@ -840,7 +840,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
         Tcl_SplitList(interp,vector_id,&tmp_dim,&vector_index_string);
         if (slice_dim!=tmp_dim) continue;
         ordinal final_offset=initial_offset;
-	for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
+        for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
         free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
@@ -949,7 +949,7 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
         Tcl_SplitList(interp,vector_id,&tmp_dim,&vector_index_string);
         if (slice_dim!=tmp_dim) continue;
         ordinal final_offset=initial_offset;
-	for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
+        for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
         free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
@@ -993,7 +993,7 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         ordinal length=read_ordinal();
         for (i=0;i<length; i++) {
             get_float(&(a->content[offset+i]));
-         //   #Info: "%ld+%ld  =  %g" offset i a->content[offset+i]
+            //   #Info: "%ld+%ld  =  %g" offset i a->content[offset+i]
         }    
     }
     done_reading();
@@ -1114,13 +1114,13 @@ void context_load(context *c) {
             LUT *a=(LUT *)malloc(sizeof(LUT));
             copy_string(a->name);
             a->dim=read_ordinal();
-	    #For: {set dim 1} {$dim<$::MAXDIM} {incr dim} {
-	        if (a->dim==$dim) {
-		    a->interpolate=lut_interpolation_$dim;
-		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
-		    a->gamma_gradient=lut_gamma_gradient_$dim;
-		}    
-	    }
+            #For: {set dim 1} {$dim<$::MAXDIM} {incr dim} {
+                if (a->dim==$dim) {
+                    a->interpolate=lut_interpolation_$dim;
+                    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+                    a->gamma_gradient=lut_gamma_gradient_$dim;
+                }    
+            }
             ordinal volume=1;
             int j,k,i;
             for (j=0;j<a->dim;j++) {
@@ -1133,12 +1133,12 @@ void context_load(context *c) {
                 for (k=0;k<a->size[j];k++) {
                     a->legend[j][k]=read_float();
                 }
-		a->physical_factor[j]=1.0/(a->legend[j][1]-a->legend[j][0]);
+                a->physical_factor[j]=1.0/(a->legend[j][1]-a->legend[j][0]);
             }
             a->hypercube_volume=1;
             for (i=0;i<a->dim;i++) a->hypercube_volume*=(a->legend[i][1]-a->legend[i][0]);
-	    a->sizer[0]=1;
-	    for (i=1;i<a->dim;i++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
+            a->sizer[0]=1;
+            for (i=1;i<a->dim;i++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
             a->content=(float *)malloc(sizeof(float)*volume);
             for (i=0;i<volume;i++) a->content[i]=read_float();
             ordinal num_of_corners=1<<a->dim;
@@ -1195,7 +1195,7 @@ void context_load(context *c) {
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
-	#Info: "num_of_children=%ld" num_of_children
+//        #Info: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context);
         break;
@@ -1229,13 +1229,13 @@ int array_load(char *filename) {
         }
         a->name=name;
         a->dim=read_ordinal();
-	#For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-	    if (a->dim==$dim) {
-	        a->interpolate=lut_interpolation_$dim;
-		a->gamma_interpolate=lut_gamma_interpolation_$dim;
+        #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
+            if (a->dim==$dim) {
+                a->interpolate=lut_interpolation_$dim;
+                a->gamma_interpolate=lut_gamma_interpolation_$dim;
                 a->gamma_gradient=lut_gamma_gradient_$dim;
-	    }	
-	}
+            }	
+        }
         a->LIT=NULL;
         a->hit=NULL;
         ordinal volume=1;
@@ -1253,8 +1253,8 @@ int array_load(char *filename) {
         }
         a->hypercube_volume=1;
         for (i=0;i<a->dim;i++) a->hypercube_volume*=(a->legend[i][1]-a->legend[i][0]);
-	a->sizer[0]=1;
-	for (i=1;i<a->dim;i++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
+        a->sizer[0]=1;
+        for (i=1;i<a->dim;i++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
         a->content=(float *)malloc(sizeof(scalar)*volume);
         for (i=0;i<volume;i++) {
             a->content[i]=read_float();
@@ -2117,7 +2117,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
                 }
             }
             if (!next_context) {
-               //  #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                //  #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=next_context;
@@ -2157,7 +2157,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
             }
         }
         if (!next_context) {
-           // #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
+            // #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
             return 0;
         }
         temp_context=next_context;
@@ -2196,7 +2196,7 @@ int create_context(char *i_key) {
         if (strcmp(context_name_buffer,".")==0) continue;
         int k=0;
         while ((context_name_buffer[k])&&(context_name_buffer[k]!='(')) k++;
-	// New PAT
+        // New PAT
         if ((context_name_buffer[k]=='(')&&(context_name_buffer[k+1]=='(')) {
             context_name_buffer[k]=0;
             int l;
@@ -2213,32 +2213,32 @@ int create_context(char *i_key) {
             temp_context->value.v=p;
             add_entry_vector_pointer_char(p->sizes,&(context_name_buffer[k+2]));
             for (l=k+2;context_name_buffer[l]!='|';l++) if (context_name_buffer[l]==',') {
-	        add_entry_vector_pointer_char(p->sizes,&(context_name_buffer[l+1]));
+                add_entry_vector_pointer_char(p->sizes,&(context_name_buffer[l+1]));
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l++]=0;
             add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l]));
             for (;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') {
-	        add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l+1]));
+                add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l+1]));
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l]=0;
-	    for (l=0;l<p->sizes->num_of;l++) p->sizes->content[l]=strdup(p->sizes->content[l]);
-	    for (l=0;l<p->properties->num_of;l++) {
-	        int colon=0;
-		float margin=0;
-		while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) colon++;
-		if (p->properties->content[l][colon]=='?') {
-		    margin=atof(&(p->properties->content[l][colon+1]));
-		    if (p->properties->content[l][0]=='-') margin=-margin;
-		    p->properties->content[l][colon]=0;
-		}
-		add_entry_vector_float(p->margins,margin);
-	        p->properties->content[l]=strdup(p->properties->content[l]);
-	    }
+            for (l=0;l<p->sizes->num_of;l++) p->sizes->content[l]=strdup(p->sizes->content[l]);
+            for (l=0;l<p->properties->num_of;l++) {
+                int colon=0;
+                float margin=0;
+                while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) colon++;
+                if (p->properties->content[l][colon]=='?') {
+                    margin=atof(&(p->properties->content[l][colon+1]));
+                //    if (p->properties->content[l][0]=='-') margin=-margin;
+                    p->properties->content[l][colon]=0;
+                }
+                add_entry_vector_float(p->margins,margin);
+                p->properties->content[l]=strdup(p->properties->content[l]);
+            }
             #Info: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
             continue;
-	} else if (context_name_buffer[k]=='(') {
+        } else if (context_name_buffer[k]=='(') {
             context_name_buffer[k]=0;
             int l;
             context *next_context=NULL;
@@ -2259,13 +2259,13 @@ int create_context(char *i_key) {
             for (l=k+1;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') argv[a->dim++]=&(context_name_buffer[l+1]);
             for (l=k+1;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') context_name_buffer[l]=0;
             context_name_buffer[l]=0;
-	    #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-	        if (a->dim==$dim) {
-		    a->interpolate=lut_interpolation_$dim;
-		    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+            #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
+                if (a->dim==$dim) {
+                    a->interpolate=lut_interpolation_$dim;
+                    a->gamma_interpolate=lut_gamma_interpolation_$dim;
                     a->gamma_gradient=lut_gamma_gradient_$dim;
-		}
-	    }
+                }
+            }
             ordinal volume=1;
             for (l=0;l<a->dim;l++) {
                 a->size[l]=atoi(argv[l]);
@@ -2278,9 +2278,9 @@ int create_context(char *i_key) {
                 int j;
                 for (j=0;j<a->size[l];j++) a->legend[l][j]=0;
             }
-	    a->sizer[0]=1;
-	    for (n=1;n<a->dim;n++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
-	    a->hypercube_volume=1;
+            a->sizer[0]=1;
+            for (n=1;n<a->dim;n++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
+            a->hypercube_volume=1;
             ordinal num_of_corners=1<<a->dim;
             ordinal offset;
             for (offset=0;offset<num_of_corners;offset++) {
@@ -2544,11 +2544,11 @@ node *add_array_context(char *i_key,node **i_node) {
     a->name=(*i_node)->name;
     a->dim=argc;
     #For: {set dim 2} {$dim<$::MAXDIM} {incr dim} {
-    	if (a->dim==$dim) {
-	    a->interpolate=lut_interpolation_$dim;
-	    a->gamma_interpolate=lut_gamma_interpolation_$dim;
+        if (a->dim==$dim) {
+            a->interpolate=lut_interpolation_$dim;
+            a->gamma_interpolate=lut_gamma_interpolation_$dim;
             a->gamma_gradient=lut_gamma_gradient_$dim;
-	}    
+        }    
     }
     ordinal volume=1;
     for (i=0;i<a->dim;i++) {
@@ -2562,7 +2562,7 @@ node *add_array_context(char *i_key,node **i_node) {
         a->legend[i]=(float *)malloc(sizeof(scalar)*a->size[i]);
         int j;
         for (j=0;j<a->size[i];j++) a->legend[i][j]=0;
-	a->physical_factor[i]=1.0;
+        a->physical_factor[i]=1.0;
     }
     a->sizer[0]=1;
     for (i=1;i<a->dim;i++) a->sizer[i]=a->sizer[i-1]*a->size[i-1];
@@ -2683,95 +2683,119 @@ void delete_context(context *c) {
     if (c->value_type==ctype_LUT) {
         delete_array((LUT *)c->value.v);
         free(c);
-	return;
+        return;
     }
     ordinal size=c->num_of_children;
     ordinal i;
     #Info: "Deleting context %s (%d children) Mem=[eng %ld B]" c->name size memory->ru_maxrss
     for (i=0;i<size;i++) delete_context(c->children[i]);
     if (c->value_type==ctype_string) {
-    	free(c->value.v);
+        free(c->value.v);
     }
     free(c);
 }
 void delete_array(LUT *a) {
     if (a->content) free(a->content);
-//    if (a->hit) free(a->hit);
-//    if (a->hit_bytecode) free(a->hit_bytecode);
+    //    if (a->hit) free(a->hit);
+    //    if (a->hit_bytecode) free(a->hit_bytecode);
     if (a->LIT) free(a->LIT);
     free(a);
 }
 vector_int *pat_front(PAT *p,vector_float *sizes,vector_float *properties) {
     vector_int *front=new_vector_int();
-    for (i=0;i<p->content->num_of;i++) add_entry_vector_int(front,i);
     ordinal i,ii,j;
+    for (i=0;i<p->content->num_of;i++) add_entry_vector_int(front,i);
     if (sizes->num_of!=p->sizes->num_of) {
         #Error: "Tried to match front to PAT with incompatible number of sizes."
-	return(front);
+        return(front);
     }
     if (properties->num_of!=p->properties->num_of) {
         #Error: "Tried to match front to PAT with incompatible number of properties."
-	return(front);
+        return(front);
     }
     // Negate all properties that are "less is better"
     for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
-    for (i=0;i<p->content->num_of;i++) for (ii=0;ii<p->content->num_of;ii++) {
-        int dominates=1;
-        int significantly_better=0;
-	int dominated=1;
-        int significantly_worse=0;
-	for (j=0;j<p->properties->num_of;j++) {
-	    if (isnan(p->content->content[ii]->properties->content[j])) continue;
-	    if (isnan(p->content->content[i]->properties->content[j])) continue;
-	    if (p->content->content[ii]->properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
-	    if (p->content->content[ii]->properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
-	    if (p->content->content[ii]->properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
-	    if (p->content->content[ii]->properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
-	}
-	if (dominated&&significantly_worse) {
-	}    
-	if (dominates&&significantly_better) {
-	}    
+    for (i=0;i<p->content->num_of;i++) {
+        if (front->content[i]==-1) continue;
+        for (ii=i+1;ii<p->content->num_of;ii++) {
+            if (front->content[ii]==-1) continue;
+            int dominates=1;
+            int significantly_better=0;
+            int dominated=1;
+            int significantly_worse=0;
+            for (j=0;j<p->properties->num_of;j++) {
+                if (isnan(p->content->content[ii]->properties->content[j]))  {
+                    // This entry can't dominate ones that have properties that are missing from it.
+                    if (!(isnan(p->content->content[i]->properties->content[j]))) dominates=0;
+                    continue;
+                }
+                if (isnan(p->content->content[i]->properties->content[j])) continue;
+                if (isnan(p->content->content[i]->properties->content[j])) {
+                    // This entry can't be dominated by ones that are missing properties it has.
+                    if (!(isnan(p->content->content[ii]->properties->content[j]))) dominated=0;
+                    continue;
+                } 
+                // Here's where the spec matters:
+                //   If both entries excede the figure in the spec, 
+                //   Then this property cannot justify the higher entry and can't be used to turn off one of the domination flags
+                if (!isnan(properties->content[j])) if ((p->content->content[ii]->properties->content[j]>properties->content[j])&&(p->content->content[i]->properties->content[j]>properties->content[j])) continue;
+                if (p->content->content[ii]->properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
+                if (p->content->content[ii]->properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
+            }
+            if (dominated) {
+                front->content[ii]=-1;
+                break;
+            }    
+            if (dominates) {
+                front->content[i]=-1;
+            }    
+        }
     }
-    
     return(front); 
 }
 ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     ordinal i,j;
     if (sizes->num_of!=p->sizes->num_of) {
         #Error: "Tried to add an entry to PAT with incompatible number of sizes."
-	return(-1);
+        return(-1);
     }
     if (properties->num_of!=p->properties->num_of) {
         #Error: "Tried to add an entry to PAT with incompatible number of properties."
-	return(-1);
+        return(-1);
     }
     // Negate all properties that are "less is better"
     for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
     for (i=0;i<p->content->num_of;i++) {
         int dominates=1;
         int significantly_better=0;
-	int dominated=1;
+        int dominated=1;
         int significantly_worse=0;
-	for (j=0;j<p->properties->num_of;j++) {
-	    if (isnan(properties->content[j])) continue;
-	    if (isnan(p->content->content[i]->properties->content[j])) continue;
-	    if (properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
-	    if (properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
-	    if (properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
-	    if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
-	}
-	if (dominated&&significantly_worse) {
-	    #Info: "Needless"
-	    return(0);
-	}    
-	// If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
-	// Don't move on until you cleared the last entry that was put in place, hence the i--.
-	if (dominates&&significantly_better) {
-	    #Info: "Better than %ld" i
-	    delete_entry_vector_pointer_PAT_entry(p->content,i--);
-	}    
+        for (j=0;j<p->properties->num_of;j++) {
+            if (isnan(properties->content[j])) {
+                // This entry can't dominate ones that have properties that are missing from it.
+                if (!(isnan(p->content->content[i]->properties->content[j]))) dominates=0;
+                continue;
+            }	
+            if (isnan(p->content->content[i]->properties->content[j])) {
+                // This entry can't be dominated by ones that are missing properties it has.
+                if (!(isnan(properties->content[j]))) dominated=0;
+                continue;
+            } 
+            if (properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
+            if (properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
+            if (properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
+            if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
+        }
+        if (dominated) {
+            return(p->content->num_of);
+        }    
+        // If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
+        // Don't move on until you cleared the last entry that was put in place, hence the i--.
+        if (dominates&&significantly_better) {
+            delete_entry_vector_pointer_PAT_entry(p->content,i--);
+        }    
     }
+    
     PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
     pe->sizes=new_vector_float();
     for (i=0;i<sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes->content[i]);
@@ -2841,103 +2865,107 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     }
     if (strcmp(argv[2],"PAT")==0) {
         if (c->value_type!=ctype_PAT) {
-	    #Error: "(ctree) The PAT command is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-	    return TCL_ERROR;
-	}
-	if (argc<4) {
-	    #Error: "(ctree) The PAT command requires a sub-command: size, index, delete, foreach"
-	    return TCL_ERROR;
-	}
-	PAT *p=(PAT *)c->value.v;
+            #Error: "(ctree) The PAT command is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+            return TCL_ERROR;
+        }
+        if (argc<4) {
+            #Error: "(ctree) The PAT command requires a sub-command: size, index, delete, foreach"
+            return TCL_ERROR;
+        }
+        PAT *p=(PAT *)c->value.v;
         if (strcmp(argv[3],"size")==0) {
-	    tcl_append_int(interp,p->content->num_of);
+            tcl_append_int(interp,p->content->num_of);
             return TCL_OK;
-	}
+        }
         if (strcmp(argv[3],"properties")==0) {
-	    ordinal i;
-	    for (i=0;i<p->properties->num_of;i++) Tcl_AppendElement(interp,p->properties->content[i]);
+            ordinal i;
+            for (i=0;i<p->properties->num_of;i++) Tcl_AppendElement(interp,p->properties->content[i]);
             return TCL_OK;
-	}
+        }
         if (strcmp(argv[3],"sizes")==0) {
-	    ordinal i;
-	    for (i=0;i<p->sizes->num_of;i++) Tcl_AppendElement(interp,p->sizes->content[i]);
+            ordinal i;
+            for (i=0;i<p->sizes->num_of;i++) Tcl_AppendElement(interp,p->sizes->content[i]);
             return TCL_OK;
-	}
+        }
         if (strcmp(argv[3],"margins")==0) {
-	    ordinal i;
-	    for (i=0;i<p->margins->num_of;i++) tcl_append_float(interp,p->margins->content[i]);
+            ordinal i;
+            for (i=0;i<p->margins->num_of;i++) tcl_append_float(interp,p->margins->content[i]);
             return TCL_OK;
-	}
+        }
         if (strcmp(argv[3],"index")==0) {
             if (argc!=5) {
-	        #Error: "(ctree) The PAT entry sub-command requires an index"
-	        return TCL_ERROR;
-	    }
-	    ordinal i,j;
-	    j=atoi(argv[4]);
-	    for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
-	    for (i=0;i<p->properties->num_of;i++) tcl_append_float(interp,p->content->content[j]->properties->content[i]);
+                #Error: "(ctree) The PAT index sub-command requires an index"
+                return TCL_ERROR;
+            }
+            ordinal i,j;
+            j=atoi(argv[4]);
+            for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
+            for (i=0;i<p->properties->num_of;i++) {
+	        float value=p->content->content[j]->properties->content[i];
+		if (p->properties->content[i][0]=='-') value=-value;
+	        tcl_append_float(interp,value);
+	    }	
             return TCL_OK;
-	}
+        }
         if (strcmp(argv[3],"delete")==0) {
             if (argc!=5) {
-	        #Error: "(ctree) The PAT delete sub-command requires an index"
-	        return TCL_ERROR;
-	    }
-	    ordinal j;
-	    j=atoi(argv[4]);
-	    delete_entry_vector_pointer_PAT_entry(p->content,j);
+                #Error: "(ctree) The PAT delete sub-command requires an index"
+                return TCL_ERROR;
+            }
+            ordinal j;
+            j=atoi(argv[4]);
+            delete_entry_vector_pointer_PAT_entry(p->content,j);
             return TCL_OK;
-	}
-	#Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]
-	return TCL_ERROR;
+        }
+        #Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]
+        return TCL_ERROR;
     }
     if (strcmp(argv[2],">>>")==0) {
         if (c->value_type!=ctype_PAT) {
-	    #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-	    return TCL_ERROR;
-	}
-	if (argc!=5) {
-	    #Error: "(ctree) The >>> operator requires a list of sizes and a list of properties."
-	    return TCL_ERROR;
-	}
+            #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+            return TCL_ERROR;
+        }
+        if (argc!=5) {
+            #Error: "(ctree) The >>> operator requires a list of sizes and a list of properties."
+            return TCL_ERROR;
+        }
         int ARGC;
         char **ARGV;
         Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
-	vector_float *sizes=new_vector_float();
-	ordinal i;
-	for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
-	free(ARGV);
+        vector_float *sizes=new_vector_float();
+        ordinal i;
+        for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
+        free(ARGV);
         Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
-	vector_float *properties=new_vector_float();
-	for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
-	free(ARGV);
-	vector_int *front=pat_front((PAT *)c->value.v,sizes,properties);
-	for (i=0;i<front->num_of;i++) tcl_append_int(interp,front->content[i]);
-	free(front);
+        vector_float *properties=new_vector_float();
+        for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+        free(ARGV);
+        vector_int *front=pat_front((PAT *)c->value.v,sizes,properties);
+        for (i=0;i<front->num_of;i++) if (front->content[i]!=-1) tcl_append_int(interp,front->content[i]);
+        free(front);
         return TCL_OK;
     }
     if (strcmp(argv[2],"<<<")==0) {
         if (c->value_type!=ctype_PAT) {
-	    #Error: "(ctree) The <<< operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-	    return TCL_ERROR;
-	}
-	if (argc!=5) {
-	    #Error: "(ctree) The <<< operator requires a list of sizes and a list of properties."
-	    return TCL_ERROR;
-	}
+            #Error: "(ctree) The <<< operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+            return TCL_ERROR;
+        }
+        if (argc!=5) {
+            #Error: "(ctree) The <<< operator requires a list of sizes and a list of properties."
+            return TCL_ERROR;
+        }
         int ARGC;
         char **ARGV;
         Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
-	vector_float *sizes=new_vector_float();
-	int i;
-	for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
-	free(ARGV);
+        vector_float *sizes=new_vector_float();
+        int i;
+        for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
+        free(ARGV);
         Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
-	vector_float *properties=new_vector_float();
-	for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
-	free(ARGV);
-	tcl_append_int(interp,add_pat_entry((PAT *)c->value.v,sizes,properties));
+        vector_float *properties=new_vector_float();
+        for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+        free(ARGV);
+        tcl_append_int(interp,add_pat_entry((PAT *)c->value.v,sizes,properties));
         return TCL_OK;
     }
     if (strcmp(argv[2],"=")==0) {
@@ -2950,9 +2978,9 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 *array_entry=atof(argv[3]);
                 return TCL_OK;
             }
-            c->value.v=(void *)strdup(argv[3]);
-            #Warning: "%s is getting typed string" c->name
-            c->value_type=ctype_string;
+            c->value.s=atof(argv[3]);
+            #Warning: "%s is getting typed real (%g)" c->name c->value.s
+            c->value_type=ctype_real;
             return TCL_OK;
         }
         if (argc<5) {
@@ -2993,17 +3021,17 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) usage: @ <context> delete"
             return TCL_ERROR;
         }
-	context *d=c->parent;
-	int i=0,j=0;
-	for (i=0;i<d->num_of_children;i++) {
-	    if (d->children[i]=c) j++;
-	    if (j>=d->num_of_children) break;
-	    d->children[i]=d->children[j];
-	    j++;
-	}
-	d->num_of_children--;
+        context *d=c->parent;
+        int i=0,j=0;
+        for (i=0;i<d->num_of_children;i++) {
+            if (d->children[i]=c) j++;
+            if (j>=d->num_of_children) break;
+            d->children[i]=d->children[j];
+            j++;
+        }
+        d->num_of_children--;
         delete_context(c);
-	Context=Ctree;
+        Context=Ctree;
         return TCL_OK;
     }
     if (strcmp(argv[2],"cd")==0) {
@@ -3774,16 +3802,16 @@ tcl_list_bytecode (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
         unsigned char bc=bc_byte();
         if (bc&HIT_CELL) {
             #Info: "<%d> Corner=%g %08X" bytecode_buffer_index bc_float() bc_full_int()
-	    bc_step();
+            bc_step();
             continue;
         }
-	float level=bc_float();
-	int32_t I0=bc_full_int();
-	bc_step();
-	int32_t I1=bc_full_int();
-	int32_t jump=bytecode_buffer_index+bc_int();
+        float level=bc_float();
+        int32_t I0=bc_full_int();
+        bc_step();
+        int32_t I1=bc_full_int();
+        int32_t jump=bytecode_buffer_index+bc_int();
         #Info: "<%d> Dim%d>=%g or jump to <%ld> %08X %08X" bytecode_buffer_index-1 bc level jump I0 I1
-	bc_step();
+        bc_step();
     }
     bc_start(a->hit_bytecode);
     return TCL_OK;
@@ -3806,22 +3834,22 @@ LUT2hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     merge_dim=a->dim;
     ordinal m=0;
     m=merge_hit_leaves(&(a->hit));
-
+    
     #Info: "Done merging %d cells" m
     ordinal stats[3];
     for (i=0;i<3;i++) stats[i]=0;
-//    a->hit=linearize_hit_leaf(a->hit,stats);
+    //    a->hit=linearize_hit_leaf(a->hit,stats);
     ordinal sizer=1;
     for (i=0;i<a->dim;i++) sizer*=(a->size[i]-1);
     bc_start(a->hit_bytecode);
     ordinal num_of_bc_words=count_hit_bytecode(a->hit);
-
+    
     #Info: "Writing Byte Code in %ld Bytes" 4*num_of_bc_words
     a->hit_bytecode=(FC *)malloc(sizeof(FC)*num_of_bc_words);
     a->hit_bytecode_size=num_of_bc_words;
     bc_start(a->hit_bytecode);
     compile_bytecode(a->hit);
-
+    
     hit_enabled=1;
     free(a->content);
     bc_start(a->hit_bytecode);
@@ -3867,7 +3895,7 @@ void map_slice_separation(LUT *a,ordinal **separation) {
     for (i=0;i<a->dim;i++) for (j=1;j<a->size[i]-1;j++) {
         if (total[i][j]==0) continue;
         separation[i][j]/=total[i][j];
-   //     #Info: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
+        //     #Info: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
     }
     for (i=0;i<a->dim;i++) {
         free(total[i]);
@@ -3878,7 +3906,7 @@ ordinal count_hit_bytecode(hit_node *hit) {
     ordinal retval=0;
     if (hit[HIT_TYPE].o&HIT_CELL) {
         retval++;
-	return(retval);
+        return(retval);
     }	
     retval+=2;
     retval+=count_hit_bytecode((hit_node *)hit[HIT_VALUES+1].p);
@@ -3892,7 +3920,7 @@ void compile_bytecode(hit_node *hit) {
         bc_put_byte(HIT_FULL_INTERP);
         // corners (skipping the scafold information about starting value and factor per dimension)
         bc_put_scalar(hit[HIT_VALUES+2*merge_dim].s);
-	bc_step();
+        bc_step();
         return;
     }
     // bc command
@@ -3990,10 +4018,10 @@ hit_node *linearize_hit_leaf(hit_node *hit,ordinal *stats) {
         for (corner=0;corner<num_of_corners;corner++) if (top_value<hit[HIT_VALUES+merge_dim*2+corner].s) top_value=hit[HIT_VALUES+merge_dim*2+corner].s;
         float resolution_step=(top_value-baseline)/255;
         if (fabs(resolution_step/baseline)*100>1) {
-	    stats[0]++;
-	    return(hit);
-	}
-	stats[1]++;
+            stats[0]++;
+            return(hit);
+        }
+        stats[1]++;
         // Go ahead and convert the entries to 8bit representation
         hit_node *new_hit=(hit_node *)malloc(sizeof(hit_node)*(4+num_of_corners));
         new_hit[HIT_TYPE].o=HIT_CFULL_INTERP;
@@ -4076,11 +4104,11 @@ hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
     for (i=0;i<num_of_corners;i++) {
         int outsider=0; 
         for (j=0;j<a->dim;j++) if (i&(1<<j)) if (array2hit_partial_legend_top[j]>=a->size[j]) outsider=1;
-	if (outsider) {
-	    hit[HIT_VALUES+i+a->dim*2].s=NAN;
-	} else {
+        if (outsider) {
+            hit[HIT_VALUES+i+a->dim*2].s=NAN;
+        } else {
             hit[HIT_VALUES+i+a->dim*2].s=a->content[index+a->neighbors[i]]; 
-	}    
+        }    
     }	
     return(hit);  
 }
@@ -4150,9 +4178,9 @@ ordinal merge_hit_leaves(hit_node **hit) {
         }
     }
     //    #Info: "MERGED!"
-//    for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
+    //    for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
         //        #Info: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
-//    }
+    //    }
     free(hit_t);
     free(hit_b);
     retval++;

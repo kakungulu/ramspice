@@ -14,7 +14,6 @@ default ::opt(r) 50
 default ::opt(ref) 100e-6
 default ::opt(limit) 10
 default ::opt(np) 1
-default ::opt(source) Tech_DB/tsmc040/4d/5:7.5:4:6/
 default ::opt(source) Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl

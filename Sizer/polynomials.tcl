@@ -1,22 +1,22 @@
 proc synthesize_minterms {{expression {}}} {
-#    Info: [.]SYNTH $expression
+    #    Info: [.]SYNTH $expression
     if {[llength $expression]<=1} {
         set expression [lindex $expression 0]
     }	
     if {[llength $expression]==0} {
-#	Info: [.]RET 0,
+        #	Info: [.]RET 0,
         return 0,
     }	
     if {[llength $expression]==1} {
         if {[llength [split $expression ,]]>1} {
-#	    Info: [.]RET $expression
+            #	    Info: [.]RET $expression
             return $expression
         }
         if {[catch {set val [expr $expression]}]} {
-#	    Info: [.]RET 1,$expression
+            #	    Info: [.]RET 1,$expression
             return 1,$expression
         } else {
-#	    Info: [.]RET $val,
+            #	    Info: [.]RET $val,
             return $val,
         }
     }	
@@ -53,12 +53,12 @@ proc synthesize_minterms {{expression {}}} {
             set post [synthesize_minterms [lindex $expression 2]]
             set final_list {}
             foreach term_pre $pre {
-	        set pre_const [lindex [split $term_pre ,] 0]
-		set pre_list [lsort [lrange [split $term_pre ,] 1 end]]
+                set pre_const [lindex [split $term_pre ,] 0]
+                set pre_list [lsort [lrange [split $term_pre ,] 1 end]]
                 foreach term_post $post {
-	            set post_const [lindex [split $term_post ,] 0]
-		    set post_list [lsort [lrange [split $term_post ,] 1 end]]
-		    set const [expr $pre_const*$post_const]
+                    set post_const [lindex [split $term_post ,] 0]
+                    set post_list [lsort [lrange [split $term_post ,] 1 end]]
+                    set const [expr $pre_const*$post_const]
                     lappend final_list [join [concat $const [lsort [concat $pre_list $post_list]]] ,]
                 }
             }
@@ -81,7 +81,7 @@ proc calc {expression} {
 proc start_poly {name {expression {}}} {
     remove_poly $name
     set analysis [analyse_expr $expression]
-#    Info: [.]analysis=$analysis
+    #    Info: [.]analysis=$analysis
     if {[regexp {(\{|@)func\s} $analysis]} {
         Error@ Expression $expression contains a function, which cannot be analysed as polynomial.
         exit
@@ -91,7 +91,7 @@ proc start_poly {name {expression {}}} {
         exit
     }
     set synthesis [synthesize_minterms $analysis]
-#    Info: [.]synthesis=$synthesis
+    #    Info: [.]synthesis=$synthesis
     foreach minterm $synthesis {
         set val [lindex [split $minterm ,] 0]
         set term [join [lrange [split $minterm ,] 1 end] ,]
@@ -179,6 +179,49 @@ proc unit_poly {a} {
     }
     return 0
 }
+proc derive_poly {a d c} {
+    remove_poly $c
+    foreach a_minterm [array names ::POLY $a@*] {
+        set a_term [lindex [split $a_minterm @] 1]
+        set count 0
+        set c_term {}
+        set sensitive_vars {}
+	Info: Deriving Poly $::POLY($a_minterm)*$a_term by $d
+        foreach var [split $a_term ,] {
+            if {$var==$d} {
+                if {$count} {
+                    lappend c_term $var
+                }
+                incr count
+                continue
+            } elseif {[info exists ::sensitivity($var,$d)]} {
+                lappend sensitive_vars $var
+            }
+            lappend c_term $var
+        }
+        set c_term [join $c_term ,]
+        default ::POLY($c@$c_term) 0.0
+        set ::POLY($c@$c_term) [calc $::POLY($c@$c_term)+$::POLY($a_minterm)*$count]
+        foreach dd $sensitive_vars {
+            set count 0
+            set c_term $::sensitivity($dd,$d)
+            foreach var [split $a_term ,] {
+                if {$var==$dd} {
+                    if {$count} {
+                        lappend c_term $var
+                    }
+                    incr count
+                    continue
+                }
+                lappend c_term $var
+            }
+            set c_term [join $c_term ,]
+            default ::POLY($c@$c_term) 0.0
+            set ::POLY($c@$c_term) [calc $::POLY($c@$c_term)+$::POLY($a_minterm)*$count]
+        }
+    }
+    dezero_poly $c
+}
 set ::temp_index 0
 proc implement_analysis {analysis} {
     if {[llength $analysis]==1} {
@@ -196,6 +239,7 @@ proc implement_analysis {analysis} {
     foreach arg $arguments {
         lappend args [implement_analysis $arg]
     }
+    
     set key [join [concat $op $args] ,]
     if {[info exists ::CSE($key)]} {
         incr ::NEEDED($key) 
@@ -208,7 +252,7 @@ proc implement_analysis {analysis} {
         set expression [join $args $op]
     }
     tmp$::temp_index=>$expression
-#    Info: [.]tmp$::temp_index=$expression
+    #    Info: [.]tmp$::temp_index=$expression
     set ::CSE($key) tmp$::temp_index
     set ::NEEDED($key) 0
     return tmp$::temp_index
@@ -252,8 +296,8 @@ proc present_poly {p {name {}}}  {
     set retval [expression_poly $p 1]
     regsub -all {\(\+} $retval "\(" retval
     set analysis [analyse_expr $retval]
-    implement_analysis $analysis
-    set analysis [implement_analysis_post $analysis]
+    #    implement_analysis $analysis
+    #    set analysis [implement_analysis_post $analysis]
     set synthesis [synthesize_minterms $analysis]
     remove_poly $p
     foreach minterm $synthesis {
@@ -262,7 +306,10 @@ proc present_poly {p {name {}}}  {
         set ::POLY($p@$term) $val
     }
     dezero_poly $p
-    return [expression_poly $p 1]
+    set retval [expression_poly $p 1]
+    array unset ::POLY *in__*
+    array unset ::POLY *out__*
+    return $retval
 }
 
 # expression_poly takes a standardized polynomial and converts it back to hierarchical expression

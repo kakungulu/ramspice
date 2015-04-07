@@ -10,6 +10,11 @@ proc func {name arguments} {
     }
 } 
 proc ::func::derive {expression var} {
+    if {[array names ::POLY $expression@*]!={}} {
+        Info: $expression has a corresponding polynomial
+        derive_poly $expression $var dpoly
+	return [present_poly dpoly $expression]
+    }
     return [derive_expression $var $expression]
 }
 proc flat_expression {equation} {
@@ -301,6 +306,8 @@ proc synthesize_expr {{expression {}}} {
     }
 }
 proc derive_expr {var expression} {
+    Info: Deriving $expression
+    Info: by $var
     if {[llength $expression]==1} {
         set expression [lindex $expression 0]
     }
@@ -312,13 +319,20 @@ proc derive_expr {var expression} {
 	    return 1
 	} 
 	default ::DERMODE first
+	Info: $expression is atomic
+	if {[array names ::DER $expression,*]!={}} {
 	if {[info exists ::DER($expression,$var,$::DERMODE)]} {
+            Info: $expression has predefined derivative
 	    return $::DER($expression,$var,$::DERMODE)
 	}
 	if {[info exists ::DER($expression,*,$::DERMODE)]} {
+            Info: $expression has predefined derivative
 	    return $::DER($expression,*,$::DERMODE)
 	}
+	return 0
+	}
 	if {[info exists ::DEF($expression)]} {
+            Info: $expression is dependent on $::DEF($expression)
 	    return [derive_expr $var [analyse_expr $::DEF($expression)]]
 	}
         return 0
@@ -378,6 +392,9 @@ proc beatufy_expression {varname} {
     
 }
 proc derive_expression {var expression} {
+    for {set i 1} {$i<=[info level]} {incr i} {
+        Info: ($i) [info level $i]
+    }
     set analyzed [analyse_expr $expression]
     if {[llength $analyzed]==1} {
         set analyzed [lindex $analyzed 0]
