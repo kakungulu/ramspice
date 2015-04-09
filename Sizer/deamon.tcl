@@ -12,7 +12,8 @@ default ::opt(vgs) 1.0
 default ::opt(vbs) 0.0
 default ::opt(r) 50
 default ::opt(ref) 100e-6
-default ::opt(limit) 2
+default ::opt(op_limit) 2
+default ::opt(step_limit) 1000
 default ::opt(np) 1
 default ::opt(source) Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
@@ -156,6 +157,10 @@ proc add_idc {name m p value} {
 }
 set ::dependent_nodes(0) 1
 proc add_vdc {name m p value} {
+    set init_value $value
+    if {[@ $value ?]} {
+        set init_value [@ $value]
+    }
     set ::vdc($m,$p) $value
     ladd ::all_nodes $m
     ladd ::all_nodes $p
@@ -164,13 +169,15 @@ proc add_vdc {name m p value} {
         set ::dependent_nodes($p) {}
         $p:Next=>$m+$value
         $p:V=>$p:Next
-        @ $p:Next = $::opt(topv)
+        @ $p:Next = [expr [@ $m:Next]+$init_value]
+        @ $p:V = [expr [@ $m:Next]+$init_value]
     } elseif {[info exists ::dependent_nodes($p)]} {
         Info: $m depends on $p ($value)
         set ::dependent_nodes($m) {}
         $m:Next=>$p+$value
         $m:V=>$m:Next
-        @ $m:Next = $::opt(topv)
+        @ $m:Next = [expr [@ $p:Next]-$init_value]
+        @ $m:V = [expr [@ $p:Next]-$init_value]
     }
 }
 array set ::all_resistors {}
@@ -245,16 +252,16 @@ proc .compile_spec {} {
                 lassign [split $spec ,] name op
                 switch $op {
                     "=" {
-		        .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                        .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
                     }
                     "<" {
                         .if {property:$name>=$::specification($spec)} {
-		            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
                         }
                     }
                     ">" {
                         .if {property:$name<=$::specification($spec)} {
-		            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
                         }
                     }
                 }
@@ -272,11 +279,11 @@ proc .compile_spec {} {
         set calculated_properties {}
         foreach spec [array names ::specification] {
             lassign [split $spec ,] name op
-  #          if {[lsearch $calculated_properties $name]==-1} {
-#                property/$name=[flat_expression  $::properties($name,expression)]
+            #          if {[lsearch $calculated_properties $name]==-1} {
+                #                property/$name=[flat_expression  $::properties($name,expression)]
                 #.calculate property/$name
- #               lappend calculated_properties $name
-   #         }
+                #               lappend calculated_properties $name
+            #         }
             regsub -all @ $::properties($name,from_display) $::specification($spec) th
             evaluate th
             switch $op {
@@ -341,37 +348,6 @@ proc .compile_circuit {} {
         foreach field {type L W d g s b} {
             set $field $::transistors($name,$field)
         }
-###        if {[string equal $d $g]} {
-###	    // Diode connection
-###            foreach node_name {d s b} {
-###                set node [set $node_name]
-###                if {[info exists ::vdc($node)]} {
-###                    set V$node_name $::vdc($node)
-###                } else {
-###                    set V$node_name $node:V
-###                    #               @ $node:V = [expr $::opt(topv)]
-###                    @ $node:V = $::opt(topv)
-###                    @ $node:Next = $::opt(topv)
-###                }
-###            }
-###            #        add_kcl_entry $s $d "Gds_$name"
-###            set ::transistors($name,Vgs) [Vdiff $Vd $Vs]
-###            @ Gds_$name = 1
-###            add_kcl $s $s "+$name:g"
-###            add_kcl $s $d "-$name:g"
-###            add_kcl $d $s "-$name:g"
-###            add_kcl $d $d "+$name:g"
-###            default ::idc($d,$s)
-###            append ::idc($d,$s) "-$name:Ideq"
-###            set ::Ids_equations($name) "interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vd $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vd $Vs]-$name:go*[Vdiff $Vb $Vs]"
-###            set ::g_equations($name) "(1/interpolateg(&:look_up_tables:$type:ro:$::opt(process),[Vdiff $Vd $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dro_dvgs,&$name:dro_dvds,&$name:dro_dvbs,&$name:dro_dl)+interpolateg(&:look_up_tables:$type:gm:$::opt(process),[Vdiff $Vd $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dgm_dvgs,&$name:dgm_dvds,&$name:dgm_dvbs,&$name:dgm_dl)*($W/$L)"
-###            @ $name:Ideq = 0
-###            @ $name:g = 1
-###            define_derivative $name:g * first 0
-###            define_derivative $name:g $W second "$name:gm/$W"
-###            define_derivative $name:g $L second "($name:dgm_dl-$name:gm/$L)*($W/$L)"
-###            continue
-###        }
         foreach node_name {d g s b} {
             set node [set $node_name]
             if {[info exists ::vdc($node)]} {
@@ -379,8 +355,12 @@ proc .compile_circuit {} {
             } else {
                 set V$node_name $node:V
                 #               @ $node:V = [expr $::opt(topv)]
-                @ $node:V = $::opt(topv)
-                @ $node:Next = $::opt(topv)
+		if {![@ $node:V ?]} {
+                    @ $node:V = $::opt(topv)
+		}
+		if {![@ $node:Next ?]} {
+                    @ $node:Next = $::opt(topv)
+		}
             }
         }
         #        add_kcl_entry $s $d "Gds_$name"
@@ -396,7 +376,11 @@ proc .compile_circuit {} {
         add_kcl $s $g "-$name:gm"
         add_kcl $d $s "-$name:gm"
         add_kcl $d $g "+$name:gm"
-        set ::Ids_equations($name) "interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vg $Vs]-$name:go*[Vdiff $Vd $Vs]"
+	if {$type=="nch"} {
+            set ::Ids_equations($name) "interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vg $Vs]-$name:go*[Vdiff $Vd $Vs]"
+	} else {
+            set ::Ids_equations($name) "-interpolate(&:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L)*($W/$L)-$name:gm*[Vdiff $Vg $Vs]-$name:go*[Vdiff $Vd $Vs]"
+	}
         set ::gm_equations($name) "interpolateg(&:look_up_tables:$type:gm:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dgm_dvgs,&$name:dgm_dvds,&$name:dgm_dvbs,&$name:dgm_dl)*($W/$L)"
         set ::go_equations($name) "($W/$L)/interpolateg(&:look_up_tables:$type:ro:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],$L,&$name:dro_dvgs,&$name:dro_dvds,&$name:dro_dvbs,&$name:dro_dl)"
         @ $name:Ideq = 0
@@ -408,18 +392,18 @@ proc .compile_circuit {} {
         define_derivative $name:go * first 0
         define_derivative $name:go $W second "$name:go/$W"
         define_derivative $name:go $L second "-$name:go*($name:dro_dl*$name:go*($L/$W)+1/$L)"
-	set ::sensitivity($name:gm,$W) $name:gm:$W
-	@ $name:gm:$W = 0
-	$name:gm:$W=>$name:gm/$W
-	set ::sensitivity($name:gm,$L) $name:gm:$L
-	@ $name:gm:$L = 0
-	$name:gm:$L=>($name:dgm_dl-$name:gm/$L)*($W/$L)
-	@ $name:go:$W = 0
-	set ::sensitivity($name:go,$W) $name:go:$W
-	$name:go:$W=>$name:go/$W
-	set ::sensitivity($name:go,$L) $name:go:$L
-	@ $name:go:$L = 0
-	$name:go:$L=>-$name:go*($name:dro_dl*$name:go*($L/$W)+1/$L)
+        set ::sensitivity($name:gm,$W) $name:gm:$W
+        @ $name:gm:$W = 0
+        $name:gm:$W=>$name:gm/$W
+        set ::sensitivity($name:gm,$L) $name:gm:$L
+        @ $name:gm:$L = 0
+        $name:gm:$L=>($name:dgm_dl-$name:gm/$L)*($W/$L)
+        @ $name:go:$W = 0
+        set ::sensitivity($name:go,$W) $name:go:$W
+        $name:go:$W=>$name:go/$W
+        set ::sensitivity($name:go,$L) $name:go:$L
+        @ $name:go:$L = 0
+        $name:go:$L=>-$name:go*($name:dro_dl*$name:go*($L/$W)+1/$L)
     }
     foreach idc_pair [array names ::idc] {
         lassign [split $idc_pair ,] m p
@@ -498,8 +482,8 @@ proc .compile_circuit {} {
         derive_poly g size:$c dg_d$c
         Det:$c=>[present_poly dg_d$c Det_d$c]
         Ted:$c=>-Det:$c/(Det*Det)
-	set ::sensitivity(Det,size:$c) Det:$c
-	set ::sensitivity(Ted,size:$c) Ted:$c
+        set ::sensitivity(Det,size:$c) Det:$c
+        set ::sensitivity(Ted,size:$c) Ted:$c
     }
     set ::POLY(Ted@Ted) 1
     Info: Det=$poly
@@ -510,11 +494,11 @@ proc .compile_circuit {} {
     # Define Data Dependencies
     foreach node $::independent_nodes {
         if {[info exists ::dependent_nodes($node)]} {
-	    incr i
-	    continue
-	}
+            incr i
+            continue
+        }
         detp ::KCL p 0 {} $i $y
-	mult_poly p Ted $node
+        mult_poly p Ted $node
         set poly [present_poly $node $node:Next]
         $node:Next=>$poly
         puts $HTML "$node:Next=$poly<br><br>"
@@ -526,9 +510,9 @@ proc .compile_circuit {} {
         if {[info exists ::gm_equations($name)]} {
             $name:gm=>$::gm_equations($name)
             $name:go=>$::go_equations($name)
-	} else {
+        } else {
             $name:g=>$::g_equations($name)
-	}
+        }
     }
     foreach name [array names ::G_equations] {
         Gds_$name=>$::G_equations($name)
@@ -541,114 +525,125 @@ proc .compile_circuit {} {
     }
     set needed_temps [lsort -command tmp_sort $needed_temps]
     .procedure converge {} {
-        # Set operating point
-	.tp size:L
-	.tp size:W
-        .for {i=0} {i<$::opt(limit)} {i=i+1} {
-	    .tp i
-            foreach name [array names ::Ids_equations] {
-                .calculate $name:gm
-		.tp $name:dgm_dl
-		puts $HTML "$name:gm=$::DEF($name:gm)<br><br>"
-		@ $name:gm:size foreach_child c {
-		    if {[info exists ::DEF($name:gm:size:$c)]} {
-		        .calculate $name:gm:size:$c
-			.tp $name:gm:size:$c
-		        puts $HTML "$name:dgm/d$c=$::DEF($name:gm:size:$c)<br><br>"
-		    }
-		}
-                .calculate $name:go
-		.tp $name:dro_dl
-		@ $name:go:size foreach_child c {
-		    if {[info exists ::DEF($name:go:size:$c)]} {
-		        .calculate $name:go:size:$c
-			.tp $name:go:size:$c
-		        puts $HTML "$name:dgo/d$c=$::DEF($name:go:size:$c)<br><br>"
-		    }
-		}
-                .if {$::transistors($name,Vgs)<6e-1} {
-                    $name:Ideq=0
-                } else {
-                    $name:Ideq=$::Ids_equations($name)
-                }
-            }
-	    
-            foreach temp $needed_temps {
-                .calculate $temp
-            }
-            .calculate Det
-            .calculate Ted
-	    @ size foreach_child c {
-	        .calculate Det:$c
-		.tp Det:$c
-		.calculate Ted:$c
-		.tp Ted:$c
-		puts $HTML "dDet/d$c=$::DEF(Det:$c)<br><br>"
-		puts $HTML "dTed/d$c=$::DEF(Ted:$c)<br><br>"
-	    }
-            foreach node $::independent_nodes {
-	        Info: NODE $node
-                .calculate $node:Next
-	        .tp $node:Next
-	        .tp i
-            }
-            foreach node $::independent_nodes {
-                .calculate $node:V
-	        .tp $node:V
-            }
-            foreach name [array names ::G_equations] {
-                .calculate Gds_$name
-                .default Gds_$name 1e+0
-            }
-        }
-	.tp Det
-	.tp Ted
-	@ property foreach_child p {
-	    Info: PROPERTY $p
-	    set expression [flat_expression  $::properties($p,expression)]
-	    property:$p=$expression
-            .tp property:$p
-            puts $HTML "$p=$expression<br><br>"
-	    start_poly $p $expression
-	    @ size foreach_child s {
-	        @ property:$p:$s = 0
-		derive_poly $p size:$s d_$p
-		set expression [present_poly d_$p]
-		remove_poly d_$p
-		property:$p:$s=$expression
-		.tp property:$p:$s
-                puts $HTML "d$p/d$s=$expression<br><br>"
-	    }
-	}
-        @ size foreach_child value {
-            Info: Size=$value
-            size:$value:step=0
-            foreach spec [array names ::specification] {
-                Info: Compiling Spec: $spec $::specification($spec)
-                lassign [split $spec ,] name op
-                switch $op {
-                    "=" {
-                        .if {property:$name:$value!=0} {
-		            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
-			}    
-                    }
-                    "<" {
-                        .if {(property:$name>=$::specification($spec))&&(property:$name:$value!=0)} {
-		            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+        continue=1
+        .for {step_counter=0} {step_counter<$::opt(step_limit) && continue} {step_limit=step_limit+1} {
+	    continue=0
+            # Set operating point
+	    .tp step_counter
+            .tp size:L
+            .tp size:W
+            .for {i=0} {i<$::opt(op_limit)} {i=i+1} {
+                .tp i
+                foreach name [array names ::Ids_equations] {
+                    .calculate $name:gm
+                    .tp $name:gm
+                    .tp $name:dgm_dl
+                    puts $HTML "$name:gm=$::DEF($name:gm)<br><br>"
+                    @ $name:gm:size foreach_child c {
+                        if {[info exists ::DEF($name:gm:size:$c)]} {
+                            .calculate $name:gm:size:$c
+                            .tp $name:gm:size:$c
+                            puts $HTML "$name:dgm/d$c=$::DEF($name:gm:size:$c)<br><br>"
                         }
                     }
-                    ">" {
-                        .if {(property:$name<=$::specification($spec))&&(property:$name:$value!=0)} {
-		            .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                    .calculate $name:go
+                    .tp $name:go
+                    .tp $name:dro_dl
+                    @ $name:go:size foreach_child c {
+                        if {[info exists ::DEF($name:go:size:$c)]} {
+                            .calculate $name:go:size:$c
+                            .tp $name:go:size:$c
+                            puts $HTML "$name:dgo/d$c=$::DEF($name:go:size:$c)<br><br>"
                         }
                     }
+#                    .if {$::transistors($name,Vgs)<6e-1} {
+#                        $name:Ideq=0
+#                    } else {
+#                        $name:Ideq=$::Ids_equations($name)
+#                    }
+                        $name:Ideq=$::Ids_equations($name)
                 }
-		.let size:$value:step=limit(size:$value:step,size:$value:step:min,size:$value:step:max)
-		.tp size:$value:step
+                
+                foreach temp $needed_temps {
+                    .calculate $temp
+                }
+                .calculate Det
+                .calculate Ted
+                @ size foreach_child c {
+                    .calculate Det:$c
+                    .tp Det:$c
+                    .calculate Ted:$c
+                    .tp Ted:$c
+                    puts $HTML "dDet/d$c=$::DEF(Det:$c)<br><br>"
+                    puts $HTML "dTed/d$c=$::DEF(Ted:$c)<br><br>"
+                }
+                foreach node $::independent_nodes {
+                    Info: NODE $node
+                    .calculate $node:Next
+                    .tp $node:Next
+                    .tp i
+                }
+                foreach node $::independent_nodes {
+                    .calculate $node:V
+                    .tp $node:V
+                }
+                foreach name [array names ::G_equations] {
+                    .calculate Gds_$name
+                    .default Gds_$name 1e+0
+                }
             }
-        }
-        @ size foreach_child value {
-            .let size:$value=limit(size:$value-size:$value:step/1000,size:$value:min,size:$value:max)
+            .tp Det
+            .tp Ted
+            @ property foreach_child p {
+                Info: PROPERTY $p
+                set expression [flat_expression  $::properties($p,expression)]
+                property:$p=$expression
+                .tp property:$p
+                puts $HTML "$p=$expression<br><br>"
+                start_poly $p $expression
+                @ size foreach_child s {
+                    @ property:$p:$s = 0
+                    derive_poly $p size:$s d_$p
+                    set expression [present_poly d_$p]
+                    remove_poly d_$p
+                    property:$p:$s=$expression
+                    .tp property:$p:$s
+                    puts $HTML "d$p/d$s=$expression<br><br>"
+                }
+            }
+            @ size foreach_child value {
+                Info: Size=$value
+                size:$value:step=0
+                foreach spec [array names ::specification] {
+                    Info: Compiling Spec: $spec $::specification($spec)
+                    lassign [split $spec ,] name op
+                    switch $op {
+                        "=" {
+                            .if {property:$name:$value!=0} {
+                                .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                            }    
+                        }
+                        "<" {
+                            .if {(property:$name>=$::specification($spec))&&(property:$name:$value!=0)} {
+                                .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                            }
+                        }
+                        ">" {
+                            .if {(property:$name<=$::specification($spec))&&(property:$name:$value!=0)} {
+                                .let size:$value:step=(property:$name-$::specification($spec))/property:$name:$value
+                            }
+                        }
+                    }
+                    .let size:$value:step=limit(size:$value:step,size:$value:step:min,size:$value:step:max)
+                    .tp size:$value:step
+                }
+		.if {size:$value:step!=0} {
+		    continue=1
+		}
+            }
+            @ size foreach_child value {
+                .let size:$value=limit(size:$value-size:$value:step/1000,size:$value:min,size:$value:max)
+            }
         }
     }
     
@@ -731,7 +726,7 @@ switch $::opt(topology) {
         vinm 0 inm param:neg
         @ param/pos = [expr $::opt(topv)/2]
         @ param/neg = [expr $::opt(topv)/2]
-	default ::opt(vref) 100e-3
+        default ::opt(vref) 100e-3
         @ param/vref = $::opt(vref)
         foreach class {p n s} {
             @ size/W$class/min = 40e-9
@@ -747,23 +742,46 @@ switch $::opt(topology) {
         @ size:L = 360e-9
         @ size:L:min = 40e-9
         @ size:L:max = 10e-6
-	@ size:L:step:min = -1e-6
-	@ size:L:step:max = 1e-6
+        @ size:L:step:min = -1e-6
+        @ size:L:step:max = 1e-6
         @ size:W = 360e-9
         @ size:W:min = 40e-9
         @ size:W:max = 10e-6
-	@ size:W:step:min = -1e-6
-	@ size:W:step:max = 1e-6
+        @ size:W:step:min = -1e-6
+        @ size:W:step:max = 1e-6
         @ topologies/$::opt(topology)((L|Adc,L)) !
         iref out 0 param:ref_current
         @ param:ref_current = 15e-6
-	vin 0 in param:vin
-	default ::opt(vin) 0.9
-	@ param:vin = $::opt(vin)
+        vin 0 in param:vin
+        default ::opt(vin) 0.9
+        @ param:vin = $::opt(vin)
         vdd 0 vdd $::opt(topv)
         mn_ref  out in 0 0 nch W=size:W L=size:L
         .property Adc -expression derive(out,param:vin) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
-        .spec Adc < -10
+        .spec Adc < -15
+    }
+    pmos {
+        @ size:L !
+        @ size:L = 360e-9
+        @ size:L:min = 40e-9
+        @ size:L:max = 10e-6
+        @ size:L:step:min = -1e-6
+        @ size:L:step:max = 1e-6
+        @ size:W = 360e-9
+        @ size:W:min = 40e-9
+        @ size:W:max = 10e-6
+        @ size:W:step:min = -1e-6
+        @ size:W:step:max = 1e-6
+        @ topologies/$::opt(topology)((L|Adc,L)) !
+        iref out 0 param:ref_current
+        @ param:ref_current = -5e-6
+        default ::opt(vin) 0.2
+        @ param:vin = $::opt(vin)
+        vin 0 in param:vin
+        vdd 0 vdd $::opt(topv)
+        mn_ref  out in vdd vdd pch W=size:W L=size:L
+        .property Adc -expression derive(out,param:vin) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+        .spec Adc < -15
     }
     default {
         Error: No support for topology named $::opt(topology)
@@ -778,10 +796,8 @@ switch $::opt(topology) {
 @ inm:V = [expr $::opt(topv)/2]
 default ::opt(save_size) 1
 set box {}
-        for {set k 0} {$k<1000} {incr k} {
-            converge
-        }
-	exit
+converge
+exit
 while {1} {
     for {set main_loop 0} {$main_loop<$::opt(save_size)} {incr main_loop} {
         @ size foreach_child s {

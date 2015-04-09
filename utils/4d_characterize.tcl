@@ -524,6 +524,9 @@ foreach type [split $device :] {
         }
     }
     if {![file exists $ids_file]||![file exists $gm_file]||![file exists $ro_file]} {
+        if {[regexp {^p} $type]} {
+            set minVt [expr -$minVt]
+        }
         textbox    "Characterizing Ids, gm and ro for $type"    
         constrain "
         Vgs  $minVt         $max_supply            $::vgs_rez

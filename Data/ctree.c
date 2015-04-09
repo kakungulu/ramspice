@@ -2979,7 +2979,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 return TCL_OK;
             }
             c->value.s=atof(argv[3]);
-            #Warning: "%s is getting typed real (%g)" c->name c->value.s
+            #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
             return TCL_OK;
         }

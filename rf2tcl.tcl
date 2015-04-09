@@ -19,6 +19,7 @@ set ::temp 27
 default ::opt(devices) {nch pch}
 default ::opt(corners) {ss tt ff fs sf}
 default ::opt(globals) {}
+default ::opt(tech) tsmc040
 set ::translated_file $::opt(input)
 set ::translated_models  $::opt(devices)
 set ::translated_sections $::opt(corners)

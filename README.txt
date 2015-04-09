@@ -13,7 +13,12 @@ RAMSpice "Mengo" build
        Object files are stored under object_file_sp and object_files directories
        respectively. Don't remove those as they provide the "makey" feature of
        incremental compilation.
-       
+    Characterizing
+    ==============
+        1. Convert Spectre .scs file to SPICE model:
+	    % cd $RAMSPICE/Spectre/40nm
+	    % $RAMSPICE/rf2tcl.tcl -input crn40lp_1d8_v1d2.scs
+	2. Run characterizing loop
     Version control
     ===============
        Due to the small size of the project and the need to migrate it accross
