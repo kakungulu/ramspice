@@ -104,6 +104,7 @@ foreach op {+ - * /} op_name {Plus Minus Mult Div} {
     GammaOperator $op_name {} $body 
 }
 GammaCommand Limit {} {
+    #Info: "Limit %g (%g,%g)" @F(1) @F(2) @F(3)
     if (@F(1)>@F(3)) @F(1)=@F(3);
     if (@F(1)<@F(2)) @F(1)=@F(2);
 }

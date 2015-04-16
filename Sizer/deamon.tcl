@@ -14,6 +14,7 @@ default ::opt(r) 50
 default ::opt(ref) 100e-6
 default ::opt(op_limit) 2
 default ::opt(step_limit) 1000
+default ::opt(step_count) 1
 default ::opt(np) 1
 default ::opt(source) Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
@@ -335,6 +336,7 @@ proc .compile_circuit {} {
         if {[catch {set G [expr 1.0/$::all_resistors($res_nodes)]}]} {
             set ::G_equations(${m}_${p}) 1.0/$::all_resistors($res_nodes)
             set G Gds_${m}_${p}
+	    set ::sensitivity(Gds_${m}_${p},$::all_resistors($res_nodes)) -1.0/($::all_resistors($res_nodes)*$::all_resistors($res_nodes))
         }
         add_kcl $m $m $G
         add_kcl $p $p $G
@@ -526,12 +528,17 @@ proc .compile_circuit {} {
     set needed_temps [lsort -command tmp_sort $needed_temps]
     .procedure converge {} {
         continue=1
-        .for {step_counter=0} {step_counter<$::opt(step_limit) && continue} {step_limit=step_limit+1} {
+        .for {step_counter=0} {step_counter<$::opt(step_count) && continue} {step_counter=step_counter+1} {
 	    continue=0
             # Set operating point
 	    .tp step_counter
-            .tp size:L
-            .tp size:W
+	    @ size foreach_child c {
+                .tp size:$c
+	    }
+            foreach name [array names ::G_equations] {
+            	.calculate Gds_$name
+            	.default Gds_$name 1e+0
+            }
             .for {i=0} {i<$::opt(op_limit)} {i=i+1} {
                 .tp i
                 foreach name [array names ::Ids_equations] {
@@ -642,7 +649,7 @@ proc .compile_circuit {} {
 		}
             }
             @ size foreach_child value {
-                .let size:$value=limit(size:$value-size:$value:step/1000,size:$value:min,size:$value:max)
+                .let size:$value=limit(size:$value-size:$value:step/$::opt(step_limit),size:$value:min,size:$value:max)
             }
         }
     }
@@ -688,6 +695,18 @@ default ::opt(topology) nmos_cs
 switch $::opt(topology) {
     diffpair {
         @ topologies/$::opt(topology)((Wp,Lp,Wn,Ln,Ws,Ls,Iref|Adc,Area)) !
+        @ param/pos = [expr $::opt(topv)/2]
+        @ param/neg = [expr $::opt(topv)/2]
+        @ param/vdd = $::opt(topv)
+        @ param/iref = $::opt(iref)
+        foreach class {p n s} {
+            @ size/W$class  = 360e-9
+            @ size/W$class/min = 40e-9
+            @ size/W$class/max = 10e-6
+            @ size/L$class  = 360e-9
+            @ size/L$class/min = 40e-9
+            @ size/L$class/max = 10e-6
+        }
         mp_1 outm outm vdd vdd pch W=size:Wp L=size:Lp
         mp_2 outp outm vdd vdd pch W=size:Wp L=size:Lp
         mnin_1 outm inp tail 0 nch W=size:Wn L=size:Ln
@@ -698,16 +717,6 @@ switch $::opt(topology) {
         vdd 0 vdd param:vdd
         vinp 0 inp param:pos
         vinm 0 inm param:neg
-        @ param/pos = [expr $::opt(topv)/2]
-        @ param/neg = [expr $::opt(topv)/2]
-        @ param/vdd = $::opt(topv)
-        @ param/iref = $::opt(iref)
-        foreach class {p n s} {
-            @ size/W$class/min = 40e-9
-            @ size/W$class/max = 10e-6
-            @ size/L$class/min = 40e-9
-            @ size/L$class/max = 10e-6
-        }
         #    rload outp 0 1e+7
         .property Adc -expression derive(outp,param:pos)-derive(outp,param:neg) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         .spec Adc < 40
@@ -715,17 +724,19 @@ switch $::opt(topology) {
     }
     diffpair_simple {
         @ topologies/$::opt(topology)((Wp,Lp,Wn,Ln,Ws,Ls|Adc,Area)) !
+        @ param/pos = [expr $::opt(topv)/2]
+        @ param/neg = [expr $::opt(topv)/2]
+        @ param/vref = $::opt(vref)
+        @ param/vdd = $::opt(topv)
         mp_1 outm outm vdd vdd pch W=size:Wp L=size:Lp
         mp_2 outp outm vdd vdd pch W=size:Wp L=size:Lp
         mnin_1 outm inp tail 0 nch W=size:Wn L=size:Ln
         mnin_2 outp inm tail 0 nch W=size:Wn L=size:Ln
         mn_tail tail vbias 0 0 nch W=size:Ws L=size:Ls
         vref  vbias 0 param:vref
-        vdd 0 vdd $::opt(topv)
+        vdd 0 vdd param:vdd
         vinp 0 inp param:pos
         vinm 0 inm param:neg
-        @ param/pos = [expr $::opt(topv)/2]
-        @ param/neg = [expr $::opt(topv)/2]
         default ::opt(vref) 100e-3
         @ param/vref = $::opt(vref)
         foreach class {p n s} {
@@ -774,13 +785,16 @@ switch $::opt(topology) {
         @ size:W:step:max = 1e-6
         @ topologies/$::opt(topology)((L|Adc,L)) !
         iref out 0 param:ref_current
-        @ param:ref_current = -5e-6
+        @ param:ref_current = -3e-6
         default ::opt(vin) 0.2
         @ param:vin = $::opt(vin)
         vin 0 in param:vin
         vdd 0 vdd $::opt(topv)
+	@ param:rload = 5e13
+	rload out 0 param:rload
         mn_ref  out in vdd vdd pch W=size:W L=size:L
         .property Adc -expression derive(out,param:vin) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+	.property Zout -expression out:V/(out:V/param:rload-derive(out,param:rload))-param:rload
         .spec Adc < -15
     }
     default {
@@ -796,17 +810,24 @@ switch $::opt(topology) {
 @ inm:V = [expr $::opt(topv)/2]
 default ::opt(save_size) 1
 set box {}
-converge
-exit
 while {1} {
     for {set main_loop 0} {$main_loop<$::opt(save_size)} {incr main_loop} {
-        @ size foreach_child s {
-            @ size/$s = [expr [@ size/$s/min]+([@ size/$s/max]-[@ size/$s/min])*rand()]
-        }
         for {set k 0} {$k<4} {incr k} {
             converge
         }
-        @ topologies/$::opt(topology) <<< [@ size/L] [list [@ property/Adc] [@ size/L]]
+	set area 0
+	set sizes {}
+	foreach class {p n s} {
+	    Info: Width=[@ size/W$class] Length=[@ size/L$class]
+	    set area [expr $area+[@ size/W$class]*[@ size/L$class]]
+	    lappend sizes [@ size/W$class]
+	    lappend sizes [@ size/L$class]
+	}
+	lappend sizes [@ param/iref]
+        @ topologies/$::opt(topology) <<< $sizes [list [@ property/Adc] $area]
+        @ size foreach_child s {
+            @ size/$s = [expr [@ size/$s/min]+([@ size/$s/max]-[@ size/$s/min])*rand()]
+        }
     }
     @ topologies save pareto.db
 }
