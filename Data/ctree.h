@@ -71,6 +71,7 @@ typedef enum {
     ctype_real,
     ctype_LUT,
     ctype_PAT,
+    ctype_POLY,
     ctype_node
 } CTYPE;
 typedef struct context context;
@@ -158,6 +159,7 @@ typedef struct {
     vector_float *sizes;
     vector_float *properties;
 } PAT_entry;
+
 void write_pointer_PAT_entry(FILE *O,PAT_entry *p);
 PAT_entry *read_pointer_PAT_entry();
 #Foreach: type $::vector_pointer_types {
@@ -179,9 +181,22 @@ typedef struct {
     vector_pointer_char *properties;
     vector_float *margins;
 } PAT;
+typedef struct {
+    char *expression;
+    vector_double *polynomial;
+} POLY;
 PAT *new_PAT();
+PAT *get_PAT(char *i_context);
+POLY *get_POLY(char *i_context);
 void write_pointer_PAT(FILE *O,PAT *p);
 PAT *read_pointer_PAT();
+POLY *new_POLY();
+void link_POLY(POLY *p);
+float calc_POLY(POLY *p);
+float derive_POLY(POLY *p,void *by_var);
+float root_POLY(POLY *p,void *by_var,double init);
+void write_pointer_POLY(FILE *O,POLY *p);
+POLY *read_pointer_POLY();
 ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties);
 
 float global_coord[$MAXDIM];
@@ -211,6 +226,8 @@ LUT *get_LUT(char *i_context);
 LUT *get_LUT_quiet(char *i_context);
 PAT *get_PAT(char *i_context);
 PAT *get_PAT_quiet(char *i_context);
+POLY *get_POLY(char *i_context);
+POLY *get_POLY_quiet(char *i_context);
 node *new_node();
 context *new_context(context *i_parent, char *i_name,void *i_value,CTYPE i_type);
 int resolve_string_char(char i_char,node **i_node);
@@ -218,7 +235,7 @@ int resolve_string_token(char *i_token,node **i_node);
 int resolve_key(char *i_key,node **i_node,float **array_entry);
 void tcl_append_long(Tcl_Interp *interp,long in_int);
 void tcl_append_int(Tcl_Interp *interp,int in_int); 
-void tcl_append_float(Tcl_Interp *interp,float in_int);
+void tcl_append_float(Tcl_Interp *interp,double in_int);
 node *add_array_context(char *i_key,node **i_node);
 ordinal add_sub_context(context *i_parent,context *i_child);
 void map_slice_separation(LUT *a,ordinal **separation);

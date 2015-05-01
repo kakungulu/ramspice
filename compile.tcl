@@ -147,7 +147,7 @@ proc tcl_preprocessor {c_code} {
             continue
         } 
 	# Identify a beginning of Tcl preprocessed block
-        if {[regexp {^\s*\#tcl\s+(.*)$} $line -> tcl_command] || [regexp {^\s*\#([A-Z]\S+: .*)$} $line -> tcl_command]} {
+        if {[regexp {^\s*\#tcl\s+(.*)$} $line -> tcl_command] || [regexp {^\s*\#([A-Z]\S+:.*)$} $line -> tcl_command]} {
             set mode tcl
             set bracket_rank [regexp -all {\{} $line]
             incr bracket_rank -[regexp -all {\}} $line]
@@ -194,7 +194,7 @@ proc tcl_preprocessor {c_code} {
             continue
         }
 	# Identify a beginning of Tcl preprocessed block
-        if {[regexp {^\s*\#tcl\s+(.*)$} $line -> tcl_command] || [regexp {^\s*\#([A-Z]\S+: .*)$} $line -> tcl_command]} {
+        if {[regexp {^\s*\#tcl\s+(.*)$} $line -> tcl_command] || [regexp {^\s*\#([A-Z]\S+:.*)$} $line -> tcl_command]} {
             set bracket_rank [regexp -all {\{} $line]
             incr bracket_rank -[regexp -all {\}} $line]
             set template_body $tcl_command

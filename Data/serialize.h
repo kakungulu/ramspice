@@ -4,8 +4,10 @@
 #include <stdlib.h>
 void write_scalar(FILE *O,double i_scalar);
 void write_float(FILE *O,float i_float);
+void write_double(FILE *O,double i_double);
 double read_scalar();
 float read_float();
+double read_double();
 void get_float(float *f);
 void write_ordinal(FILE *O,ordinal i_ordinal);
 void write_int(FILE *O,int i_int);

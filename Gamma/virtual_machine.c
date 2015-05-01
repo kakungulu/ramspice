@@ -86,7 +86,7 @@ tcl_push_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) 
     }
     Tcl_ResetResult(interp);
     char *err;
-    float F=strtof(argv[1],&err);
+    double F=strtof(argv[1],&err);
     if (strlen(err)==0) {
     	GammaVirtualMachineStack[GammaVirtualMachineStackIndex].F=F;
     	GammaVirtualMachineStackIndex--;

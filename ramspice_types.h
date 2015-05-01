@@ -15,7 +15,7 @@ int verbose;
     typedef float half_scalar;
 typedef union {
     ordinal o;
-    float s;
+    double s;
     unsigned char b[BYTES_PER_SCALAR];
     half_scalar h[2];
     void *v;
@@ -34,7 +34,15 @@ typedef union {
     void (*func)();
     unsigned char C[4];
 } FC;
+typedef union {
+    double F; 
+    int64_t I; 
+    void *P;
+    void (*func)();
+    unsigned char C[8];
+} DC;
 #define BYTES_PER_FLOAT 4
+#define BYTES_PER_DOUBLE BYTES_PER_FLOAT*2
 #else
 #Foreach: var $::global_c_variables {
     extern float $var;

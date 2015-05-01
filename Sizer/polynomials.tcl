@@ -1,3 +1,4 @@
+namespace eval ::POLY {}
 proc synthesize_minterms {{expression {}}} {
     #    Info: [.]SYNTH $expression
     if {[llength $expression]<=1} {
@@ -71,7 +72,6 @@ proc synthesize_minterms {{expression {}}} {
     }
 }
 
-array set ::POLY {}
 proc calc {expression} {
     if {[catch {set retval [expr $expression]}]} {
         return $expression
@@ -83,97 +83,97 @@ proc start_poly {name {expression {}}} {
     set analysis [analyse_expr $expression]
     #    Info: [.]analysis=$analysis
     if {[regexp {(\{|@)func\s} $analysis]} {
-        Error@ Expression $expression contains a function, which cannot be analysed as polynomial.
-        exit
+        Warning: Expression $expression contains a function, which cannot be analysed as polynomial.
+        return 0
     }
     if {[regexp {(\{|@)/\s} $analysis]} {
-        Error@ Expression $expression contains a division, which cannot be analysed as polynomial.
-        exit
+        Warning: Expression $expression contains a division, which cannot be analysed as polynomial.
+        return 0
     }
     set synthesis [synthesize_minterms $analysis]
     #    Info: [.]synthesis=$synthesis
     foreach minterm $synthesis {
         set val [lindex [split $minterm ,] 0]
-        set term [join [lrange [split $minterm ,] 1 end] ,]
-        set ::POLY($name@$term) $val
+	set term {}
+	foreach var [lrange [split $minterm ,] 1 end] {
+	    skip {$var=={}}
+	    lappend term $var
+	}
+        set term [join $term ,]
+#	regsub -all {,\{\}} $term {} term
+        set ::POLY::${name}($term) $val
     }
     dezero_poly $name
+    return 1
 }
 
 proc dezero_poly {p} {
-    foreach key [array names ::POLY $p@*] {
-        skip {$::POLY($key)!=0.0}
-        array unset ::POLY $key
+    foreach key [array names ::POLY::$p] {
+        skip {[set ::POLY::${p}($key)]!=0.0}
+        array unset ::POLY::$p $key
     }
 }
 proc remove_poly {name} {
-    array unset ::POLY $name@*
+    array unset ::POLY::$name
 }
 
 proc add_poly {a b c} {
     remove_poly $c
-    foreach a_minterm [array names ::POLY $a@*] {
-        set minterm [lindex [split $a_minterm @] 1]
-        set val $::POLY($a_minterm)
-        if {[info exists ::POLY($b@$minterm)]} {
-            set val [calc $val+$::POLY($b@$minterm)]
+    foreach minterm [array names ::POLY::$a] {
+        set val [set ::POLY::${a}($minterm)]
+        if {[info exists ::POLY::${b}($minterm)]} {
+            set val [calc $val+[set ::POLY::${b}($minterm)]
         }
-        set ::POLY($c@$minterm) $val
+        set ::POLY::${c}($minterm) $val
     }
-    foreach b_minterm [array names ::POLY $b@*] {
-        set minterm [lindex [split $b_minterm @] 1]
-        skip {[info exists ::POLY($a@$minterm)]} 
-        set ::POLY($c@$minterm) $::POLY($b_minterm)
+    foreach minterm [array names ::POLY::$b] {
+        skip {[info exists ::POLY::${a}($minterm)]} 
+        set ::POLY::${c}($minterm) [set ::POLY::${b}($minterm)]
     }
     dezero_poly $c
 } 
 proc acc_poly {a b {factor 1.0}} {
-    foreach a_minterm [array names ::POLY $a@*] {
-        set minterm [lindex [split $a_minterm @] 1]
-        set val $::POLY($a_minterm)
-        if {[info exists ::POLY($b@$minterm)]} {
-            set val [calc $val+$::POLY($b@$minterm)*$factor]
+    array unset ::POLY::result
+    foreach minterm [array names ::POLY::$a] {
+        set val [set ::POLY::${a}($minterm)]
+        if {[info exists ::POLY::${b}($minterm)]} {
+            set val [calc $val+[set ::POLY::${b}($minterm)]*$factor]
         }
-        set ::POLY(result@$minterm) $val
+        set ::POLY::result($minterm) $val
     }
-    foreach b_minterm [array names ::POLY $b@*] {
-        set minterm [lindex [split $b_minterm @] 1]
-        skip {[info exists ::POLY($a@$minterm)]} 
-        set ::POLY(result@$minterm) [calc $::POLY($b_minterm)*$factor]
+    foreach minterm [array names ::POLY::$b] {
+        skip {[info exists ::POLY::${a}($minterm)]} 
+        set ::POLY::result($minterm) [calc [set ::POLY::${b}($minterm)]*$factor]
     }
-    array unset ::POLY $a@*
-    foreach result_minterm [array names ::POLY result@*] {
-        set minterm [lindex [split $result_minterm @] 1]
-        set ::POLY($a@$minterm) $::POLY($result_minterm)
-    }
-    array unset ::POLY result@*
+    array unset ::POLY::$a
+    array set ::POLY::$a [array get ::POLY::result]
+    array unset ::POLY::result
     dezero_poly $a
 } 
 proc mult_poly {a b c} {
     remove_poly $c
-    foreach a_minterm [array names ::POLY $a@*] {
-        set a_term [lindex [split $a_minterm @] 1]
-        foreach b_minterm [array names ::POLY $b@*] {
-            set b_term [lindex [split $b_minterm @] 1]
+    foreach a_term [array names ::POLY::$a] {
+        foreach b_term [array names ::POLY::$b] {
             set c_term [join [lsort [concat [split $a_term ,] [split $b_term ,]]] ,]
-            default ::POLY($c@$c_term) 0.0
-            set ::POLY($c@$c_term) [calc $::POLY($c@$c_term)+$::POLY($a_minterm)*$::POLY($b_minterm)]
+	    regsub -all {,\{\}} $c_term {} c_term
+            default ::POLY::${c}($c_term) 0.0
+            set ::POLY::${c}($c_term) [calc [set ::POLY::${c}($c_term)]+[set ::POLY::${a}($a_term)]*[set ::POLY::${b}($b_term)]]
         }
     }
     dezero_poly $c
 }
 
 proc zero_poly {a} {
-    if {[array names ::POLY $a@*]=="$a@"} {
-        if {$::POLY($a@)==0} {
+    if {[array names ::POLY::$a]=={{}}} {
+        if {[set ::POLY::${a}()==0} {
             return 1
         }
     }
     return 0
 }
 proc unit_poly {a} {
-    if {[array names ::POLY $a@*]=="$a@"} {
-        if {$::POLY($a@)==1.0} {
+    if {[array names ::POLY::$a]=={{}}} {
+        if {[set ::POLY::${a}({})==1.0} {
             return 1
         }
     }
@@ -181,12 +181,10 @@ proc unit_poly {a} {
 }
 proc derive_poly {a d c} {
     remove_poly $c
-    foreach a_minterm [array names ::POLY $a@*] {
-        set a_term [lindex [split $a_minterm @] 1]
+    foreach a_term [array names ::POLY::$a] {
         set count 0
         set c_term {}
         set sensitive_vars {}
-	Info: Deriving Poly $::POLY($a_minterm)*$a_term by $d
         foreach var [split $a_term ,] {
             if {$var==$d} {
                 if {$count} {
@@ -200,8 +198,9 @@ proc derive_poly {a d c} {
             lappend c_term $var
         }
         set c_term [join $c_term ,]
-        default ::POLY($c@$c_term) 0.0
-        set ::POLY($c@$c_term) [calc $::POLY($c@$c_term)+$::POLY($a_minterm)*$count]
+	regsub -all {,\{\}} $c_term {} c_term
+        default ::POLY::${c}($c_term) 0.0
+        set ::POLY::${c}($c_term) [calc [set ::POLY::${c}($c_term)]+[set ::POLY::${a}($a_term)]*$count]
         foreach dd $sensitive_vars {
             set count 0
             set c_term $::sensitivity($dd,$d)
@@ -216,8 +215,9 @@ proc derive_poly {a d c} {
                 lappend c_term $var
             }
             set c_term [join $c_term ,]
-            default ::POLY($c@$c_term) 0.0
-            set ::POLY($c@$c_term) [calc $::POLY($c@$c_term)+$::POLY($a_minterm)*$count]
+	    regsub -all {,\{\}} $c_term {} c_term
+            default ::POLY::${c}($c_term) 0.0
+            set ::POLY::${c}($c_term) [calc [set ::POLY::${c}($c_term)]+[set ::POLY::${a}($a_term)]*$count]
         }
     }
     dezero_poly $c
@@ -293,30 +293,42 @@ proc implement_analysis_post {analysis} {
     return $expression
 }
 proc present_poly {p {name {}}}  {
-    set retval [expression_poly $p 1]
-    regsub -all {\(\+} $retval "\(" retval
-    set analysis [analyse_expr $retval]
-    #    implement_analysis $analysis
-    #    set analysis [implement_analysis_post $analysis]
-    set synthesis [synthesize_minterms $analysis]
-    remove_poly $p
-    foreach minterm $synthesis {
-        set val [lindex [split $minterm ,] 0]
-        set term [join [lrange [split $minterm ,] 1 end] ,]
-        set ::POLY($p@$term) $val
+    set first 1
+    set retval {}
+    foreach minterm [lsort [array names ::POLY::$p]] {
+        set const [set ::POLY::${p}($minterm)]
+	skip {$const==0}
+	if {$minterm=={}} {
+	    if {$first} {
+	        append retval $const
+	    } else {
+	        if {$const>0} {
+		    append retval +$const
+		} else {
+		    append retval $const
+		}
+	    }
+	} else {
+	    if {!$first && ($const>0)} {
+                append retval +
+	    }	    
+	    if {$const==-1} {
+	        append retval -
+	    } elseif {$const!=1} {	
+	        append retval $const*
+	    }
+	    append retval [join [split $minterm ,] *]
+	}
+        set first 0
     }
-    dezero_poly $p
-    set retval [expression_poly $p 1]
-    array unset ::POLY *in__*
-    array unset ::POLY *out__*
     return $retval
 }
 
 # expression_poly takes a standardized polynomial and converts it back to hierarchical expression
 proc expression_poly {p {first 1}} {
     if {[llength [array names ::POLY $p@*]]==1} {
-        set expression [lindex [split [array names ::POLY $p@*] @] 1]
-        set const $::POLY($p@$expression)
+        set expression [array names ::POLY::$p]
+        set const [set ::POLY::${p}($expression)]
         if {$const==1.0} {
             if {$first} {
                 return [join [split $expression ,] *]
@@ -336,9 +348,8 @@ proc expression_poly {p {first 1}} {
         }
         return [join [concat $const [split $expression ,]] *]
     }
-    foreach p_minterm [lsort [array names ::POLY $p@*]] {
+    foreach minterm [lsort [array names ::POLY::$p]] {
         array unset local
-        set minterm [lindex [split $p_minterm @] 1]
         foreach var [lsort [split $minterm ,]] {
             default local($var) 0
             incr local($var)
@@ -359,10 +370,9 @@ proc expression_poly {p {first 1}} {
     if {$max_cnt<=1} {
         set first 1
         set retval {}
-        foreach  p_minterm [lsort [array names ::POLY $p@*]] {
-            array unset ::POLY result$p@*
-            set minterm [lindex [split $p_minterm @] 1]
-            set ::POLY(result$p@$minterm) $::POLY($p@$minterm)
+        foreach  minterm [lsort [array names ::POLY::$p]] {
+            array unset ::POLY::result$p
+            set ::POLY::result${p}($minterm) [set ::POLY::${p}($minterm)]
             append retval [expression_poly result$p $first]
             set first 0
         }
@@ -377,9 +387,8 @@ proc expression_poly {p {first 1}} {
     set varname [lindex [split $max_var ,] 0]
     set varcnt [lindex [split $max_var ,] 1]
     set var_pattern [join [string repeat " $varname" $varcnt] ,]
-    foreach p_minterm [lsort [array names ::POLY $p@*]] {
-        set minterm [lindex [split $p_minterm @] 1]
-        if {[regexp $var_pattern $p_minterm]} {
+    foreach minterm [lsort [array names ::POLY::$p]] {
+        if {[regexp $var_pattern $minterm]} {
             set final_key {} 
             set countdown $varcnt
             foreach var [lsort [split $minterm ,]] {
@@ -390,15 +399,14 @@ proc expression_poly {p {first 1}} {
                 incr countdown -1
             }
             set final_key [join $final_key ,]
-            set ::POLY(in__$p@$final_key) $::POLY($p_minterm)
+            set ::POLY::in__${p}($final_key) [set ::POLY::${p}($minterm)]
         } else {
-            set ::POLY(out__$p@$minterm) $::POLY($p_minterm)
+            set ::POLY::out__${p}($minterm) [set ::POLY::${p}($minterm)]
         }
     }
-    if {[llength [array names ::POLY in__$p@*]]==1} {
-        set invar [lindex [array get ::POLY in__$p@*] 0]
-        set const $::POLY($invar)
-        set var [lindex [split $invar @] 1]
+    if {[llength [array names ::POLY::in__$p]]==1} {
+        set var [lindex [array get ::POL::in__$p] 0]
+        set const [set ::POLY::in__$p($var)]
         if {$const==0} {
         } elseif {$const==1.0} {
             if {$first} {

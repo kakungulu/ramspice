@@ -23,6 +23,17 @@ void write_float(FILE *O,float i_float) {
     // #Info: "Writing Float %g" F.F
     fflush(O);
 }
+void write_double(FILE *O,double i_double) {
+    if (O==NULL) {
+        O=OpenFileForWriting;
+    }
+    DC F;
+    F.F=i_double;
+    int i=0;
+    for(;i<BYTES_PER_DOUBLE;i++) fprintf(O,"%c",F.C[i]);
+    // #Info: "Writing double %g" F.F
+    fflush(O);
+}
 double read_scalar() {
     so_union sob;
     int i=0;
@@ -38,6 +49,17 @@ float read_float() {
     file_size_countdown-=BYTES_PER_FLOAT;
     R=F.F;
     // #Info: "Reading Float %g (%ld)" F.F file_size_countdown
+    
+    return(R); 
+}
+double read_double() {
+    DC F;
+    double R;
+    int i=0;
+    for(;i<BYTES_PER_DOUBLE;i++) F.C[i]=fgetc(OpenFileForReading);
+    file_size_countdown-=BYTES_PER_DOUBLE;
+    R=F.F;
+    // #Info: "Reading double %g (%ld)" F.F file_size_countdown
     
     return(R); 
 }

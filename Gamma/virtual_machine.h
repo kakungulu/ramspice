@@ -7,7 +7,7 @@
 #define GammaVirtualMachineStackSize $::GammaVirtualMachineStackSize
 #define GammaVirtualMachineBatchSize $::GammaVirtualMachineBatchSize
 //void (*GammaVirtualMachineBatch[GammaVirtualMachineBatchSize])(void);
-FC GammaVirtualMachineBatch[GammaVirtualMachineBatchSize];
+DC GammaVirtualMachineBatch[GammaVirtualMachineBatchSize];
 ordinal GammaVirtualMachineBatchProgramCounter;
 ordinal GammaVirtualMachineBatchProgramSize;
 int GammaVirtualMachineRunning;
@@ -19,9 +19,9 @@ static int tcl_reset_gamma (ClientData clientData,Tcl_Interp *interp,int argc,ch
 static int tcl_init_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_set_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_push_gamma (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
-FC GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackSize];
+DC GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackSize];
 ordinal GammaVirtualMachineGosubStackIndex;
-FC GammaVirtualMachineStack[GammaVirtualMachineStackSize];
+DC GammaVirtualMachineStack[GammaVirtualMachineStackSize];
 ordinal GammaVirtualMachineStackArgs;
 ordinal GammaVirtualMachineStackIndex;
 int GammaVirtualMachineSkip;

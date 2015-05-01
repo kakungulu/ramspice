@@ -225,11 +225,11 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             if (bc&HIT_LIN_INTERP) {
                 bc_float(&retval);
                 float slope;
-                #Info: "Intercept=%g" retval
+                //#Info: "Intercept=%g" retval
                 #For: {set i 0} {$i<$DIM} {incr i} {
                     bc_float(&slope);
                     retval+=slope*coord[$i];
-                    #Info: "Slope=%g Coord=%g => %g" slope coord[$i] retval
+                    //#Info: "Slope=%g Coord=%g => %g" slope coord[$i] retval
                 }    
                 Tcl_GetTime(&end_time);
                 get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
@@ -247,9 +247,9 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
                 float Y;
                 #For: {set i 0} {$i<$breadth/2} {incr i} {
                     bc_float(&X);
-                    #Info: "Corner=%g" X
+                    //#Info: "Corner=%g" X
                     bc_float(&Y);
-                    #Info: "Corner=%g" Y
+                    //#Info: "Corner=%g" Y
                     float interpolation_buffer$i=Y*weight1+X*weight2;
                 }
                 #tcl incr weighing_dim
@@ -286,9 +286,9 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
                 unsigned char top_corner;
                 #For: {set i 0} {$i<$breadth/2} {incr i} {
                     bottom_corner=bc_byte();
-                    #Info: "Corner 0x%X" bottom_corner
+                    //#Info: "Corner 0x%X" bottom_corner
                     bc_byte();
-                    #Info: "Corner 0x%X" top_corner
+                    //#Info: "Corner 0x%X" top_corner
                     float interpolation_buffer$i=top_corner*weight1+bottom_corner*weight2;
                 }
                 #tcl incr weighing_dim
@@ -378,7 +378,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         // Full interpolation, refer back to the original array
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
             float interpolation_buffer$corner=a->content[index+a->neighbors[$corner]];
-	    #Info: "interpolation_buffer$corner=%g" interpolation_buffer$corner
+	    //#Info: "interpolation_buffer$corner=%g" interpolation_buffer$corner
         }
         #tcl set weighing_dim 0
         float weight;
@@ -546,30 +546,30 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	    } else {
 	        key${i}=-((int)(-i_f));
 	    }
-	    #Info: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
+	    //#Info: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
 	    if (key${i}<0) key${i}=0;
 	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;
             index+=key${i}*a->sizer[$i];
-	    #Info: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
+	    //#Info: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
 	}    
         // Full interpolation, refer back to the original array
 	float *hypercube=&(a->content[index]);
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
             float interpolation_buffer$corner=hypercube[a->neighbors[$corner]];
-	    #Info: "Corner $corner=%g" interpolation_buffer$corner
+	    //#Info: "Corner $corner=%g" interpolation_buffer$corner
         }
 	float w1,w2;
         #tcl set weighing_dim 0
         #For: {set breadth $num_of_corners} {$breadth>1} {set breadth [expr $breadth/2]} {
-	    #Info: "Dim $weighing_dim: key=%d" key${weighing_dim} 
+	    //#Info: "Dim $weighing_dim: key=%d" key${weighing_dim} 
 	    w1=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F-a->legend[$weighing_dim][key${weighing_dim}];
 	    w2=a->legend[$weighing_dim][key${weighing_dim}+1]-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F;
             #tcl set j 0
-	    #Info: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
+	    //#Info: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
             #For: {set i 0} {$i<$breadth} {incr i 2} {
                 #tcl set k [expr $i+1]
                 interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
-		#Info: "interpolation_buffer$j=%g" interpolation_buffer$j
+		//#Info: "interpolation_buffer$j=%g" interpolation_buffer$j
                 #tcl incr j
             }
             #tcl incr weighing_dim
@@ -596,52 +596,53 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	float i_f;
         #For: {set i 0} {$i<$DIM} {incr i} {
 	    i_f=(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F-a->legend[$i][0])*a->physical_factor[$i];
-	    #Info: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
+	    //#Info: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
 	    int key${i}=(int)i_f;
 	    if (key${i}<0) key${i}=0;
 	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;
             index+=key${i}*a->sizer[$i];
-	    #Info: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
+	    //#Info: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
 	}    
         // Full interpolation, refer back to the original array
 	float *hypercube=&(a->content[index]);
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
             float interpolation_buffer$corner=hypercube[a->neighbors[$corner]];
-	    #Info: "Corner $corner=%g" interpolation_buffer$corner
+	    //#Info: "Corner $corner=%g" interpolation_buffer$corner
         }
 	float w1,w2;
         #tcl set weighing_dim 0
         #For: {set breadth $num_of_corners} {$breadth>1} {set breadth [expr $breadth/2]} {
-	    #Info: "Dim $weighing_dim: key=%d" key${weighing_dim} 
+	    //#Info: "Dim $weighing_dim: key=%d" key${weighing_dim} 
 	    w1=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F-a->legend[$weighing_dim][key${weighing_dim}];
 	    w2=a->legend[$weighing_dim][key${weighing_dim}+1]-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F;
             #tcl set j 0
-	    #Info: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
+	    //#Info: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
             #For: {set i 0} {$i<$breadth} {incr i 2} {
                 #tcl set k [expr $i+1]
                 interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
 		float gradient_buffer${weighing_dim}_$j=interpolation_buffer$k-interpolation_buffer$i;
 		#For: {set l 0} {$l<$weighing_dim} {incr l} {
 		    gradient_buffer${l}_$j=gradient_buffer${l}_$k*w1+gradient_buffer${l}_$i*w2;
+		    //#Info: "grad_buffer${l}_$j=%g" gradient_buffer${l}_$j
 		}
-		#Info: "interpolation_buffer$j=%g" interpolation_buffer$j
+		//#Info: "interpolation_buffer$j=%g" interpolation_buffer$j
                 #tcl incr j
             }
             #tcl incr weighing_dim
         }
 	GammaVirtualMachineStackIndex+=$DIM;
-	float *derivative;
+	double *derivative;
 	#For: {set i 0} {$i<$DIM} {incr i} { 
-	    derivative=(float *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].P;
-	    #Info: "Accessing %d/%d  %x=%g" GammaVirtualMachineStackIndex+2+$i GammaVirtualMachineStackSize derivative gradient_buffer${i}_0/a->hypercube_volume
+	    derivative=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].P;
+	    //#Info: "Accessing %d/%d  %x=%g" GammaVirtualMachineStackIndex+2+$i GammaVirtualMachineStackSize derivative gradient_buffer${i}_0/a->hypercube_volume
 	    if (derivative) {
                 *derivative=gradient_buffer${i}_0/a->hypercube_volume;
 	    }
-	    #Info: "Derivative %d: %g" $i *derivative
+	    //#Info: "Derivative %d: %g" $i *derivative
 	}    
 	GammaVirtualMachineStackIndex+=$DIM;
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=interpolation_buffer0/a->hypercube_volume;
-	#Info: "Result: %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F
+	//#Info: "Result: %g => %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStackIndex+1
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
         get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
@@ -895,10 +896,10 @@ void new_linear_interpolation_table(LUT *a) {
     ordinal pass=0;
     float error_rms=0;
     float progress_index=1;
-    #Info: "LIT allocated (%ld entries). Calculating slopes" L->volume
+    //#Info: "LIT allocated (%ld entries). Calculating slopes" L->volume
     for (i=0;i<L->volume;i++) {
         if ((10.0*i/L->volume)>progress_index) {
-            #Info: "Linear Cells' Precentage=%d%%   %d%% left   potential=%d%%" 100*pass/i 100-100*i/L->volume 100*pass/L->volume+100-100*i/L->volume
+            //#Info: "Linear Cells' Precentage=%d%%   %d%% left   potential=%d%%" 100*pass/i 100-100*i/L->volume 100*pass/L->volume+100-100*i/L->volume
             progress_index+=1;
         }
         float error=generate_lit(a,L,i);
@@ -907,7 +908,7 @@ void new_linear_interpolation_table(LUT *a) {
     }
     error_rms/=L->volume;
     error_rms=sqrt(error_rms);
-    #Info: "%ld fit linear out of %ld entries (LCP: %d%%  RMS error=%e)" pass L->volume 100*pass/L->volume error_rms
+    //#Info: "%ld fit linear out of %ld entries (LCP: %d%%  RMS error=%e)" pass L->volume 100*pass/L->volume error_rms
 }
 
 float feasibility(
@@ -942,7 +943,7 @@ float *Gain, float *Area, float *fc, float tolerance
     // Ids gets a special "tightening"
     if (!isnan(*Ids)) {
         float point_distance=(point_Ids/(*Ids))-1.0;
-        #Info: "Distance from Ids is %g/%g=%g tolerance=%g" point_Ids (*Ids) point_distance tolerance
+        //#Info: "Distance from Ids is %g/%g=%g tolerance=%g" point_Ids (*Ids) point_distance tolerance
         point_distance*=point_distance;
         if (point_distance<=tolerance*tolerance) point_distance=0;
         distance+=point_distance;

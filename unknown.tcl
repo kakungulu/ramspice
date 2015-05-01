@@ -1,6 +1,12 @@
 proc unknown {args} {
     variable ::tcl::UnknownPending
     global auto_noexec auto_noload env tcl_interactive
+    # HTML stuff
+    if {[regexp {^<} $args] && [info exists ::web_output]} {
+        default ::HTML stdout
+	puts $::HTML $args
+	return
+    }
     
     # Bus notation support
     if {[regexp {^[0-9]+$} $args]} {

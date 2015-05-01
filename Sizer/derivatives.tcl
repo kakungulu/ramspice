@@ -10,7 +10,7 @@ proc func {name arguments} {
     }
 } 
 proc ::func::derive {expression var} {
-    if {[array names ::POLY $expression@*]!={}} {
+    if {[array names ::POLY::$expression]!={}} {
         Info: $expression has a corresponding polynomial
         derive_poly $expression $var dpoly
 	return [present_poly dpoly $expression]
@@ -126,7 +126,15 @@ proc expr/ {X Y} {
     return $retval
 }
 proc analyse_expr {{expression {}}} {
+    #Info: [.] Analyzing $expression
     incr ::Gamma_expression_counter
+    # Protect negative constants
+    while {[regexp {^(.*)([\*\/\+\-])(\-[0-9]+\.?[0-9]*e?[\+\-]?[0-9]*)(.*)$} $expression -> pre op const post]} {
+        set counter $::Gamma_expression_counter
+	set ::Gamma_deffered_expressions($counter) $const
+	incr ::Gamma_expression_counter
+	set expression "$pre$op@<$counter>@$post"
+    }
     while {[regexp {^(.*[^0-9])([0-9]+\.?[0-9]*e[\+\-]?[0-9]+)(.*)$} $expression -> pre const post]} {
         set counter $::Gamma_expression_counter
 	set ::Gamma_deffered_expressions($counter) $const
@@ -142,6 +150,7 @@ proc analyse_expr {{expression {}}} {
 	}
 	set analysis [analyse_expr "$pre@<$counter>@$post"]
 	regsub -all "@\\<$counter\\>@" $analysis $::Gamma_deffered_expressions($counter) retval
+        #Info: [.] Analysis $retval
 	return $retval
     }
     foreach op ", + - * /" {
@@ -149,12 +158,16 @@ proc analyse_expr {{expression {}}} {
 	append pattern $op
 	append pattern "(.+)\$" 
         if {[regexp $pattern $expression -> pre post]} {
-	    return "\{$op [analyse_expr $pre] [analyse_expr $post]\}"
+ 	    set retval "\{$op [analyse_expr $pre] [analyse_expr $post]\}"
+            #Info: [.] Analysis $retval
+	    return $retval
 	}
     }
     if {[regexp {^@<([0-9]+)>@$} $expression -> counter]} {
+        #Info: [.] Analysis ::Gamma_deffered_expressions($counter)
         return $::Gamma_deffered_expressions($counter)
     }
+    #Info: [.] Analysis $expression
     return $expression
 }
 proc simplify_minterms {up_term} {
@@ -320,10 +333,10 @@ proc derive_expr {var expression} {
 	} 
 	default ::DERMODE first
 	Info: $expression is atomic
-	if {[array names ::DER $expression,*]!={}} {
-	if {[info exists ::DER($expression,$var,$::DERMODE)]} {
+	if {[array names ::sensitivity $expression,*]!={}} {
+	if {[info exists ::sensitivity($expression,$var)]} {
             Info: $expression has predefined derivative
-	    return $::DER($expression,$var,$::DERMODE)
+	    return $::sensitivity($expression,$var)
 	}
 	if {[info exists ::DER($expression,*,$::DERMODE)]} {
             Info: $expression has predefined derivative
@@ -399,6 +412,7 @@ proc derive_expression {var expression} {
     if {[llength $analyzed]==1} {
         set analyzed [lindex $analyzed 0]
     }
+    Info: ANALYZED $analyzed
     set retval [derive_expr $var $analyzed]
     beatufy_expression retval
     return $retval

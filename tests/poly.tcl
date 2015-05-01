@@ -1,6 +1,20 @@
 # \
 exec $RAMSPICE/ramspice $0 $argv
 get_opts
+
+
+@ a = 2
+@ b = 3
+@ c/POLY !
+@ c/POLY = {1 a a b b + -2 a b}
+Info: poly value=[@ c/POLY]
+Info: poly derivative by a=[@ c/POLY derive a]
+Info: poly derivative by b=[@ c/POLY derive b]
+Info: poly root by a=[@ c/POLY root a 50]
+exit
+
+
+
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/matrices.tcl

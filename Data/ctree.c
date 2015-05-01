@@ -141,12 +141,61 @@ void write_pointer_PAT(FILE *O,PAT *p) {
     write_vector_pointer_char(O,p->properties);
     write_vector_float(O,p->margins);
 }
+void write_pointer_POLY(FILE *O,POLY *p) {
+    write_string(O,p->expression);
+}
 PAT *read_pointer_PAT() {
     PAT *p=(PAT *)malloc(sizeof(PAT));
     p->content=read_vector_pointer_PAT_entry();
     p->sizes=read_vector_pointer_char();
     p->properties=read_vector_pointer_char();
     p->margins=read_vector_float();
+    return(p);
+}
+void link_POLY(POLY *p) {
+    char *draft=(char *)malloc(sizeof(char)*(strlen(p->expression)+1));
+    sprintf(draft,"%s",p->expression);
+    ordinal i,j,argc=1;
+    for (i=0;draft[i];i++) if (draft[i]==' ') argc++;
+    char **argv=(char **)malloc(sizeof(char *)*argc);
+    argv[0]=draft;
+    j=1;
+    for (i=0;draft[i];i++) if (draft[i]==' ') {
+        draft[i]=0;
+        argv[j++]=&(draft[i+1]);
+    }
+    int next_is_coeff=1;
+    so_union SO;
+    for (i=0;i<argc;i++) {
+        if (strcmp(argv[i],"+")==0) {
+            SO.v=NULL;
+            add_entry_vector_double(p->polynomial,SO.s);
+            next_is_coeff=1;
+            continue;
+        }
+        if (next_is_coeff) {
+            add_entry_vector_double(p->polynomial,strtod(argv[i],NULL));
+            next_is_coeff=0;
+            continue;
+        }
+        context *c=Context;
+        float *array_entry;
+        if ((argv[i][0]=='/')||(argv[i][0]==':')) {
+            c=Ctree;
+        }
+        if (!(resolve_context(argv[i],&c,&array_entry))) {
+            c=create_context(argv[i]);
+	}
+        SO.v=&(c->value.s);
+        add_entry_vector_double(p->polynomial,SO.s);
+    }
+    free(argv);
+    free(draft);
+}
+POLY *read_pointer_POLY() {
+    POLY *p=(POLY *)malloc(sizeof(POLY));
+    p->expression=copy_string();
+    link_POLY(p);
     return(p);
 }
 
@@ -268,7 +317,7 @@ void tcl_append_int(Tcl_Interp *interp,int in_int) {
     sprintf(buf,"%d",in_int);
     Tcl_AppendElement(interp,buf);
 }
-void tcl_append_float(Tcl_Interp *interp,float in_int) {
+void tcl_append_float(Tcl_Interp *interp,double in_int) {
     char buf[16];
     sprintf(buf,"%g",in_int);
     Tcl_AppendElement(interp,buf);
@@ -1104,12 +1153,20 @@ void context_load(context *c) {
         char name[256];
         read_string(name);
         CTYPE value_type=read_ordinal();
+        c->value_type=value_type;
         context *next_context;
         if (value_type==ctype_void) copy_string(c->value.v);
         if (value_type==ctype_string) copy_string(c->value.v);
         if (value_type==ctype_real) c->value.s=read_float();
         if (value_type==ctype_integer) c->value.o=read_ordinal();
-        if (value_type==ctype_PAT) c->value.v=read_pointer_PAT();
+        if (value_type==ctype_PAT) {
+            PAT *p=read_pointer_PAT();
+            next_context=new_context(c,name,p,ctype_PAT);
+        }    
+        if (value_type==ctype_POLY) {
+            POLY *p=read_pointer_POLY();
+            next_context=new_context(c,name,p,ctype_POLY);
+        }    
         if (value_type==ctype_LUT) {
             LUT *a=(LUT *)malloc(sizeof(LUT));
             copy_string(a->name);
@@ -1195,7 +1252,7 @@ void context_load(context *c) {
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
-//        #Info: "num_of_children=%ld" num_of_children
+        // #Info: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context);
         break;
@@ -2174,6 +2231,12 @@ PAT *new_PAT() {
     p->margins=new_vector_float();
     return(p);
 }
+POLY *new_POLY() {
+    POLY *p=(POLY *)malloc(sizeof(POLY));
+    p->expression="";
+    p->polynomial=new_vector_double();
+    return(p);
+}
 int create_context(char *i_key) {
     context *temp_context=Context;
     if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
@@ -2230,7 +2293,7 @@ int create_context(char *i_key) {
                 while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) colon++;
                 if (p->properties->content[l][colon]=='?') {
                     margin=atof(&(p->properties->content[l][colon+1]));
-                //    if (p->properties->content[l][0]=='-') margin=-margin;
+                    //    if (p->properties->content[l][0]=='-') margin=-margin;
                     p->properties->content[l][colon]=0;
                 }
                 add_entry_vector_float(p->margins,margin);
@@ -2308,7 +2371,15 @@ int create_context(char *i_key) {
                 break;
             }
         }
-        if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_void);
+        if (!next_context) {
+            CTYPE c_type=ctype_void;
+            void *v=NULL;
+            if (strcmp(context_name_buffer,"POLY")==0) {
+                c_type=ctype_POLY;
+                v=new_POLY();
+            }	
+            next_context=new_context(temp_context,context_name_buffer,v,c_type);
+        }    
         temp_context=next_context;
     }
     return 1;
@@ -2643,6 +2714,18 @@ LUT *get_LUT(char *i_context) {
     }
     return (LUT *)c->value.v;
 }
+POLY *get_POLY(char *i_context) {
+    context *c=Context;
+    float *array_entry;
+    if ((i_context[0]=='/')||(i_context[0]==':')) {
+        c=Ctree;
+    }
+    if (!(resolve_context(i_context,&c,&array_entry))) {
+        #Error: "(get_POLY) no such context %s" i_context
+        return NULL;
+    }
+    return (POLY *)c->value.v;
+}
 LUT *get_LUT_quiet(char *i_context) {
     node *c=Context;
     float *array_entry;
@@ -2757,11 +2840,11 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     ordinal i,j;
     if (sizes->num_of!=p->sizes->num_of) {
         #Error: "Tried to add an entry to PAT with incompatible number of sizes."
-        return(-1);
+        return(-2);
     }
     if (properties->num_of!=p->properties->num_of) {
         #Error: "Tried to add an entry to PAT with incompatible number of properties."
-        return(-1);
+        return(-2);
     }
     // Negate all properties that are "less is better"
     for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
@@ -2787,7 +2870,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
             if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
         }
         if (dominated) {
-            return(p->content->num_of);
+            return(-1);
         }    
         // If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
         // Don't move on until you cleared the last entry that was put in place, hence the i--.
@@ -2804,7 +2887,95 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     add_entry_vector_pointer_PAT_entry(p->content,pe);
     return(p->content->num_of);
 }
-
+float calc_POLY(POLY *p) {
+    ordinal i=0;
+    int next_is_coeff=1;
+    double total=0;
+    so_union SO;
+    for (i=0;i<p->polynomial->num_of;i++) {
+        SO.s=get_entry_vector_double(p->polynomial,i);
+        next_is_coeff=1;
+        double term=0;
+        while ((SO.v)&&(i<p->polynomial->num_of)) {
+            if (next_is_coeff) {
+                term=SO.s;
+                next_is_coeff=0;
+                i++;
+                if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+                continue;
+            }
+            double var=*((double *)SO.v);
+            term*=var;
+            i++;
+            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+        }
+        total+=term;
+    }
+    float retval=total;
+    return(retval);
+}
+float derive_POLY(POLY *p,void *by_var) {
+    ordinal i=0;
+    int next_is_coeff=1;
+    double total=0;
+    so_union SO;
+    for (i=0;i<p->polynomial->num_of;i++) {
+        SO.s=get_entry_vector_double(p->polynomial,i);
+        next_is_coeff=1;
+        double term=0;
+	int num_of_by_var=0;
+        while ((SO.v)&&(i<p->polynomial->num_of)) {
+            if (next_is_coeff) {
+                term=SO.s;
+                next_is_coeff=0;
+                i++;
+                if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+                continue;
+            }
+	    if (SO.v==by_var) {
+	        num_of_by_var++;
+		if (num_of_by_var==1) {
+                    i++;
+                    if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+		    continue;
+		}
+	    }
+            double var=*((double *)SO.v);
+            term*=var;
+            i++;
+            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+        }
+        total+=term*num_of_by_var;
+    }
+    float retval=total;
+    return(retval);
+}
+float root_POLY(POLY *p,void *by_var,double init) {
+    double total=init;
+    double *by=(double *)by_var;
+    double original_value=*by;
+    *by=total;
+    double dist=calc_POLY(p);
+    while (fabs(dist)>1e-20) {
+        total-=dist/derive_POLY(p,by_var);
+        *by=total;
+	dist=calc_POLY(p);
+    }
+    float retval=total;
+    *by=original_value;
+    return(retval);
+}
+float imp_derive_POLY(POLY *p,void *by_var,void *root_var,double init) {
+    double root_value=root_POLY(p,root_var,init);
+    double *root=(double *)root_var;
+    double original_value=*root;
+    *root=root_value;
+    double nom=derive_POLY(p,by_var);
+    double denom=derive_POLY(p,root_var);
+    *root=original_value;
+    float retval=-nom/denom;
+    return(retval);
+}
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -2837,6 +3008,10 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     }
     if (argc==2) {
         // simple value return
+        if (c->value_type==ctype_POLY) {
+            tcl_append_float(interp,calc_POLY(c->value.v));
+            return TCL_OK;
+        }
         if (c->value_type==ctype_void) {
             return TCL_OK;
         }
@@ -2862,6 +3037,95 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         }
         #Error: "(ctree) ccontext has unrecognized value_type."
         return TCL_ERROR;
+    }
+    if (strcmp(argv[2],"type")==0) {
+        tcl_append_int(interp,c->value_type);
+        return TCL_OK;
+    }
+    if (strcmp(argv[2],"derive")==0) {
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The derive command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+        if (argc<4) {
+            #Error: "(ctree) The derive command requires a by-variable"
+            return TCL_ERROR;
+        }
+        context *by=Context;
+        float *array_entry;
+        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+            by=ctree;
+        }
+	float *array_context;
+	if (!resolve_context(argv[3],&by,&array_context)) {
+            #Warning: "(ctree) The derive command was given a non-existent context %s" argv[3]
+	    tcl_append_float(interp,0);
+            return TCL_OK;
+	}
+	void *by_var=&(by->value.s);
+	tcl_append_float(interp,derive_POLY(c->value.v,by_var));
+	return TCL_OK;
+    }
+    if (strcmp(argv[2],"root")==0) {
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The root command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+        if (argc<4) {
+            #Error: "(ctree) The root command requires a by-variable"
+            return TCL_ERROR;
+        }
+	double init=0;
+	if (argc==5) init=strtod(argv[4],NULL);
+        context *by=Context;
+        float *array_entry;
+        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+            by=ctree;
+        }
+	float *array_context;
+	if (!resolve_context(argv[3],&by,&array_context)) {
+            #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
+	    tcl_append_float(interp,0);
+            return TCL_OK;
+	}
+	void *by_var=&(by->value.s);
+	tcl_append_float(interp,root_POLY(c->value.v,by_var,init));
+	return TCL_OK;
+    }
+    if (strcmp(argv[2],"imp_derive")==0) {
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The root command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+        if (argc<5) {
+            #Error: "(ctree) The implicit derivative command requires two by-variables"
+            return TCL_ERROR;
+        }
+	double init=0;
+	if (argc==6) init=strtod(argv[5],NULL);
+        float *array_context;
+        context *by=Context;
+        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+            by=ctree;
+        }
+	if (!resolve_context(argv[3],&by,&array_context)) {
+            #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
+	    tcl_append_float(interp,0);
+            return TCL_OK;
+	}
+	void *by_var=&(by->value.s);
+        context *root=Context;
+        if ((argv[4][0]=='/')||(argv[4][0]==':')) {
+            root=ctree;
+        }
+	if (!resolve_context(argv[4],&root,&array_context)) {
+            #Warning: "(ctree) The root command was given a non-existent context %s" argv[4]
+	    tcl_append_float(interp,0);
+            return TCL_OK;
+	}
+	void *root_var=&(root->value.s);
+	tcl_append_float(interp,imp_derive_POLY(c->value.v,by_var,root_var,init));
+	return TCL_OK;
     }
     if (strcmp(argv[2],"PAT")==0) {
         if (c->value_type!=ctype_PAT) {
@@ -2901,10 +3165,10 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             j=atoi(argv[4]);
             for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
             for (i=0;i<p->properties->num_of;i++) {
-	        float value=p->content->content[j]->properties->content[i];
-		if (p->properties->content[i][0]=='-') value=-value;
-	        tcl_append_float(interp,value);
-	    }	
+                float value=p->content->content[j]->properties->content[i];
+                if (p->properties->content[i][0]=='-') value=-value;
+                tcl_append_float(interp,value);
+            }	
             return TCL_OK;
         }
         if (strcmp(argv[3],"delete")==0) {
@@ -2970,6 +3234,12 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     }
     if (strcmp(argv[2],"=")==0) {
         if (argc==4) {
+            if (c->value_type==ctype_POLY) {
+                POLY *p=(POLY *)c->value.v;
+                p->expression=strdup(argv[3]);
+                link_POLY(c->value.v);
+                return TCL_OK;
+            }
             if (c->value_type==ctype_LUT) {
                 if (array_entry==NULL) {
                     #Error: "(ctree) invalid array access %s" argv[1]
@@ -2979,7 +3249,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 return TCL_OK;
             }
             c->value.s=atof(argv[3]);
-            #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
+            //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
             return TCL_OK;
         }
@@ -3674,15 +3944,45 @@ tcl_resource_usage (ClientData clientData,Tcl_Interp *interp,int argc,char *argv
 }
 #Foreach: type {Info Warning Error} {
     static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-        printf("%s ",argv[0]);
+        #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
+            printf("%s ",argv[0]);
+        }
         if (this_process_forked) printf("(forked process %d) ",getpid());
         int i;
         for (i=1;i<argc;i++) printf("%s ",argv[i]);
+        #If: {![string equal ${type} "Print"]} {
+            printf("\n");
+        }
+        fflush(stdout);
+        return TCL_OK;
+    }
+}
+#Foreach: type {Print} {
+    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+        printf("Info: ");
+        if (this_process_forked) printf("(forked process %d) ",getpid());
+        int i;
+        for (i=1;i<argc;i++) printf("%s ",argv[i]);
+        fflush(stdout);
+        return TCL_OK;
+    }
+}
+#Foreach: type {Token} {
+    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+        int i;
+        for (i=1;i<argc;i++) printf("%s ",argv[i]);
+        fflush(stdout);
+        return TCL_OK;
+    }
+}
+#Foreach: type {Nl} {
+    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
         printf("\n");
         fflush(stdout);
         return TCL_OK;
     }
 }
+
 static int
 tcl_sizer (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -4241,7 +4541,7 @@ int register_tcl_functions(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
     OpenFileForReading=NULL;
     OpenFileForWriting=NULL;
-    #Foreach: type {Info Warning Error} {
+    #Foreach: type {Info Warning Error Print Nl Token} {
         Tcl_CreateCommand(interp, "$type:", tcl_$type, NULL, NULL);
     }
     #Foreach: global_var $::global_c_variables {

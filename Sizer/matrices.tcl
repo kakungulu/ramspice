@@ -220,7 +220,7 @@ proc detp {
     upvar $M_var M
     set dim $M(dim)
     if {$row==$dim} {
-        set ::POLY($p@) 1.0
+        set ::POLY::${p}({}) 1.0
         return
     }
     start_poly $p 
