@@ -292,6 +292,17 @@ proc implement_analysis_post {analysis} {
     }
     return $expression
 }
+proc list_poly {p} {
+    set retval {}
+    foreach term [lsort [array names ::POLY::$p]] {
+        lappend retval [set ::POLY::${p}($term)]
+	foreach var [split $term ,] {
+	    lappend retval $var
+	}
+	lappend retval +
+    }
+    return [lrange $retval 0 end-1]
+}
 proc present_poly {p {name {}}}  {
     set first 1
     set retval {}

@@ -203,7 +203,9 @@ proc .push {something} {
                 @ $varname !
                 @ $varname = real 0
             }
-            if {[@ $varname is_array]} {
+	    if {[string match *POLY $varname]} {
+	        GammaCommandPushPOLY $varname
+            } elseif {[@ $varname is_array]} {
                 GammaCommandPushLUT $varname
             } else {
                 GammaCommandPushPointer $varname
@@ -248,27 +250,6 @@ proc .let {args} {
     GammaCommandPopVar $name
     #    .tp $name
 }
-### proc .property {args} {
-    ###     array unset ::Gamma_function_args
-    ###     if {![regexp {^\s*([A-Za-z0-9_:^]+)\s*=\s*(.*)$} $args -> name expression]} {
-        ###         Error: .property syntax is <var> = <expression>
-    ###     }
-    ###     .label: ::property($name,calculation)
-    ###     if {![@ $name ?]} {
-        ###         @ $name !
-        ### 	@ $name = real 0
-    ###     }
-    ###     foreach switch {unit min max} {
-        ###         if {[regexp "^(.*)\\-$switch\\s+(\\S+)(.*)\$" $expression -> pre val post]} {
-            ###             set ::property($name,$switch) $val
-            ### 	    set expression "$pre $post"
-        ###         }
-    ###     }
-    ###     regsub -all {\s+} $expression {} expression
-    ###     Gamma_expression $expression
-    ###     GammaCommandPopVar $name
-    ###     GammaCommandReturn 0
-### }
 proc .calc {var} {
     .calculate $var
 }
@@ -325,7 +306,8 @@ proc Gamma_expression {expression {context {}}} {
             }
             @ $context/POLY !
             @ $context/POLY = $poly_list
-            uplevel "GammaCommandPolynomial $context/POLY"
+            uplevel "GammaCommandPushPOLY $context/POLY"
+            uplevel "GammaCommandPolynomial"
             return
         }
     }

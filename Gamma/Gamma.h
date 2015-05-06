@@ -11,6 +11,7 @@ void GammaCommandTestVar(void);
 void GammaCommandTcl(void);
 void GammaCommandPushVar(void);
 void GammaCommandPushPointer(void);
+void GammaCommandPushPOLY(void);
 void GammaCommandPushLUT(void);
 void GammaCommandPopVar(void);
 void GammaCommandPop(void);
@@ -85,6 +86,7 @@ static int tcl_gamma_DistAtMost(ClientData clientData,Tcl_Interp *interp,int arg
 static int tcl_gamma_Minus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Plus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Root(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_gamma_PushPOLY(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_GreaterThan(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_ImpDerive(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_gamma_Branch(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);

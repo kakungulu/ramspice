@@ -46,12 +46,17 @@ GammaCommand Tcl {string Code} {
 }
 GammaCommand PushVar {var C} {
     @F(0)=*C;
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushPointer {var C} {
     //#Info: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
     @P(0)=C;
+    GammaVirtualMachineStackIndex--;
+}
+GammaCommand PushPOLY {POLY P} {
+    @P(0)=P;
+    #Info: "Pushing POLY %x" P
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushLUT {LUT C} {
@@ -61,32 +66,31 @@ GammaCommand PushLUT {LUT C} {
 }
 GammaCommand PopVar {var C} {
     GammaVirtualMachineStackIndex++;
-//    #Info: "Poping Var %x (%g->%g)" &(GammaVirtualMachineStack[GammaVirtualMachineStackIndex]) *((double*)C) @F(0)
+    #Info: "Poping Var %x (%g->%g)" C *((double*)C) @F(0)
     *((double *)C)=@F(0);
 }
 GammaCommand Pop {} {
     GammaVirtualMachineStackIndex++;
 }
 
-GammaCommand Polynomial {POLY P} {
-    @F(0)=calc_POLY(P);
+GammaCommand Polynomial {} {
+    @F(1)=calc_POLY(@P(1));
     //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
-    GammaVirtualMachineStackIndex--;
 }
-GammaCommand Root {POLY P, var C} {
-    @F(0)=root_POLY(P,C,0);
+GammaCommand Root {} {
+    @F(2)=root_POLY(@P(1),@P(2),0);
     //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
-    GammaVirtualMachineStackIndex--;
+    GammaVirtualMachineStackIndex++;
 }
-GammaCommand Derive {POLY P, var C} {
-    @F(0)=derive_POLY(P,C);
+GammaCommand Derive {} {
+    @F(2)=derive_POLY(@P(1),@P(2));
     //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
-    GammaVirtualMachineStackIndex--;
+    GammaVirtualMachineStackIndex++;
 }
-GammaCommand ImpDerive {POLY P, var C, var D} {
-    @F(0)=imp_derive_POLY(P,C,D,0);
+GammaCommand ImpDerive {} {
+    @F(3)=imp_derive_POLY(@P(1),@P(2),@P(3),0);
     //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
-    GammaVirtualMachineStackIndex--;
+    GammaVirtualMachineStackIndex+=2;
 }
 GammaCommand Interpolate {} {
 //    #Info: "Accessing LUT at %x" @P(1)

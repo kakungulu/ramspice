@@ -52,6 +52,8 @@ proc .property {name args} {
     default opt(from_display) @
     default opt(unit) {}
     default opt(more) better
+    default opt(denom) {}
+    @ property/$name/denom = string $opt(denom)
     if {![info exists opt(expression)]} {
         Error: property requires a -expression switch
         exit
@@ -65,10 +67,10 @@ proc .property {name args} {
     switch $opt(more) {
         better {@ property/$name/op = string +}
         worse {@ property/$name/op = string -}
-	default {
-	    Error: A property $name can be either '-more better' or '-more worse'.
-	    exit
-	}
+        default {
+            Error: A property $name can be either '-more better' or '-more worse'.
+            exit
+        }
     }
     set ::DERMODE $original_der_mode
 }
@@ -263,6 +265,7 @@ proc tmp_sort {t1 t2} {
     }	
     return 0
 }
+set ::circuit_components {}
 proc .compile_circuit {} {
     @ s = 0
     set ::independent_nodes {}
@@ -350,14 +353,14 @@ proc .compile_circuit {} {
         set ::sensitivity($name:go,$L) $name:go:$L
         @ $name:go:$L = 0
         $name:go:$L=>-$name:go*($name:dro_dl*$name:go/$W)
-	if {$::opt(mode)=="ac" || $::opt(mode)=="noise"} {
-	    add_kcl $s $g "-$name:cgs*s"
-	    add_kcl $g $s "+$name:cgs*s"
-	    add_kcl $d $g "-$name:cgd*s"
-	    add_kcl $g $d "+$name:cgd*s"
-	    $name:cgs=>0.66666*[@ /look_up_tables/$type/cox]*$L*$L*$W
-	    $name:cgd=>0.33334*[@ /look_up_tables/$type/cox]*$L*$L*$W
-	}
+        if {$::opt(mode)=="ac" || $::opt(mode)=="noise"} {
+            add_kcl $s $g "-$name:cgs*s"
+            add_kcl $g $s "+$name:cgs*s"
+            add_kcl $d $g "-$name:cgd*s"
+            add_kcl $g $d "+$name:cgd*s"
+            $name:cgs=>0.66666*[@ /look_up_tables/$type/cox]*$L*$L*$W
+            $name:cgd=>0.33334*[@ /look_up_tables/$type/cox]*$L*$L*$W
+        }
     }
     foreach idc_pair [array names ::idc] {
         lassign [split $idc_pair ,] m p
@@ -403,8 +406,32 @@ proc .compile_circuit {} {
     set ::KCL(dim) $dim	
     set HTML [open /tmp/KCL.html w]
     puts $HTML <html>
+    puts $HTML <head>
+    puts $HTML {<style type="text/css">
+        .matrix {
+            position: relative;
+        }
+        .matrix:before, .matrix:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            border: 1px solid #000;
+            width: 6px;
+            height: 100%;
+        }
+        .matrix:before {
+            left: -6px;
+            border-right: 0;
+        }
+        .matrix:after {
+            right: -6px;
+            border-left: 0;
+        } 
+    }
+    puts $HTML </style>
+    puts $HTML </head>
     puts $HTML <body>
-    puts $HTML "<table border=\"2\">"
+    puts $HTML "<table class=\"matrix\">"
     for {set i 0} {$i<$dim} {incr i} {
         puts $HTML <tr>
         puts $HTML <td>
@@ -429,9 +456,7 @@ proc .compile_circuit {} {
     puts $HTML </table>
     puts $HTML <h3>
     detp ::KCL g
-    set poly [present_poly g Det]
-    Det=>$poly
-    Ted=>1/Det
+    @ Det/POLY = [list_poly g]
     @ size foreach_child c {
         derive_poly g size:$c dg_d$c
         Det:$c=>[present_poly dg_d$c Det_d$c]
@@ -439,27 +464,22 @@ proc .compile_circuit {} {
         set ::sensitivity(Det,size:$c) Det:$c
         set ::sensitivity(Ted,size:$c) Ted:$c
     }
-    set ::POLY::Ted(Ted) 1
-    Info: Det=$poly
-    puts $HTML Det=$poly
+    puts $HTML Det=[present_poly g Det]
     puts $HTML </h3>
     @ 0:V = 0
     set i 0
     # Define Data Dependencies
     foreach node $::independent_nodes {
-        if {[info exists ::dependent_nodes($node)]} {
-            incr i
-            continue
-        }
-        detp ::KCL p 0 {} $i $y
-        mult_poly p Ted $node
-        set poly [present_poly $node $node:Next]
-        $node:Next=>$poly
+        detp ::KCL poly_$node 0 {} $i $y
+        Info: Setting poly poly_$node to [list_poly poly_$node]
+        @ $node:Next:POLY = [list_poly poly_$node]
+        @ $node:Next:POLY denom Det:POLY
+        set poly [present_poly poly_$node $node:Next]
+        $node=>$poly
         puts $HTML "$node:Next=$poly<br><br>"
-        Info: $node:Next=$poly
-        $node:V=>limit($node:Next,0,$::opt(topv))
         incr i
     }
+    #exit
     foreach name [array names ::Ids_equations] {
         if {[info exists ::gm_equations($name)]} {
             $name:gm=>$::gm_equations($name)
@@ -472,12 +492,6 @@ proc .compile_circuit {} {
         Gds_$name=>$::G_equations($name)
         .default Gds_$name 1e+0
     }
-    set needed_temps {}
-    foreach key [array names ::NEEDED] {
-        skip {$::NEEDED($key)==0}
-        lappend needed_temps $::CSE($key)
-    }
-    set needed_temps [lsort -command tmp_sort $needed_temps]
     @ continue = 1
     @ step_counter = 0
     @ max_slopeW = 0
@@ -502,10 +516,10 @@ proc .compile_circuit {} {
             .for {i=0} {i<$::opt(op_limit)} {i=i+1} {
                 .tp i
                 foreach name [array names ::Ids_equations] {
-		    if {$::opt(mode)=="ac" ||  $::opt(mode)=="noise"} {
-		        .calculate $name:cgs
-		        .calculate $name:cgd
-		    }
+                    if {$::opt(mode)=="ac" ||  $::opt(mode)=="noise"} {
+                        .calculate $name:cgs
+                        .calculate $name:cgd
+                    }
                     .calculate $name:gm
                     .tp $name:gm
                     .tp $name:dgm_dl
@@ -527,35 +541,16 @@ proc .compile_circuit {} {
                             puts $HTML "$name:dgo/d$c=$::DEF($name:go:size:$c)<br><br>"
                         }
                     }
-                    #                    .if {$::transistors($name,Vgs)<6e-1} {
-                        #                        $name:Ideq=0
-                    #                    } else {
-                        #                        $name:Ideq=$::Ids_equations($name)
-                    #                    }
                     $name:Ideq=$::Ids_equations($name)
                 }
-                
-                foreach temp $needed_temps {
-                    .calculate $temp
-                }
-                .calculate Det
-                .calculate Ted
-                @ size foreach_child c {
-                    .calculate Det:$c
-                    .tp Det:$c
-                    .calculate Ted:$c
-                    .tp Ted:$c
-                    puts $HTML "dDet/d$c=$::DEF(Det:$c)<br><br>"
-                    puts $HTML "dTed/d$c=$::DEF(Ted:$c)<br><br>"
-                }
+                Det=Polynomial(&Det:POLY)
                 foreach node $::independent_nodes {
                     Info: NODE $node
-                    .calculate $node:Next
+                    $node:Next=Polynomial(&$node:Next:POLY)
                     .tp $node:Next
-                    .tp i
                 }
                 foreach node $::independent_nodes {
-                    .calculate $node:V
+                    $node:V=limit($node:Next,0,$::opt(topv))
                     .tp $node:V
                 }
                 foreach name [array names ::G_equations] {
@@ -563,47 +558,80 @@ proc .compile_circuit {} {
                     .default Gds_$name 1e+0
                 }
             }
-            .tp Det
-            .tp Ted
+	    @ size foreach_child s {
+	        .tp size:$s
+	    }
             @ property foreach_child p {
-                Info: PROPERTY $p
+                Info: PROPERTY $p=$::properties($p,expression)
                 set expression [flat_expression  $::properties($p,expression)]
-                property:$p=$expression
-                puts $HTML "$p=$expression<br><br>"
+                Info: PROPERTY $p=$expression
                 start_poly $p $expression
-                set display_grad {}
-                @ size foreach_child s {
-                    @ property:$p:$s = 0
-                    if {[array names ::POLY::$p]!={}} {
-                        derive_poly $p size:$s d_$p
-                        set derived_expression [present_poly d_$p]
-                        remove_poly d_$p
-                    } else {
-                        set derived_expression [derive_expression size:$s $expression ]
+                if {[array names ::POLY::$p]!={}} {
+                    @ property:$p:POLY = [list_poly $p]
+                    if {[@ property:$p:denom] != {}} {
+                        @ property:$p:POLY denom [@ property:$p:denom]:POLY
                     }
-                    property:$p:$s=$derived_expression
-                    .tp property:$p:$s
-                    puts $HTML "d$p/d$s=$derived_expression<br><br>"
+                    property:$p=Polynomial(&property:$p:POLY)
+		    .tp property:$p
+                    set visited_components {}
+                    foreach component [lindex [@ property:$p/POLY expression] 0] {
+                        skip {$component=="+"}
+                        skip {![catch {expr $component+0}]}
+                        skip {[lsearch $visited_components $component]!=-1}
+                        lappend visited_components $component
+			@ property:$p:$component !
+			@ property:$p:$component = 0
+                        property:$p:$component=Derive(&property:$p:POLY,&$component)
+			.tp property:$p:$component
+                        skip {[lsearch $::circuit_components $component]!=-1}
+                        lappend ::circuit_components $component
+                    }
+                } else {    
+                    property:$p=$expression
+                    foreach component $::circuit_components {
+		        set derivative [derive_expression $component $expression]
+			if {$derivative!=0} {
+ 			   @ property:$p:$component !
+                           @ property:$p:$component = 0
+                           property:$p:$component=$derivative
+			   .tp property:$p:$component
+			}
+		    }
+                }   
+                @ size foreach_child s {
+                    set expression {}
+                    foreach component $::circuit_components {
+                	skip {![info exists ::sensitivity($component,size:$s)]}
+			skip {![@ property:$p:$component ?]}
+                	lappend expression property:$p:$component*$::sensitivity($component,size:$s)
+                    }
+                    @ property:$p:$s !
+                    property:$p:$s=[join $expression +]
+		    .tp property:$p:$s
                 }
+            }
+            @ property foreach_child p {
+                puts $HTML "$p=$expression<br><br>"
                 max_slopeW=0
                 max_slopeL=0
                 @ size foreach_child value {
-		    set Dim [string index $value 0]
+                    set Dim [string index $value 0]
                     .if {abs(property:$p:$value)>max_slope$Dim} {
                         max_slope$Dim=abs(property:$p:$value)
                     }
                 }
-                set display_grad "Info: % step \[@ step_counter\] $p=\[@ property:$p\] "
+                set display_grad "Info: Test Point step \[@ step_counter\] $p=\[@ property:$p\] "
                 @ size foreach_child value {
-		    set Dim [string index $value 0]
+                    set Dim [string index $value 0]
                     size:$value:step=unit_step$Dim*property:$p:$value/max_slope$Dim
                     append display_grad "$value=\[@ size/$value\] \[@ property:$p:$value\] "
-		    .tp size:$value:step
-		    .tp size:$value
+                    .tp size:$value:step
+                    .tp size:$value
                     size:$value=limit(size:$value[@ property/$p/op]size:$value:step,size:$value:min,size:$value:max)
-		    .tp size:$value
+                    .tp size:$value
                 }
-                .tcl $display_grad
+		#.tcl exit
+                               .tcl $display_grad
             }
         }
     }
@@ -642,7 +670,7 @@ proc add_transistor {name d g s b type args} {
         }
     }
 }
-default ::opt(iref) 10e-6
+default ::opt(iref) 50e-6
 ..init
 default ::opt(topology) nmos_cs
 switch $::opt(topology) {
@@ -657,8 +685,8 @@ switch $::opt(topology) {
         @ param/vdd = $::opt(topv)
         @ param/iref = $::opt(iref)
         foreach class {p n s} {
-            @ size/W$class  = 1
-            @ size/W$class/min = 1
+            @ size/W$class  = 4
+            @ size/W$class/min = 0.1
             @ size/W$class/max = 200
             @ size/W$class/step/min = -2
             @ size/W$class/step/max = 2
@@ -679,12 +707,12 @@ switch $::opt(topology) {
         vinp 0 inp param:pos
         vinm 0 inm param:neg
         #    rload outp 0 1e+7
-        .property Adc -expression derive(outp,param:pos)-derive(outp,param:neg) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
-        .property CMRR -expression derive(outp,param:pos)+derive(outp,param:neg) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB -more worse
-        .property PSRR -expression derive(outp,param:vdd) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB -more worse
-        .property Zout -expression (n_tail:go+nin_2:go)/((n_tail:go*nin_2:go)+(n_tail:go+nin_2:go)*p_2:go) -unit Ohm -more worse
+        .property Adc -expression derive(outp,param:pos)-derive(outp,param:neg) -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+#        .property CMRR -expression derive(outp,param:pos)+derive(outp,param:neg) -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB -more worse
+#        .property PSRR -expression derive(outp,param:vdd) -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB -more worse
+#        .property Zout -expression (n_tail:go+nin_2:go)/((n_tail:go*nin_2:go)+(n_tail:go+nin_2:go)*p_2:go) -unit Ohm -more worse
         .spec Adc > 50
-        .spec Zout < 100
+#        .spec Zout < 100
     }
     diffpair_simple {
         @ topologies/$::opt(topology)((Wp,Lp,Wn,Ln,Ws,Ls|Adc,Area)) !
@@ -723,8 +751,8 @@ switch $::opt(topology) {
         @ size:L:step:min = -1e-6
         @ size:L:step:max = 1e-6
         @ size:W = 360e-9
-        @ size:W:min = 40e-9
-        @ size:W:max = 10e-6
+        @ size:W:min = 0.1
+        @ size:W:max = 1000
         @ size:W:step:min = -1e-6
         @ size:W:step:max = 1e-6
         @ topologies/$::opt(topology)((L|Adc,L)) !
@@ -733,7 +761,7 @@ switch $::opt(topology) {
         default ::opt(vin) 0.9
         vdd 0 vdd $::opt(topv)
         mn_ref  out in 0 0 nch W=size:W L=size:L
-        .property Adc -expression derive(out,param:vin) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+        .property Adc -expression derive(out,param:vin)  -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         .spec Adc < -15
     }
     pmos {
@@ -783,54 +811,61 @@ while {1} {
     for {set super_loop 0} {$super_loop<100} {incr super_loop} {
         set save_a_change 0
         for {set main_loop 0} {$main_loop<$::opt(save_size)} {incr main_loop} {
-	    if {[@ topologies/$::opt(topology) PAT size]<4 || rand()<0.5} {
-	        # PAT too small, use randomizer to seed it
-		Info: random, only [@ topologies/$::opt(topology) PAT size] entries
-		
-                foreach class {p n s} {
-                    @ size/L$class = [expr [@ size/L$class/min]+([@ size/L$class/max]-[@ size/L$class/min])*rand()]
-                    @ size/W$class = [expr (99*rand()+1)]
+            if {[@ topologies/$::opt(topology) PAT size]<4 || rand()<0.5} {
+                # PAT too small, use randomizer to seed it
+                Info: random, only [@ topologies/$::opt(topology) PAT size] entries
+                
+		@ size foreach_child L {
+		    skip {![string match L* $L]}
+		    regsub {^L} $L W W
+                    @ size/$L = [expr [@ size/$L/min]+([@ size/$L/max]-[@ size/$L/min])*rand()]
+                    @ size/$W = [expr (99*rand()+1)]
                 }    
-	    } else {
-		Info: PAT
-	        # Take a random entry from the PAT and try to improve it
-	        set i [expr int([@ topologies/$::opt(topology) PAT size]*rand())]
-		set entry [@ topologies/$::opt(topology) PAT index $i]
-		set j 0
-                foreach class {p n s} {
-		    foreach Dim {W L} {
-		        @ size/$Dim$class = [lindex $entry $j]
-		        incr j
-		    }
-		}
-	    }
+            } else {
+                Info: PAT
+                # Take a random entry from the PAT and try to improve it
+                set i [expr int([@ topologies/$::opt(topology) PAT size]*rand())]
+                set entry [@ topologies/$::opt(topology) PAT index $i]
+                set j 0
+		@ size foreach_child L {
+		    skip {![string match L* $L]}
+		    regsub {^L} $L W W
+                        @ size/$W = [lindex $entry $j]
+                        incr j
+                        @ size/$L = [lindex $entry $j]
+                        incr j
+                    }
+                }
+            }
             converge
             Info: converged
             set area 0
             set sizes {}
             set printed_sizes {}
             set WbyLviolated 0
-            foreach class {p n s} {
-                #    Info: Width=[@ size/W$class] Length=[@ size/L$class]
-                set area [expr $area+[@ size/W$class]*[@ size/L$class]*[@ size/L$class]]
-                lappend sizes [@ size/W$class]
-                lappend sizes [@ size/L$class]
-                if {[@ size/W$class]<[@ size/L$class]} {
+	    @ size foreach_child L {
+	    	skip {![string match L* $L]}
+	    	regsub {^L} $L W W
+                #    Info: Width=[@ size/$W] Length=[@ size/$L]
+                set area [expr $area+[@ size/$W]*[@ size/$L]*[@ size/$L]]
+                lappend sizes [@ size/$W]
+                lappend sizes [@ size/$L]
+                if {[@ size/$W]<[@ size/$L]} {
                     set WbyLviolated 1
                 }
-                lappend printed_sizes W$class=[eng [@ size/W$class] m]
-                lappend printed_sizes L$class=[eng [@ size/L$class] m]
+                lappend printed_sizes $W=[eng [@ size/$W] m]
+                lappend printed_sizes $L=[eng [@ size/$L] m]
             }
             skip $WbyLviolated 
             skip {[@ outp:V]<50e-3}
             skip {[@ outp:V]<[@ tail:V]}
-	    skip {[@ property/Adc]<0}
+            skip {[@ property/Adc]<0}
             lappend printed_sizes Out=[eng [@ outp:V] V]
             lappend printed_sizes Tail=[eng [@ tail:V] V]
             lappend printed_sizes Adc=[eng [expr 20*log10([@ property/Adc])] dB]
             #            lappend printed_sizes Zout=[eng [@ property/Zout] Ohm]
             lappend sizes [@ param/iref]
-#            set saved [@ topologies/$::opt(topology) <<< $sizes [list [@ property/Adc] [@ property/Zout] $area]]
+            #            set saved [@ topologies/$::opt(topology) <<< $sizes [list [@ property/Adc] [@ property/Zout] $area]]
             set saved [@ topologies/$::opt(topology) <<< $sizes [list [@ property/Adc] $area]]
             if {$saved>=0} {
                 set save_a_change 1
@@ -847,9 +882,11 @@ while {1} {
             @ topologies save pareto.db
         } 
     }	
-    foreach class {p n s} {
-        @ size/W$class/max = [expr 1e-6+[@ size/W$class/max]]
-        @ size/L$class/max = [expr 1e-6+[@ size/L$class/max]]
+    @ size foreach_child L {
+    	skip {![string match L* $L]}
+    	regsub {^L} $L W W
+        @ size/$W/max = [expr 1e-6+[@ size/$W/max]]
+        @ size/$L/max = [expr 1e-6+[@ size/$L/max]]
     }
 }
 

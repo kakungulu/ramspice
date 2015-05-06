@@ -181,10 +181,12 @@ typedef struct {
     vector_pointer_char *properties;
     vector_float *margins;
 } PAT;
-typedef struct {
+typedef struct POLY POLY;
+struct POLY {
     char *expression;
     vector_double *polynomial;
-} POLY;
+    POLY *denom;
+};
 PAT *new_PAT();
 PAT *get_PAT(char *i_context);
 POLY *get_POLY(char *i_context);
@@ -192,6 +194,7 @@ void write_pointer_PAT(FILE *O,PAT *p);
 PAT *read_pointer_PAT();
 POLY *new_POLY();
 void link_POLY(POLY *p);
+float calc_polynomial(vector_double *p);
 float calc_POLY(POLY *p);
 float derive_POLY(POLY *p,void *by_var);
 float root_POLY(POLY *p,void *by_var,double init);

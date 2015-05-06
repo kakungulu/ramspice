@@ -155,6 +155,7 @@ PAT *read_pointer_PAT() {
 void link_POLY(POLY *p) {
     char *draft=(char *)malloc(sizeof(char)*(strlen(p->expression)+1));
     sprintf(draft,"%s",p->expression);
+    #Info: "Linking POLY %s" p->expression
     ordinal i,j,argc=1;
     for (i=0;draft[i];i++) if (draft[i]==' ') argc++;
     char **argv=(char **)malloc(sizeof(char *)*argc);
@@ -2235,6 +2236,7 @@ POLY *new_POLY() {
     POLY *p=(POLY *)malloc(sizeof(POLY));
     p->expression="";
     p->polynomial=new_vector_double();
+    p->denom=NULL;
     return(p);
 }
 int create_context(char *i_key) {
@@ -2377,6 +2379,7 @@ int create_context(char *i_key) {
             if (strcmp(context_name_buffer,"POLY")==0) {
                 c_type=ctype_POLY;
                 v=new_POLY();
+		#Info: "New POLY at %s (%x %x)"  i_key temp_context v
             }	
             next_context=new_context(temp_context,context_name_buffer,v,c_type);
         }    
@@ -2724,6 +2727,14 @@ POLY *get_POLY(char *i_context) {
         #Error: "(get_POLY) no such context %s" i_context
         return NULL;
     }
+    if ((strcmp(c->name,"POLY")==0)&&(c->value_type!=ctype_POLY)) {
+        c->value_type=ctype_POLY;
+	c->value.v=new_POLY();
+    }
+    if (c->value_type!=ctype_POLY) {
+        #Error: "(get_POLY) context %s is not a polynomial" i_context
+        return NULL;
+    }
     return (POLY *)c->value.v;
 }
 LUT *get_LUT_quiet(char *i_context) {
@@ -2892,6 +2903,7 @@ float calc_POLY(POLY *p) {
     int next_is_coeff=1;
     double total=0;
     so_union SO;
+    //#Info: "POLY %x = %s" p p->expression
     for (i=0;i<p->polynomial->num_of;i++) {
         SO.s=get_entry_vector_double(p->polynomial,i);
         next_is_coeff=1;
@@ -2899,19 +2911,26 @@ float calc_POLY(POLY *p) {
         while ((SO.v)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
                 term=SO.s;
+		//#Info: "POLY %x const=%g" p term
                 next_is_coeff=0;
                 i++;
                 if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
                 continue;
             }
             double var=*((double *)SO.v);
+            //#Info: "POLY %x var %x=%g" p SO.v var
             term*=var;
             i++;
-            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+           if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
         }
         total+=term;
     }
     float retval=total;
+    //#Info: "POLY %x total=%g" p total
+    if (p->denom) {
+        retval/=calc_POLY(p->denom);
+        //#Info: "POLY %x divided to total=%g" p retval
+    }
     return(retval);
 }
 float derive_POLY(POLY *p,void *by_var) {
@@ -2948,6 +2967,17 @@ float derive_POLY(POLY *p,void *by_var) {
         total+=term*num_of_by_var;
     }
     float retval=total;
+    //#Info: "derive %x/%x total=%g" p by_var total
+    if (p->denom) {
+        float nom=calc_POLY(p);
+        //#Info: "derive %x nom=%g" p nom
+	float denom=calc_POLY(p->denom);
+        //#Info: "derive %x denom=%g" p denom
+	float d_denom=derive_POLY(p->denom,by_var);
+        //#Info: "derive %x d_denom=%g" p d_denom
+        retval=(total*denom-nom*d_denom)/(denom*denom);	
+        //#Info: "derive %x retval=(total*denom-nom*d_denom)/(denom*denom)=%g" p retval
+    }
     return(retval);
 }
 float root_POLY(POLY *p,void *by_var,double init) {
@@ -3041,6 +3071,36 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     if (strcmp(argv[2],"type")==0) {
         tcl_append_int(interp,c->value_type);
         return TCL_OK;
+    }
+    if (strcmp(argv[2],"expression")==0) {
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The expression command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+        if (argc!=3) {
+            #Error: "(ctree) The expression command takes no arguments"
+            return TCL_ERROR;
+        }
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The expression command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+	POLY *p=(POLY *)c->value.v;
+	Tcl_AppendElement(interp,p->expression);
+	return TCL_OK;
+    }	
+    if (strcmp(argv[2],"denom")==0) {
+        if (c->value_type!=ctype_POLY) {
+            #Error: "(ctree) The denom command is to be used with a polynomial only."
+            return TCL_ERROR;
+        }
+        if (argc<4) {
+            #Error: "(ctree) The denom command requires a polynomial"
+            return TCL_ERROR;
+        }
+	POLY *nom=get_POLY(argv[1]);
+	nom->denom=get_POLY(argv[3]);
+	return TCL_OK;
     }
     if (strcmp(argv[2],"derive")==0) {
         if (c->value_type!=ctype_POLY) {
@@ -3235,9 +3295,10 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     if (strcmp(argv[2],"=")==0) {
         if (argc==4) {
             if (c->value_type==ctype_POLY) {
-                POLY *p=(POLY *)c->value.v;
+                POLY *p=new_POLY();
                 p->expression=strdup(argv[3]);
-                link_POLY(c->value.v);
+                link_POLY(p);
+		c->value.v=p;
                 return TCL_OK;
             }
             if (c->value_type==ctype_LUT) {
@@ -3248,6 +3309,14 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 *array_entry=atof(argv[3]);
                 return TCL_OK;
             }
+	    if (strcmp(c->name,"POLY")==0) {
+                POLY *p=new_POLY();
+                p->expression=strdup(argv[3]);
+                link_POLY(p);
+		c->value.v=p;
+		c->value_type=ctype_POLY;
+                return TCL_OK;
+	    }
             c->value.s=atof(argv[3]);
             //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
@@ -3950,9 +4019,7 @@ tcl_resource_usage (ClientData clientData,Tcl_Interp *interp,int argc,char *argv
         if (this_process_forked) printf("(forked process %d) ",getpid());
         int i;
         for (i=1;i<argc;i++) printf("%s ",argv[i]);
-        #If: {![string equal ${type} "Print"]} {
-            printf("\n");
-        }
+        printf("\n");
         fflush(stdout);
         return TCL_OK;
     }

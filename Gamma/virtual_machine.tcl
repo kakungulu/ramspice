@@ -8,11 +8,11 @@ proc GammaCommand {name interface i_body} {
     regsub -all {@(.)\(([^\)]+)\)} $i_body "GammaVirtualMachineStack\[GammaVirtualMachineStackIndex+\\2\].\\1" i_body
     if {[lsearch $::Gamma_operators $name]==-1} {
         set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (!GammaVirtualMachineTempSkip) \{\n    "
-//	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
 	append body " DC FCUNION;\n"
     } else {
         set body "\n    int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;\n    GammaVirtualMachineSkip=0;\n    if (1) \{\n    "
-//	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
+	append body "#Info: \"%ld: $name\" GammaVirtualMachineBatchProgramCounter\n"
 	append body " DC FCUNION;\n"
     }
     set i 0
@@ -114,8 +114,8 @@ proc GammaTclInterface {} {
 	            puts $O "    context *GammaContext$i;"
 	            puts $O "    resolve_context(argv\[$i\],&(GammaContext$i),NULL);"
 	            puts $O "    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=(void *)(&(GammaContext$i->value.s));"
-		    #append info_pattern "%x "
-		    #append info_list "(&(GammaContext$i->value.s)) "
+		    append info_pattern "%x "
+		    append info_list "(&(GammaContext$i->value.s)) "
 		}
                 string {
 	            puts $O "    char *new_name=(char *)malloc(sizeof(char)*(strlen(argv\[$i\])+1));"
