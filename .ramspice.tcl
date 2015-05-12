@@ -496,6 +496,7 @@ set ::rusage_fields {
     nsignals
     nvcsw
 }
+
 proc textbox {text_in {out stdout}} {
     set max_length 0
     foreach line [split $text_in \n] {
@@ -521,6 +522,11 @@ proc textbox {text_in {out stdout}} {
     puts -nonewline $out [string repeat \# $max_length]
     puts $out ##
 }
+Info: Traget=[ginfo target]
+if {[ginfo target]=="silent"} {
+    proc textbox args {}
+}
+
 namespace eval SPICE {
 }
 proc ::SPICE::end {} {

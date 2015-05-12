@@ -923,9 +923,6 @@ main(int argc, char **argv)
     if (Tcl_Eval(interp,"puts \"RAMSPICE=$::env(RAMSPICE)\"")==TCL_ERROR) {
         Tcl_Eval(interp,"puts $errorInfo");
     };
-    if (Tcl_Eval(interp,"source $::env(RAMSPICE)/.ramspice.tcl")==TCL_ERROR) {
-        Tcl_Eval(interp,"puts $errorInfo");
-    };
     Tcl_Eval(interp, "namespace eval " TCLSPICE_namespace " { }");
     /* Get information on memory status upon startup.
        Would like to do this later, but cpinit evals commands.
@@ -951,6 +948,9 @@ main(int argc, char **argv)
         sprintf(args_buf,"lappend ::argv %s",argv[i]);
 	Tcl_Eval(interp,args_buf);
     }
+    if (Tcl_Eval(interp,"source $::env(RAMSPICE)/.ramspice.tcl")==TCL_ERROR) {
+        Tcl_Eval(interp,"puts $errorInfo");
+    };
     execute_main_commands(interp,argc,argv);
     
     // Execute stdin input code here:
