@@ -905,8 +905,9 @@ inp_dodeck(
                     *q = '\0';
 
                 if (p == dd->li_error) {
-                    if (strstr(dd->li_line, ".model"))
+                    if (strstr(dd->li_line, ".model")) {
                         #Warning: "Model issue on line %d : %.*s ...%s" dd->li_linenum_orig 56 dd->li_line dd->li_error
+			}
                     else {
                         #Error: "on line %d : %s %s" dd->li_linenum_orig dd->li_line dd->li_error
                         have_err = TRUE;

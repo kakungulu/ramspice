@@ -814,8 +814,9 @@ measure_minMaxAvg(
                 avgCnt ++;
                 break;
             }
-            default :
+            default : {
 	        #Error: "improper min/max/avg call."
+		}
             }
 
         }
@@ -836,8 +837,9 @@ measure_minMaxAvg(
         meas->m_measured_at = mValueAt;
         break;
     }
-    default :
+    default : {
         #Error: "improper min/max/avg call."
+	}
     }
 }
 
