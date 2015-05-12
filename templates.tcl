@@ -15,6 +15,11 @@ while {[uplevel "expr $condition"]} {
         uplevel $step
     }
 }
+proc If: {condition body} {
+if {[uplevel "expr $condition"]} {
+        uplevel [list tcl_preprocessor $body]
+    }
+}
 
 proc Close_Bracket: {{num 1}} {
 print_line [string repeat "\}" $num]

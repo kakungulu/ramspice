@@ -186,7 +186,7 @@ void link_POLY(POLY *p) {
         }
         if (!(resolve_context(argv[i],&c,&array_entry))) {
             c=create_context(argv[i]);
-	}
+        }
         SO.v=&(c->value.s);
         add_entry_vector_double(p->polynomial,SO.s);
     }
@@ -308,7 +308,7 @@ _tcl_dispatch (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     return _run(argc, (char **)argv);
 }
 /********************************************************
-  Atomic C->Tcl result passing functions
+Atomic C->Tcl result passing functions
 ********************************************************/
 void tcl_append_long(Tcl_Interp *interp,long in_int) {
     char buf[16];
@@ -325,21 +325,35 @@ void tcl_append_float(Tcl_Interp *interp,double in_int) {
     sprintf(buf,"%g",in_int);
     Tcl_AppendElement(interp,buf);
 }
+static int
+gamma_info (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=2) {
+        #Error: "usage: %s <target>" argv[0]
+        return TCL_ERROR;
+    }
+    Tcl_ResetResult(interp);
+    if (strcmp(argv[1],"target")==0) {
+        Tcl_AppendElement(interp,"$::target");
+        return TCL_OK;
+    }
+    #Error: "No such %s field: %s" argv[0] argv[1]
+    return TCL_ERROR;
+}
 /********************************************************
-  Binary File interface from Tcl
-  ******************************
-  open_bin - open a file to read/write
-  There is no handle returned. This simplifies Tcl code,
-  but also limits the coder to only one file open for read
-  and one open for write. 
-  This is 99.9% of the applications anyway...
-  
-  close_bin - again, no handle, but still requires to specify
-  if its the one open for read or the one open for write that 
-  is to be closed.
-  
-  write_bin, read_bin - can accept a list of values after a type token, 
-  provided they are the same type. Again, no handle used.
+Binary File interface from Tcl
+******************************
+open_bin - open a file to read/write
+There is no handle returned. This simplifies Tcl code,
+but also limits the coder to only one file open for read
+and one open for write. 
+This is 99.9% of the applications anyway...
+
+close_bin - again, no handle, but still requires to specify
+if its the one open for read or the one open for write that 
+is to be closed.
+
+write_bin, read_bin - can accept a list of values after a type token, 
+provided they are the same type. Again, no handle used.
 ********************************************************/
 static int
 tcl_open_bin (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -455,10 +469,10 @@ tcl_read_bin (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     return TCL_ERROR;
 }
 /********************************************************
- Simple Fork implementation in Tcl
-  C level has a global variable indicating whether this process
-  is user invoked or forked. It is used by the Info functions
-  to indicate source of messages.
+Simple Fork implementation in Tcl
+C level has a global variable indicating whether this process
+is user invoked or forked. It is used by the Info functions
+to indicate source of messages.
 ********************************************************/
 static int
 tcl_fork (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -476,8 +490,8 @@ tcl_fork (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 }
 
 /********************************************************
-  Timing report retrieves and resets the global variables 
-  get_Tcl_timer and get_Tcl_counter
+Timing report retrieves and resets the global variables 
+get_Tcl_timer and get_Tcl_counter
 ********************************************************/
 
 static int
@@ -497,7 +511,7 @@ tcl_timer_report (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
 }
 
 /********************************************************
-    LUT support commands
+LUT support commands
 ********************************************************/
 
 static int
@@ -647,28 +661,28 @@ tcl_generate_lit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 /********************************************************
-    Simulation slice saving functions
-    *********************************
-    Once a DC loop has run, the results can be saved in a binary file
-    that can be later used to populate a LUT.
-    The interim binary file is necessary for now, because the runs
-    may be split to different processes and the parent process 
-    needs to collect all the results to a single LUT.
-    
-    Slices can be saved as-is, or be processed on the fly 
-    to perform derivatives of simulations. The baseline command
-    sets a certain slice as reference for future processing.
-    If, for instance, a gm vector is needed. The ids slice for 
-    one Vgs sweep can be set as baseline and then a following 
-    Vgs+epsilon sweep can be saved as differential, with the 1/epsilon
-    factor. 
-    delta saving is designed for vectors of totem-pole circuits, 
-    where the voltage we want is the difference between drain and source and
-    not the absolute value of all the sources. 
-    The two, delta and differential functions, can be combined in a 4th 
-    slice-saving function.
-    Finally, a complementary load_characterization_slice function
-    takes a slice and uses it to populate part of a LUT.
+Simulation slice saving functions
+*********************************
+Once a DC loop has run, the results can be saved in a binary file
+that can be later used to populate a LUT.
+The interim binary file is necessary for now, because the runs
+may be split to different processes and the parent process 
+needs to collect all the results to a single LUT.
+
+Slices can be saved as-is, or be processed on the fly 
+to perform derivatives of simulations. The baseline command
+sets a certain slice as reference for future processing.
+If, for instance, a gm vector is needed. The ids slice for 
+one Vgs sweep can be set as baseline and then a following 
+Vgs+epsilon sweep can be saved as differential, with the 1/epsilon
+factor. 
+delta saving is designed for vectors of totem-pole circuits, 
+where the voltage we want is the difference between drain and source and
+not the absolute value of all the sources. 
+The two, delta and differential functions, can be combined in a 4th 
+slice-saving function.
+Finally, a complementary load_characterization_slice function
+takes a slice and uses it to populate part of a LUT.
 ********************************************************/
 
 static int
@@ -1110,12 +1124,12 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
 }
 
 /********************************************************
-    DEPRECATED: Tcl based LUT populating function.
-    LUT's should not be dumped and loaded in ASCII files,
-    because of run time constraints.
-    The cTree database system takes care of binary marshalling
-    and file saving/loading of LUT's as well as other 
-    data structures.
+DEPRECATED: Tcl based LUT populating function.
+LUT's should not be dumped and loaded in ASCII files,
+because of run time constraints.
+The cTree database system takes care of binary marshalling
+and file saving/loading of LUT's as well as other 
+data structures.
 ********************************************************/
 
 static int
@@ -2447,7 +2461,7 @@ int create_context(char *i_key) {
             if (strcmp(context_name_buffer,"POLY")==0) {
                 c_type=ctype_POLY;
                 v=new_POLY();
-		#Info: "New POLY at %s (%x %x)"  i_key temp_context v
+                #Info: "New POLY at %s (%x %x)"  i_key temp_context v
             }	
             next_context=new_context(temp_context,context_name_buffer,v,c_type);
         }    
@@ -2797,7 +2811,7 @@ POLY *get_POLY(char *i_context) {
     }
     if ((strcmp(c->name,"POLY")==0)&&(c->value_type!=ctype_POLY)) {
         c->value_type=ctype_POLY;
-	c->value.v=new_POLY();
+        c->value.v=new_POLY();
     }
     if (c->value_type!=ctype_POLY) {
         #Error: "(get_POLY) context %s is not a polynomial" i_context
@@ -2979,7 +2993,7 @@ float calc_POLY(POLY *p) {
         while ((SO.v)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
                 term=SO.s;
-		//#Info: "POLY %x const=%g" p term
+                //#Info: "POLY %x const=%g" p term
                 next_is_coeff=0;
                 i++;
                 if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
@@ -2989,7 +3003,7 @@ float calc_POLY(POLY *p) {
             //#Info: "POLY %x var %x=%g" p SO.v var
             term*=var;
             i++;
-           if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
         }
         total+=term;
     }
@@ -3010,7 +3024,7 @@ float derive_POLY(POLY *p,void *by_var) {
         SO.s=get_entry_vector_double(p->polynomial,i);
         next_is_coeff=1;
         double term=0;
-	int num_of_by_var=0;
+        int num_of_by_var=0;
         while ((SO.v)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
                 term=SO.s;
@@ -3019,14 +3033,14 @@ float derive_POLY(POLY *p,void *by_var) {
                 if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
                 continue;
             }
-	    if (SO.v==by_var) {
-	        num_of_by_var++;
-		if (num_of_by_var==1) {
+            if (SO.v==by_var) {
+                num_of_by_var++;
+                if (num_of_by_var==1) {
                     i++;
                     if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
-		    continue;
-		}
-	    }
+                    continue;
+                }
+            }
             double var=*((double *)SO.v);
             term*=var;
             i++;
@@ -3039,9 +3053,9 @@ float derive_POLY(POLY *p,void *by_var) {
     if (p->denom) {
         float nom=calc_POLY(p);
         //#Info: "derive %x nom=%g" p nom
-	float denom=calc_POLY(p->denom);
+        float denom=calc_POLY(p->denom);
         //#Info: "derive %x denom=%g" p denom
-	float d_denom=derive_POLY(p->denom,by_var);
+        float d_denom=derive_POLY(p->denom,by_var);
         //#Info: "derive %x d_denom=%g" p d_denom
         retval=(total*denom-nom*d_denom)/(denom*denom);	
         //#Info: "derive %x retval=(total*denom-nom*d_denom)/(denom*denom)=%g" p retval
@@ -3057,7 +3071,7 @@ float root_POLY(POLY *p,void *by_var,double init) {
     while (fabs(dist)>1e-20) {
         total-=dist/derive_POLY(p,by_var);
         *by=total;
-	dist=calc_POLY(p);
+        dist=calc_POLY(p);
     }
     float retval=total;
     *by=original_value;
@@ -3153,9 +3167,9 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The expression command is to be used with a polynomial only."
             return TCL_ERROR;
         }
-	POLY *p=(POLY *)c->value.v;
-	Tcl_AppendElement(interp,p->expression);
-	return TCL_OK;
+        POLY *p=(POLY *)c->value.v;
+        Tcl_AppendElement(interp,p->expression);
+        return TCL_OK;
     }	
     if (strcmp(argv[2],"denom")==0) {
         if (c->value_type!=ctype_POLY) {
@@ -3166,9 +3180,9 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The denom command requires a polynomial"
             return TCL_ERROR;
         }
-	POLY *nom=get_POLY(argv[1]);
-	nom->denom=get_POLY(argv[3]);
-	return TCL_OK;
+        POLY *nom=get_POLY(argv[1]);
+        nom->denom=get_POLY(argv[3]);
+        return TCL_OK;
     }
     if (strcmp(argv[2],"derive")==0) {
         if (c->value_type!=ctype_POLY) {
@@ -3184,15 +3198,15 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         if ((argv[3][0]=='/')||(argv[3][0]==':')) {
             by=ctree;
         }
-	float *array_context;
-	if (!resolve_context(argv[3],&by,&array_context)) {
+        float *array_context;
+        if (!resolve_context(argv[3],&by,&array_context)) {
             #Warning: "(ctree) The derive command was given a non-existent context %s" argv[3]
-	    tcl_append_float(interp,0);
+            tcl_append_float(interp,0);
             return TCL_OK;
-	}
-	void *by_var=&(by->value.s);
-	tcl_append_float(interp,derive_POLY(c->value.v,by_var));
-	return TCL_OK;
+        }
+        void *by_var=&(by->value.s);
+        tcl_append_float(interp,derive_POLY(c->value.v,by_var));
+        return TCL_OK;
     }
     if (strcmp(argv[2],"root")==0) {
         if (c->value_type!=ctype_POLY) {
@@ -3203,22 +3217,22 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The root command requires a by-variable"
             return TCL_ERROR;
         }
-	double init=0;
-	if (argc==5) init=strtod(argv[4],NULL);
+        double init=0;
+        if (argc==5) init=strtod(argv[4],NULL);
         context *by=Context;
         float *array_entry;
         if ((argv[3][0]=='/')||(argv[3][0]==':')) {
             by=ctree;
         }
-	float *array_context;
-	if (!resolve_context(argv[3],&by,&array_context)) {
+        float *array_context;
+        if (!resolve_context(argv[3],&by,&array_context)) {
             #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
-	    tcl_append_float(interp,0);
+            tcl_append_float(interp,0);
             return TCL_OK;
-	}
-	void *by_var=&(by->value.s);
-	tcl_append_float(interp,root_POLY(c->value.v,by_var,init));
-	return TCL_OK;
+        }
+        void *by_var=&(by->value.s);
+        tcl_append_float(interp,root_POLY(c->value.v,by_var,init));
+        return TCL_OK;
     }
     if (strcmp(argv[2],"imp_derive")==0) {
         if (c->value_type!=ctype_POLY) {
@@ -3229,31 +3243,31 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The implicit derivative command requires two by-variables"
             return TCL_ERROR;
         }
-	double init=0;
-	if (argc==6) init=strtod(argv[5],NULL);
+        double init=0;
+        if (argc==6) init=strtod(argv[5],NULL);
         float *array_context;
         context *by=Context;
         if ((argv[3][0]=='/')||(argv[3][0]==':')) {
             by=ctree;
         }
-	if (!resolve_context(argv[3],&by,&array_context)) {
+        if (!resolve_context(argv[3],&by,&array_context)) {
             #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
-	    tcl_append_float(interp,0);
+            tcl_append_float(interp,0);
             return TCL_OK;
-	}
-	void *by_var=&(by->value.s);
+        }
+        void *by_var=&(by->value.s);
         context *root=Context;
         if ((argv[4][0]=='/')||(argv[4][0]==':')) {
             root=ctree;
         }
-	if (!resolve_context(argv[4],&root,&array_context)) {
+        if (!resolve_context(argv[4],&root,&array_context)) {
             #Warning: "(ctree) The root command was given a non-existent context %s" argv[4]
-	    tcl_append_float(interp,0);
+            tcl_append_float(interp,0);
             return TCL_OK;
-	}
-	void *root_var=&(root->value.s);
-	tcl_append_float(interp,imp_derive_POLY(c->value.v,by_var,root_var,init));
-	return TCL_OK;
+        }
+        void *root_var=&(root->value.s);
+        tcl_append_float(interp,imp_derive_POLY(c->value.v,by_var,root_var,init));
+        return TCL_OK;
     }
     if (strcmp(argv[2],"PAT")==0) {
         if (c->value_type!=ctype_PAT) {
@@ -3366,7 +3380,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 POLY *p=new_POLY();
                 p->expression=strdup(argv[3]);
                 link_POLY(p);
-		c->value.v=p;
+                c->value.v=p;
                 return TCL_OK;
             }
             if (c->value_type==ctype_LUT) {
@@ -3377,14 +3391,14 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 *array_entry=atof(argv[3]);
                 return TCL_OK;
             }
-	    if (strcmp(c->name,"POLY")==0) {
+            if (strcmp(c->name,"POLY")==0) {
                 POLY *p=new_POLY();
                 p->expression=strdup(argv[3]);
                 link_POLY(p);
-		c->value.v=p;
-		c->value_type=ctype_POLY;
+                c->value.v=p;
+                c->value_type=ctype_POLY;
                 return TCL_OK;
-	    }
+            }
             c->value.s=atof(argv[3]);
             //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
@@ -4079,42 +4093,98 @@ tcl_resource_usage (ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_ERROR;
     
 }
-#Foreach: type {Info Warning Error} {
-    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-        #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
-            printf("%s ",argv[0]);
+#If: {[string match *regular $::target] || [string match *debug $::target]} {
+    #Foreach: type {Info Warning Error} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
+                printf("%s ",argv[0]);
+            }
+            if (this_process_forked) printf("(forked process %d) ",getpid());
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            printf("\n");
+            fflush(stdout);
+            return TCL_OK;
         }
-        if (this_process_forked) printf("(forked process %d) ",getpid());
-        int i;
-        for (i=1;i<argc;i++) printf("%s ",argv[i]);
-        printf("\n");
-        fflush(stdout);
-        return TCL_OK;
+    }
+    #Foreach: type {Print} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            printf("Info: ");
+            if (this_process_forked) printf("(forked process %d) ",getpid());
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            fflush(stdout);
+            return TCL_OK;
+        }
+    }
+    #Foreach: type {Token} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            fflush(stdout);
+            return TCL_OK;
+        }
+    }
+    #Foreach: type {Nl} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            printf("\n");
+            fflush(stdout);
+            return TCL_OK;
+        }
+    }
+} 
+#If: {[string match *silent $::target]} {
+    #Foreach: type {Info Warning Error Print Token Nl} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            return TCL_OK;
+        }
     }
 }
-#Foreach: type {Print} {
-    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-        printf("Info: ");
-        if (this_process_forked) printf("(forked process %d) ",getpid());
-        int i;
-        for (i=1;i<argc;i++) printf("%s ",argv[i]);
-        fflush(stdout);
-        return TCL_OK;
+#If: {[string match *debug $::target]} {
+    #Foreach: type {Dinfo Dwarning Derror} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
+                printf("%s ",argv[0]);
+            }
+            if (this_process_forked) printf("(forked process %d) ",getpid());
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            printf("\n");
+            fflush(stdout);
+            return TCL_OK;
+        }
     }
-}
-#Foreach: type {Token} {
-    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-        int i;
-        for (i=1;i<argc;i++) printf("%s ",argv[i]);
-        fflush(stdout);
-        return TCL_OK;
+    #Foreach: type {Dprint} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            printf("Info: ");
+            if (this_process_forked) printf("(forked process %d) ",getpid());
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            fflush(stdout);
+            return TCL_OK;
+        }
     }
-}
-#Foreach: type {Nl} {
-    static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-        printf("\n");
-        fflush(stdout);
-        return TCL_OK;
+    #Foreach: type {Dtoken} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            int i;
+            for (i=1;i<argc;i++) printf("%s ",argv[i]);
+            fflush(stdout);
+            return TCL_OK;
+        }
+    }
+    #Foreach: type {Dnl} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            printf("\n");
+            fflush(stdout);
+            return TCL_OK;
+        }
+    }
+} 
+#If: {[string match *regular $::target]||[string match *silent $::target]} {
+    #Foreach: type {Dinfo Dwarning Derror Dprint Dtoken Dnl} {
+        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            return TCL_OK;
+        }
     }
 }
 
@@ -4674,9 +4744,10 @@ int register_tcl_functions(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "close_bin", tcl_close_bin, NULL, NULL);
     Tcl_CreateCommand(interp, "write_bin", tcl_write_bin, NULL, NULL);
     Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
+    Tcl_CreateCommand(interp, "ginfo", gamma_info, NULL, NULL);
     OpenFileForReading=NULL;
     OpenFileForWriting=NULL;
-    #Foreach: type {Info Warning Error Print Nl Token} {
+    #Foreach: type {Info Warning Error Print Nl Token Dinfo Dwarning Derror Dprint Dtoken Dnl} {
         Tcl_CreateCommand(interp, "$type:", tcl_$type, NULL, NULL);
     }
     #Foreach: global_var $::global_c_variables {

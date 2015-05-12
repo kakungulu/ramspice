@@ -819,7 +819,8 @@ proc default {varname {val {}}} {
         set var {}
     }
 }
-proc get_opts {} {
+proc get_opts {args} {
+    array set ::opt $args
     foreach arg [lrange $::argv 2 end] {
         if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
             set key $found_key
