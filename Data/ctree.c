@@ -1983,7 +1983,7 @@ Spice_Init(Tcl_Interp *interp)
     context_stack_pointer=0;
     network_node_root=NULL;
     save_interp();
-    init_serial();
+    //init_serial();
     network_task_handle=0;
     {
         int i;
