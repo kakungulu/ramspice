@@ -307,7 +307,9 @@ _tcl_dispatch (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     argv[0] += i + 1;
     return _run(argc, (char **)argv);
 }
-
+/********************************************************
+  Atomic C->Tcl result passing functions
+********************************************************/
 void tcl_append_long(Tcl_Interp *interp,long in_int) {
     char buf[16];
     sprintf(buf,"%d",in_int);
@@ -323,6 +325,22 @@ void tcl_append_float(Tcl_Interp *interp,double in_int) {
     sprintf(buf,"%g",in_int);
     Tcl_AppendElement(interp,buf);
 }
+/********************************************************
+  Binary File interface from Tcl
+  ******************************
+  open_bin - open a file to read/write
+  There is no handle returned. This simplifies Tcl code,
+  but also limits the coder to only one file open for read
+  and one open for write. 
+  This is 99.9% of the applications anyway...
+  
+  close_bin - again, no handle, but still requires to specify
+  if its the one open for read or the one open for write that 
+  is to be closed.
+  
+  write_bin, read_bin - can accept a list of values after a type token, 
+  provided they are the same type. Again, no handle used.
+********************************************************/
 static int
 tcl_open_bin (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -436,6 +454,12 @@ tcl_read_bin (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     #Error: "%s: No such type %s. Supported: int, float and string." argv[0] argv[1]
     return TCL_ERROR;
 }
+/********************************************************
+ Simple Fork implementation in Tcl
+  C level has a global variable indicating whether this process
+  is user invoked or forked. It is used by the Info functions
+  to indicate source of messages.
+********************************************************/
 static int
 tcl_fork (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -450,6 +474,12 @@ tcl_fork (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     tcl_append_int(interp,child_pid);
     return TCL_OK;
 }
+
+/********************************************************
+  Timing report retrieves and resets the global variables 
+  get_Tcl_timer and get_Tcl_counter
+********************************************************/
+
 static int
 tcl_timer_report (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -458,34 +488,39 @@ tcl_timer_report (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
         return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
-    tcl_append_float(interp,(1e3*get_Ids_timer)/get_Ids_counter);
-    tcl_append_float(interp,get_Ids_timer);
-    tcl_append_int(interp,get_Ids_counter);
-    get_Ids_timer=0;
-    get_Ids_counter=0;
+    tcl_append_float(interp,(1e3*get_Tcl_timer)/get_Tcl_counter);
+    tcl_append_float(interp,get_Tcl_timer);
+    tcl_append_int(interp,get_Tcl_counter);
+    get_Tcl_timer=0;
+    get_Tcl_counter=0;
     return TCL_OK;
 }
+
+/********************************************************
+    LUT support commands
+********************************************************/
+
 static int
-array_set_legend (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+LUT_set_legend (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
     if (argc!=5) {
-        #Error: "array_set_legend requires array name, dimension, coordinate and physical value"
+        #Error: "LUT_set_legend requires array name, dimension, coordinate and physical value"
         return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
     LUT *a=get_LUT(argv[1]);
     if (a==NULL) {
-        #Error: "(array_set_legend) No such array: %s" argv[1]
+        #Error: "(LUT_set_legend) No such array: %s" argv[1]
         return TCL_ERROR;
     }
     ordinal l_index=atoi(argv[2]);
     if (l_index>=a->dim) {
-        #Error: "(array_set_legend) index %s exceeds array's dimension" argv[2]
+        #Error: "(LUT_set_legend) index %s exceeds array's dimension" argv[2]
         return TCL_ERROR;
     }
     ordinal s_index=atoi(argv[3]);
     if (s_index>=a->size[l_index]) {
-        #Error: "(array_set_legend) index %s exceeds array's size" argv[3]
+        #Error: "(LUT_set_legend) index %s exceeds array's size" argv[3]
         return TCL_ERROR;
     }
     a->legend[l_index][s_index]=atof(argv[4]);
@@ -498,63 +533,63 @@ array_set_legend (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 static int
-array_get_legend (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+LUT_get_legend (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
     if (argc!=4) {
-        #Error: "array_get_legend requires array name, dimension, coordinat and legend"
+        #Error: "LUT_get_legend requires array name, dimension, coordinat and legend"
         return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
     LUT *a=get_LUT(argv[1]);
     if (a==NULL) {
-        #Error: "(array_get_legend) No such array: %s" argv[1]
+        #Error: "(LUT_get_legend) No such array: %s" argv[1]
         return TCL_ERROR;
     }
     int l_index=atoi(argv[2]);
     if (l_index>=a->dim) {
-        #Error: "(array_get_legend) index %s exceeds array's dimension" argv[2]
+        #Error: "(LUT_get_legend) index %s exceeds array's dimension" argv[2]
         return TCL_ERROR;
     }
     int s_index=atoi(argv[3]);
     if (s_index>=a->size[l_index]) {
-        #Error: "(array_get_legend) index %s exceeds array's size" argv[3]
+        #Error: "(LUT_get_legend) index %s exceeds array's size" argv[3]
         return TCL_ERROR;
     }
     tcl_append_float(interp,a->legend[l_index][s_index]);
     return TCL_OK;
 }
 static int
-array_get_dim (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+LUT_get_dim (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
     if (argc!=2) {
-        #Error: "array_get_dim  requires array name"
+        #Error: "LUT_get_dim  requires array name"
         return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
     LUT *a=get_LUT(argv[1]);
     if (a==NULL) {
-        #Error: "(array_get_legend) No such array: %s" argv[1]
+        #Error: "(LUT_get_legend) No such array: %s" argv[1]
         return TCL_ERROR;
     }
     tcl_append_int(interp,a->dim);
     return TCL_OK;
 }
 static int
-array_get_size (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+LUT_get_size (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
     if (argc!=3) {
-        #Error: "array_get_size requires array name, dimension"
+        #Error: "LUT_get_size requires array name, dimension"
         return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
     LUT *a=get_LUT(argv[1]);
     if (a==NULL) {
-        #Error: "(array_get_size) No such array: %s" argv[1]
+        #Error: "(LUT_get_size) No such array: %s" argv[1]
         return TCL_ERROR;
     }
     int l_index=atoi(argv[2]);
     if (l_index>=a->dim) {
-        #Error: "(array_get_size) index %s exceeds array's dimension" argv[2]
+        #Error: "(LUT_get_size) index %s exceeds array's dimension" argv[2]
         return TCL_ERROR;
     }
     tcl_append_int(interp,a->size[l_index]);
@@ -579,7 +614,7 @@ normalize_ids (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     return TCL_OK;
 }
 static int
-array_list (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+LUT_list (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
     if (argc<2) {
         #Error: "(%s) requires array name" argv[0]
@@ -588,7 +623,7 @@ array_list (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     Tcl_ResetResult(interp);
     LUT *a=get_LUT(argv[1]);
     if (a==NULL) {
-        #Error: "(array_list) No such array: %s" argv[1]
+        #Error: "(LUT_list) No such array: %s" argv[1]
         return TCL_ERROR;
     }
     int i;
@@ -611,6 +646,30 @@ tcl_generate_lit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     new_linear_interpolation_table(a);
     return TCL_OK;
 }
+/********************************************************
+    Simulation slice saving functions
+    *********************************
+    Once a DC loop has run, the results can be saved in a binary file
+    that can be later used to populate a LUT.
+    The interim binary file is necessary for now, because the runs
+    may be split to different processes and the parent process 
+    needs to collect all the results to a single LUT.
+    
+    Slices can be saved as-is, or be processed on the fly 
+    to perform derivatives of simulations. The baseline command
+    sets a certain slice as reference for future processing.
+    If, for instance, a gm vector is needed. The ids slice for 
+    one Vgs sweep can be set as baseline and then a following 
+    Vgs+epsilon sweep can be saved as differential, with the 1/epsilon
+    factor. 
+    delta saving is designed for vectors of totem-pole circuits, 
+    where the voltage we want is the difference between drain and source and
+    not the absolute value of all the sources. 
+    The two, delta and differential functions, can be combined in a 4th 
+    slice-saving function.
+    Finally, a complementary load_characterization_slice function
+    takes a slice and uses it to populate part of a LUT.
+********************************************************/
 
 static int
 baseline_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
@@ -1050,6 +1109,14 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
     return TCL_OK;
 }
 
+/********************************************************
+    DEPRECATED: Tcl based LUT populating function.
+    LUT's should not be dumped and loaded in ASCII files,
+    because of run time constraints.
+    The cTree database system takes care of binary marshalling
+    and file saving/loading of LUT's as well as other 
+    data structures.
+********************************************************/
 
 static int
 array_data (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -1093,6 +1160,7 @@ array_data (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     #Info: "loaded %s" argv[1],volume
     return TCL_OK;
 }
+
 int array_save(LUT *a,char *filename,int append_mode) {
     FILE *O;
     if (append_mode) {
@@ -1963,8 +2031,8 @@ Spice_Init(Tcl_Interp *interp)
     if (interp == 0)
     return TCL_ERROR;
     verbose=0;
-    get_Ids_timer=0;
-    get_Ids_counter=0;
+    get_Tcl_timer=0;
+    get_Tcl_counter=0;
     save_slice_base=NULL;
     #ifdef USE_TCL_STUBS
     if (Tcl_InitStubs(interp, (char *)"8.1", 0) == NULL)
@@ -4567,13 +4635,13 @@ int register_tcl_functions(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "fork", tcl_fork, NULL, NULL);
     Tcl_CreateCommand(interp, "array_set", array_set, NULL, NULL);
     Tcl_CreateCommand(interp, "array_get", array_get, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_list", array_list, NULL, NULL);
+    Tcl_CreateCommand(interp, "LUT_list", LUT_list, NULL, NULL);
     Tcl_CreateCommand(interp, "array_data", array_data, NULL, NULL);
     Tcl_CreateCommand(interp, "timer_report", tcl_timer_report, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_set_legend", array_set_legend, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_get_legend", array_get_legend, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_get_dim", array_get_dim, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_get_size", array_get_size, NULL, NULL);
+    Tcl_CreateCommand(interp, "LUT_set_legend", LUT_set_legend, NULL, NULL);
+    Tcl_CreateCommand(interp, "LUT_get_legend", LUT_get_legend, NULL, NULL);
+    Tcl_CreateCommand(interp, "LUT_get_dim", LUT_get_dim, NULL, NULL);
+    Tcl_CreateCommand(interp, "LUT_get_size", LUT_get_size, NULL, NULL);
     Tcl_CreateCommand(interp, "alter_param", alter_param, NULL, NULL);
     Tcl_CreateCommand(interp, "set_param", set_param, NULL, NULL);
     Tcl_CreateCommand(interp, "list_bytecode", tcl_list_bytecode, NULL, NULL);
@@ -4659,8 +4727,8 @@ int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
             Tcl_Eval(interp,"puts $errorInfo");
         }
         #Info: "Done sourcing Tcl script: %s" argv[i]
-        if (get_Ids_counter) {
-            #Info: "Average Interpolation CPU time: %ld ns" (1e3*get_Ids_timer)/get_Ids_counter
+        if (get_Tcl_counter) {
+            #Info: "Average Interpolation CPU time: %ld ns" (1e3*get_Tcl_timer)/get_Tcl_counter
         }
     }
     if ((network_node_type!=net_mode_null)&&(this_is_a_network_node)) {

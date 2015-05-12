@@ -92,8 +92,8 @@ tcl_bsim_${bsim_version} (ClientData clientData,Tcl_Interp *interp,int argc,char
         }
     }
     getrusage(RUSAGE_SELF,&end);
-    get_Ids_timer+=1000000*(end.ru_utime.tv_sec-start.ru_utime.tv_sec)+end.ru_utime.tv_usec-start.ru_utime.tv_usec;
-    get_Ids_counter++;
+    get_Tcl_timer+=1000000*(end.ru_utime.tv_sec-start.ru_utime.tv_sec)+end.ru_utime.tv_usec-start.ru_utime.tv_usec;
+    get_Tcl_counter++;
     return TCL_OK;
 }
 }

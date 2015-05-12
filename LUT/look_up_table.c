@@ -215,8 +215,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             }
             retval=interpolation_buffer0/volume;
             Tcl_GetTime(&end_time);
-            get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-            get_Ids_counter++;
+            get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+            get_Tcl_counter++;
             return(retval);
             
             //// Older HIT	    
@@ -232,8 +232,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
                     //#Info: "Slope=%g Coord=%g => %g" slope coord[$i] retval
                 }    
                 Tcl_GetTime(&end_time);
-                get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-                get_Ids_counter++;
+                get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+                get_Tcl_counter++;
                 return(retval);
             }
             if (bc&HIT_FULL_INTERP) {
@@ -267,8 +267,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
                 }
                 retval=interpolation_buffer0/volume;
                 Tcl_GetTime(&end_time);
-                get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-                get_Ids_counter++;
+                get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+                get_Tcl_counter++;
                 return(retval);
             }
             if (bc&HIT_CFULL_INTERP) {
@@ -306,8 +306,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
                 }
                 retval=resolution_step*interpolation_buffer0/volume+baseline;
                 Tcl_GetTime(&end_time);
-                get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-                get_Ids_counter++;
+                get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+                get_Tcl_counter++;
                 return(retval);
             }
         }
@@ -395,8 +395,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         retval=interpolation_buffer0;
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
-        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-        get_Ids_counter++;
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
         return(retval);
     }
 }
@@ -520,8 +520,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         retval=interpolation_buffer0/a->hypercube_volume;
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
-        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-        get_Ids_counter++;
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
         return(retval);
     }
 } 
@@ -578,8 +578,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=interpolation_buffer0/a->hypercube_volume;
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
-        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-        get_Ids_counter++;
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
     }
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
@@ -645,8 +645,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	//#Info: "Result: %g => %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStackIndex+1
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
-        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-        get_Ids_counter++;
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
     }
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
@@ -757,8 +757,8 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         retval=interpolation_buffer0/hyper_volume;
         interpolation_time_$DIM:
         Tcl_GetTime(&end_time);
-        get_Ids_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
-        get_Ids_counter++;
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
         return(retval);
     }
 }

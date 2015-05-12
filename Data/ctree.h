@@ -330,8 +330,8 @@ int Spice_Init(Tcl_Interp *interp);
 int SIMinit(IFfrontEnd *frontEnd, IFsimulator **simulator);
 float debug_entries[MAXDIM];
 int debug_entries_index;
-float get_Ids_timer;
-ordinal get_Ids_counter;
+float get_Tcl_timer;
+ordinal get_Tcl_counter;
 struct plot *save_slice_base;
 int this_process_forked;
 #endif
