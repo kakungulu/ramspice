@@ -8,9 +8,9 @@
    The main routine for ngspice
 */
 #include "ngspice/ngspice.h"
-#include "Data/ctree.h"
-#include "LUT/look_up_table.h"
-#include "frontend/tcl_input.h"
+#include "Gamma/Data/ctree.h"
+#include "Gamma/LUT/look_up_table.h"
+#include "Gamma/MC/tcl_input.h"
 //#include "Analysis/dc_analysis.h"
 #include <db.h>
 #ifdef HAVE_ASPRINTF

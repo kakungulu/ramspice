@@ -1,7 +1,7 @@
 #ifndef GammaVirtualMachine
 #define GammaVirtualMachine
 #include "ramspice_types.h"
-#include "Data/ctree.h"
+#include "Gamma/Data/ctree.h"
 #include <tcl.h>
 #define GammaVirtualMachineGosubStackSize $::GammaVirtualMachineGosubStackSize
 #define GammaVirtualMachineStackSize $::GammaVirtualMachineStackSize

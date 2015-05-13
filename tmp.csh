@@ -1,1 +1,0 @@
-/home/ystatter/mengo_deprecated//utils/reduced_collect_random_sample.tcl -topv 1.8 -tech tsmc018 -device nch -process ss -size 500 -source /home/ystatter/mengo_deprecated/Tech_DB/tsmc018/reduced/3.5:7:4:7 -interpolation LUT
