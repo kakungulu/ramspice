@@ -1,4 +1,4 @@
-source $::env(RAMSPICE)/unknown.tcl
+source $::env(RAMSPICE)/Etc/utils/unknown
 proc args {args_var} {
     upvar $args_var args
     if {[llength $args]==1} {
