@@ -15,9 +15,11 @@ while {[uplevel "expr $condition"]} {
         uplevel $step
     }
 }
-proc If: {condition body} {
+proc If: {condition body {else {}}} {
 if {[uplevel "expr $condition"]} {
         uplevel [list tcl_preprocessor $body]
+    } else {
+        uplevel [list tcl_preprocessor $else]
     }
 }
 
