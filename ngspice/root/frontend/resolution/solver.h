@@ -1,0 +1,3 @@
+#ifndef RESOLUTION_SOLVER
+#define RESOLUTION_SOLVER
+#endif

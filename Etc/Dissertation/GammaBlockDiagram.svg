@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created by diasvg.py -->
+<svg width="51.366cm" height="18.639cm" viewBox="27.424 5.861 78.789 24.500"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+<path stroke="#000000" fill="none" stroke-width="0.100"  d="M 27.524,16.257 C 31.924,12.557 32.924,21.457 33.224,21.757 "/>
+<line x1="27.524" y1="16.357" x2="27.474" y2="6.007" stroke="#000000" stroke-width="0.100" />
+<line x1="27.474" y1="6.007" x2="33.074" y2="6.007" stroke="#000000" stroke-width="0.100" />
+<line x1="33.102" y1="6.037" x2="33.124" y2="21.357" stroke="#000000" stroke-width="0.100" />
+<text x="28.160" y="7.037"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+Branch Stack</text>
+<path stroke="#000000" fill="none" stroke-width="0.100"  d="M 34.169,16.236 C 38.569,12.536 39.569,21.436 39.869,21.736 "/>
+<line x1="34.169" y1="16.336" x2="34.119" y2="5.986" stroke="#000000" stroke-width="0.100" />
+<line x1="34.119" y1="5.986" x2="39.719" y2="5.986" stroke="#000000" stroke-width="0.100" />
+<line x1="39.747" y1="6.017" x2="39.769" y2="21.336" stroke="#000000" stroke-width="0.100" />
+<text x="34.929" y="7.121"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+Data Stack</text>
+<rect x="41.073" y="5.911" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.073" y="5.911" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="41.482" y="7.021"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+Program Batch</text>
+<ellipse cx="55.202" cy="17.700" rx="0.357" ry="0.357" fill="#FFFFFF" stroke="none"  /><ellipse cx="55.202" cy="17.700" rx="0.357" ry="0.357" fill="none" stroke="#000000"  stroke-width="0.100" /><ellipse cx="55.202" cy="18.962" rx="0.357" ry="0.357" fill="#FFFFFF" stroke="none"  /><ellipse cx="55.202" cy="18.962" rx="0.357" ry="0.357" fill="none" stroke="#000000"  stroke-width="0.100" /><ellipse cx="55.202" cy="20.223" rx="0.357" ry="0.357" fill="#FFFFFF" stroke="none"  /><ellipse cx="55.202" cy="20.223" rx="0.357" ry="0.357" fill="none" stroke="#000000"  stroke-width="0.100" /><rect x="51.082" y="21.815" width="8.241" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="51.082" y="21.815" width="8.241" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="51.747" y="23.033"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+GammaCmdGoSub</text>
+<rect x="51.082" y="13.543" width="8.241" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="51.082" y="13.543" width="8.241" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="51.621" y="14.635"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+GammaCmdLimit</text>
+<rect x="51.082" y="9.744" width="8.241" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="51.082" y="9.744" width="8.241" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="51.082" y="5.944" width="8.241" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="51.082" y="5.944" width="8.241" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="51.460" y="6.932"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+GammaCmdInterpolate</text>
+<rect x="41.070" y="7.983" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="7.983" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="10.013" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="10.013" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="12.086" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="12.086" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="14.159" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="14.159" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="16.223" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="16.223" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="18.254" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="18.254" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="20.327" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="20.327" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="41.070" y="22.400" width="5.713" height="2.051" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="41.070" y="22.400" width="5.713" height="2.051" fill="none" stroke="#000000" stroke-width="0.100" />
+<line x1="46.783" y1="9.008" x2="50.574" y2="7.437" stroke="#000000" stroke-width="0.100" />
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="50.670,7.668 51.036,7.245 50.478,7.206 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="50.670,7.668 51.036,7.245 50.478,7.206 "/>
+<line x1="46.783" y1="11.039" x2="50.669" y2="14.462" stroke="#000000" stroke-width="0.100" />
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="50.504,14.650 51.044,14.793 50.834,14.274 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="50.504,14.650 51.044,14.793 50.834,14.274 "/>
+<line x1="46.783" y1="13.111" x2="50.587" y2="11.266" stroke="#000000" stroke-width="0.100" />
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="50.696,11.491 51.037,11.048 50.478,11.041 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="50.696,11.491 51.037,11.048 50.478,11.041 "/>
+<line x1="46.783" y1="17.249" x2="50.756" y2="22.654" stroke="#000000" stroke-width="0.100" />
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="50.555,22.803 51.052,23.057 50.958,22.506 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="50.555,22.803 51.052,23.057 50.958,22.506 "/>
+<line x1="46.783" y1="21.352" x2="50.779" y2="15.285" stroke="#000000" stroke-width="0.100" />
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="50.988,15.422 51.054,14.867 50.571,15.147 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="50.988,15.422 51.054,14.867 50.571,15.147 "/>
+<text x="51.642" y="10.882"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+GammaCmdPushVar</text>
+<rect x="63.296" y="6.175" width="1.653" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="63.296" y="6.175" width="1.653" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="64.045" y="7.645"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+/</text>
+<rect x="66.786" y="9.118" width="3.671" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="66.786" y="9.118" width="3.671" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<rect x="66.870" y="13.448" width="3.671" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="66.870" y="13.448" width="3.671" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="67.402" y="14.899"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+Variables</text>
+<text x="68.165" y="10.714"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+LUT</text>
+<rect x="71.999" y="17.527" width="3.671" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="71.999" y="17.527" width="3.671" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="72.748" y="18.955"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+Node3</text>
+<rect x="77.045" y="21.647" width="1.695" height="2.565" fill="#FFFFFF" stroke="none" stroke-width="0"/>
+<rect x="77.045" y="21.647" width="1.695" height="2.565" fill="none" stroke="#000000" stroke-width="0.100" />
+<text x="77.793" y="23.075"  fill="#000000" text-anchor="start" font-size="0.60" font-family="sans" font-style="normal" font-weight="400">
+V</text>
+<polyline fill="none" stroke="#000000" stroke-width="0.100"  points="64.122,8.739 64.122,10.400 66.786,10.400 "/>
+<polyline fill="none" stroke="#000000" stroke-width="0.100"  points="64.122,8.739 64.108,8.739 64.108,14.731 66.870,14.731 "/>
+<polyline fill="none" stroke="#000000" stroke-width="0.100"  points="68.705,16.013 68.705,18.809 71.999,18.809 "/>
+<polyline fill="none" stroke="#000000" stroke-width="0.100"  points="73.835,20.091 73.835,22.929 77.045,22.929 "/>
+<line x1="46.783" y1="15.184" x2="76.512" y2="22.793" stroke="#000000" stroke-width="0.100" stroke-dasharray="0.10,0.10"/>
+<polygon fill="#000000" stroke="none" stroke-width="0.100" points="76.450,23.035 76.996,22.917 76.574,22.551 "/>
+<polygon fill="none" stroke="#000000" stroke-width="0.100"  points="76.450,23.035 76.996,22.917 76.574,22.551 "/>
+</svg>
