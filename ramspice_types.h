@@ -43,6 +43,50 @@ typedef union {
 } DC;
 #define BYTES_PER_FLOAT 4
 #define BYTES_PER_DOUBLE BYTES_PER_FLOAT*2
+
+
+#ifndef	M_PI
+#  define M_PI       3.14159265358979323846
+#endif
+#ifndef	M_E
+#  define M_E  	     2.7182818284590452354
+#endif
+#ifndef	M_LOG2E
+#  define M_LOG2E    1.4426950408889634074
+#endif
+#ifndef	M_LOG10E
+#  define M_LOG10E   0.43429448190325182765
+#endif
+
+
+/*
+ *  IEEE Floating point
+ */
+
+#define MAX_EXP_ARG	709.0
+
+#ifndef DBL_EPSILON
+# define DBL_EPSILON	2.2204460492503131e-16
+#endif
+#ifndef DBL_MAX
+# define DBL_MAX	1.79769313486231e+308
+#endif
+#ifndef DBL_MIN
+# define DBL_MIN	2.22507385850721e-308
+#endif
+#ifndef SHRT_MAX
+# define SHRT_MAX	32766
+#endif
+#ifndef INT_MAX
+# define INT_MAX	2147483646
+#endif
+#ifndef LONG_MAX
+# define LONG_MAX	2147483646
+#endif
+
+
+
+
 #else
 #Foreach: var $::global_c_variables {
     extern float $var;
