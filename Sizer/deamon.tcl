@@ -20,7 +20,7 @@ default ::opt(mode) dc
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
-default ::opt(source) Tech_DB/tsmc040/4d/5:5:3:6/
+default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
@@ -740,7 +740,7 @@ switch $::opt(topology) {
         #    rload outp 0 1e+7
         .property Adc -expression (derive(outp:V,pos_input)-derive(outp:V,neg_input))/Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
     }
-    nmos {
+    nmos_cs {
         default ::opt(vin) [expr $::opt(topv)/2]
         @ param:ref_current = 15e-6
         @ param:vin = $::opt(vin)
@@ -764,7 +764,7 @@ switch $::opt(topology) {
         .property Adc -expression derive(out,param:vin)  -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         .spec Adc < -15
     }
-    pmos {
+    pmos_cs {
         @ size:L !
         @ size:L = 360e-9
         @ size:L:min = 40e-9
