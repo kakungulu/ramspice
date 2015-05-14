@@ -295,3 +295,4 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         file link -s ${binary} bin/${binary}-regular
     }
 }
+exit
