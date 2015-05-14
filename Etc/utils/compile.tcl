@@ -10,26 +10,27 @@ source $::env(RAMSPICE)/Etc/utils/unknown.tcl
 
 
 # Gamma support comes in here:
-source $::env(RAMSPICE)/Gamma/virtual_machine.tcl
-set O [open $::env(RAMSPICE)/Gamma/Gamma.h w]
-puts $O "#ifndef Gamma"
-puts $O "#define Gamma"
-puts $O "#include \"ramspice_types.h\""
-puts $O "#include \"Gamma/virtual_machine.h\""
-#puts $O "#include <tcl.h>"
-close $O
-set O [open $::env(RAMSPICE)/Gamma/Gamma.c w]
-puts $O "#include <stdio.h>"
-puts $O "#include <stdlib.h>"
-puts $O "#include \"Data/ctree.h\""
-puts $O "#include \"Gamma/Gamma.h\""
-close $O
-source $::env(RAMSPICE)/Gamma/Gamma.tcl
-GammaTclInterface
-set O [open $::env(RAMSPICE)/Gamma/Gamma.h a]
-puts $O "#endif"
-close $O
-
+if {([file mtime $::env(RAMSPICE)/Gamma/Gamma.c]< [file mtime $::env(RAMSPICE)/Gamma/Gamma.tcl])||([file mtime $::env(RAMSPICE)/Gamma/Gamma.c]< [file mtime $::env(RAMSPICE)/Gamma/virtual_machine.tcl]) } {
+    source $::env(RAMSPICE)/Gamma/virtual_machine.tcl
+    set O [open $::env(RAMSPICE)/Gamma/Gamma.h w]
+    puts $O "#ifndef Gamma"
+    puts $O "#define Gamma"
+    puts $O "#include \"ramspice_types.h\""
+    puts $O "#include \"Gamma/virtual_machine.h\""
+    #puts $O "#include <tcl.h>"
+    close $O
+    set O [open $::env(RAMSPICE)/Gamma/Gamma.c w]
+    puts $O "#include <stdio.h>"
+    puts $O "#include <stdlib.h>"
+    puts $O "#include \"Data/ctree.h\""
+    puts $O "#include \"Gamma/Gamma.h\""
+    close $O
+    source $::env(RAMSPICE)/Gamma/Gamma.tcl
+    GammaTclInterface
+    set O [open $::env(RAMSPICE)/Gamma/Gamma.h a]
+    puts $O "#endif"
+    close $O
+}
 ###############
 # Preprocessed code files are beutified automatically
 # Procedure to figure out indentation. 
@@ -180,7 +181,6 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         set pre_c "/usr/bin/gcc -I${preprocessed}  -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
         set pre_cpp "/usr/bin/g++  -I${preprocessed} -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
-        puts "Info: Expanding templates"
         array set mtimes {}
         set copied_filenames {}
         foreach path [all_paths] {
@@ -188,11 +188,12 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                 source $file
             }
         }   
+	set skip_compilation 1
         foreach path [all_paths] {
-	    if {$binary=="gamma" && [string match *spice* $path]} continue
+            if {$binary=="gamma" && [string match *spice* $path]} continue
             foreach file [glob -nocomplain $path/*.h $path/*.c $path/*.cpp] {
-  	      if {$binary=="ramspice" && [string match *Gamma/main.c $file]} continue
-              set filename [file tail $file]
+                if {$binary=="ramspice" && [string match *Gamma/main.c $file]} continue
+                set filename [file tail $file]
                 set fileext [file extension $file]
                 set fileroot [file rootname $filename]
                 set tmpdir [join [concat ${preprocessed} [lrange [split [file dirname [file normalize $file]] /] [llength [split [pwd] /]] end]] /]
@@ -217,6 +218,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                     if {[file mtime $target_file]>[file mtime $file]} continue
                 }
                 puts "Info: Preprocessing $file to $target_file"
+		set skip_compilation 0
                 set I [open $file r]
                 set ::templates::O [open $target_file w]
                 set ::rank 0
@@ -225,6 +227,10 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                 close $I
             }
         }    
+	if {$skip_compilation} {
+            puts "Info: ${binary}-${target} is up to date"
+	    continue
+	}
         puts "Info: Creating compilation script [c]"
         foreach path [all_paths ${preprocessed}] {
             foreach file [glob -nocomplain $path/*.c $path/*.cpp] {
