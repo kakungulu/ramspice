@@ -180,7 +180,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
             cd $pwd
         }
         
-        set O [open compile.tcsh w]
+        set O [open compile${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         set pre_c "/usr/bin/gcc -I${preprocessed}  -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
@@ -275,25 +275,27 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                 }
             }
         }
+	puts $O exit
         close $O
         
-        set O [open link.tcsh w]
+        set O [open link${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl  -ldb-4.7  $object_files/*.o -o $target_name | & tee -a log"
+	puts $O exit
         close $O
         if {![file exists $object_files]} {
             file mkdir $object_files
         }
-        exec chmod +x ./compile.tcsh
-        exec chmod +x ./link.tcsh
+        exec chmod +x ./compile${binary}-$target.tcsh
+        exec chmod +x ./link${binary}-$target.tcsh
         
         puts "Info: Compiling [c]"
-        exec ./compile.tcsh
+        exec ./compile${binary}-$target.tcsh
         puts "Info: Linking [c]"
-        exec ./link.tcsh
-        file delete compile.tcsh
-        file delete link.tcsh
+        exec ./link${binary}-$target.tcsh
+        file delete compile${binary}-$target.tcsh
+        file delete link${binary}-$target.tcsh
     }
     if {![file exists $::env(RAMSPICE)/${binary}]} {
         file link -s ${binary} bin/${binary}-regular

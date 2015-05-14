@@ -201,7 +201,6 @@ void GammaCommandPolynomial() {
  FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=calc_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -213,7 +212,6 @@ void GammaCommandRoot() {
  FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=root_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P,0);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -226,7 +224,6 @@ void GammaCommandDerive() {
  FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=derive_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -239,7 +236,6 @@ void GammaCommandImpDerive() {
  FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F=imp_derive_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].P,0);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex+=2;
     }
     GammaVirtualMachineBatchProgramCounter+=1;

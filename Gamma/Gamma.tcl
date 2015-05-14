@@ -75,21 +75,17 @@ GammaCommand Pop {} {
 
 GammaCommand Polynomial {} {
     @F(1)=calc_POLY(@P(1));
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
 }
 GammaCommand Root {} {
     @F(2)=root_POLY(@P(1),@P(2),0);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
 }
 GammaCommand Derive {} {
     @F(2)=derive_POLY(@P(1),@P(2));
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
 }
 GammaCommand ImpDerive {} {
     @F(3)=imp_derive_POLY(@P(1),@P(2),@P(3),0);
-    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex+=2;
 }
 GammaCommand Interpolate {} {
