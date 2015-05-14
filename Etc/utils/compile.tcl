@@ -10,7 +10,11 @@ source $::env(RAMSPICE)/Etc/utils/unknown.tcl
 
 
 # Gamma support comes in here:
-if {([file mtime $::env(RAMSPICE)/Gamma/Gamma.c]< [file mtime $::env(RAMSPICE)/Gamma/Gamma.tcl])||([file mtime $::env(RAMSPICE)/Gamma/Gamma.c]< [file mtime $::env(RAMSPICE)/Gamma/virtual_machine.tcl]) } {
+set gamma_c_mtime 0
+if {[file exists $::env(RAMSPICE)/Gamma/Gamma.c]} {
+    set gamma_c_mtime [file mtime $::env(RAMSPICE)/Gamma/Gamma.c]
+}
+if {($gamma_c_mtime< [file mtime $::env(RAMSPICE)/Gamma/Gamma.tcl])||($gamma_c_mtime< [file mtime $::env(RAMSPICE)/Gamma/virtual_machine.tcl]) } {
     source $::env(RAMSPICE)/Gamma/virtual_machine.tcl
     set O [open $::env(RAMSPICE)/Gamma/Gamma.h w]
     puts $O "#ifndef Gamma"

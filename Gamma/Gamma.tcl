@@ -1,16 +1,16 @@
-GammaCommand Push {double F} {
-    //#Info: "Pushing Constant (%g)" F
+GammaCommand Push {float F} {
+    #Dinfo: "Pushing Constant (%g)" F
     @F(0)=F;
     GammaVirtualMachineStackIndex--;
 }
 
-GammaCommand Default {var Var,double Val} {
+GammaCommand Default {var Var,float Val} {
     if (isnan(*Var)) {
         *Var=Val;
     }
 }
 GammaCommand GoSub {int SubRoutine} {
-    //#Info: "%ld/%ld: Gosub to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize SubRoutine
+    #Dinfo: "%ld/%ld: Gosub to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize SubRoutine
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineBatchProgramCounter;
     GammaVirtualMachineGosubStackIndex--;
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineStackArgs;
@@ -20,7 +20,7 @@ GammaCommand GoSub {int SubRoutine} {
 }
 GammaCommand Return {int NumOfArguments} {
     if (GammaVirtualMachineGosubStackIndex+1>=GammaVirtualMachineGosubStackSize) {
-        //#Info: "Returning to nothing. Stoping!"
+        #Dinfo: "Returning to nothing. Stoping!"
         GammaVirtualMachineReset();
 	return;
     }
@@ -28,7 +28,7 @@ GammaCommand Return {int NumOfArguments} {
     GammaVirtualMachineStackArgs=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
     GammaVirtualMachineGosubStackIndex++;
     GammaVirtualMachineBatchProgramCounter=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
-    //#Info: "%ld/%ld: Returning to %ld with value=%g" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2 @F(1)
+    #Dinfo: "%ld/%ld: Returning to %ld with value=%g" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2 @F(1)
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+NumOfArguments+1].F=@F(1);
     GammaVirtualMachineStackIndex+=NumOfArguments;
 }
@@ -37,7 +37,7 @@ GammaCommand PushArg {int Arg} {
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand TestVar {string VarName,var C} {
-    #Info: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
+    #Dinfo: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
 }
 GammaCommand Tcl {string Code} {
     if (Tcl_Eval(interp,Code)==TCL_ERROR) {
@@ -46,28 +46,28 @@ GammaCommand Tcl {string Code} {
 }
 GammaCommand PushVar {var C} {
     @F(0)=*C;
-    #Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushPointer {var C} {
-    //#Info: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
     @P(0)=C;
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushPOLY {POLY P} {
     @P(0)=P;
-    #Info: "Pushing POLY %x" P
+    #Dinfo: "Pushing POLY %x" P
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PushLUT {LUT C} {
-    //#Info: "Pushing pointer %x" C 
+    #Dinfo: "Pushing pointer %x" C 
     @P(0)=C;
     GammaVirtualMachineStackIndex--;
 }
 GammaCommand PopVar {var C} {
     GammaVirtualMachineStackIndex++;
-    #Info: "Poping Var %x (%g->%g)" C *((double*)C) @F(0)
-    *((double *)C)=@F(0);
+    #Dinfo: "Poping Var %x (%g->%g)" C *((float*)C) @F(0)
+    *((float *)C)=@F(0);
 }
 GammaCommand Pop {} {
     GammaVirtualMachineStackIndex++;
@@ -75,37 +75,37 @@ GammaCommand Pop {} {
 
 GammaCommand Polynomial {} {
     @F(1)=calc_POLY(@P(1));
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
 }
 GammaCommand Root {} {
     @F(2)=root_POLY(@P(1),@P(2),0);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
 }
 GammaCommand Derive {} {
     @F(2)=derive_POLY(@P(1),@P(2));
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
 }
 GammaCommand ImpDerive {} {
     @F(3)=imp_derive_POLY(@P(1),@P(2),@P(3),0);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C @F(0) GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex+=2;
 }
 GammaCommand Interpolate {} {
-//    #Info: "Accessing LUT at %x" @P(1)
+    #Dinfo: "Accessing LUT at %x" @P(1)
     LUT *a=(LUT *)@P(1);
-//    #Info: "Calling interpolation %x" a->gamma_interpolate
+    #Dinfo: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_interpolate(a);
 }
 GammaCommand Interpolateg {} {
-    //#Info: "Accessing LUT at %x" @P(1)
+    #Dinfo: "Accessing LUT at %x" @P(1)
     LUT *a=(LUT *)@P(1);
-    //#Info: "Calling interpolation %x" a->gamma_interpolate
+    #Dinfo: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_gradient(a);
 }
 set op_template {
-    double F=@F(1)@O@F(2);
+    float F=@F(1)@O@F(2);
     if (isinf(F)==1) {
         //#Warning: "Overflow!"
         F=DBL_MAX;
@@ -117,7 +117,7 @@ set op_template {
     if (fabs(F)>1e20) {
         //#Warning: "Large Number: %g" F
     }	
-    //#Info: "%g@O%g=%g  =>  %d" @F(1) @F(2) F GammaVirtualMachineStackIndex+2
+    #Dinfo: "%g@O%g=%g  =>  %d" @F(1) @F(2) F GammaVirtualMachineStackIndex+2
     @F(2)=F;
     GammaVirtualMachineStackIndex++;
 }
@@ -126,14 +126,14 @@ foreach op {+ - * /} op_name {Plus Minus Mult Div} {
     GammaOperator $op_name {} $body 
 }
 GammaCommand Limit {} {
-    //#Info: "Limit %g (%g,%g)" @F(1) @F(2) @F(3)
+    #Dinfo: "Limit %g (%g,%g)" @F(1) @F(2) @F(3)
     if (@F(1)>@F(3)) @F(1)=@F(3);
     if (@F(1)<@F(2)) @F(1)=@F(2);
 }
 set op_template {
-    //#Info: "%d@O%d   %g@O%g " @I(1) @I(2) @F(1) @F(2)
+    #Dinfo: "%d@O%d   %g@O%g " @I(1) @I(2) @F(1) @F(2)
     @I(2)=@I(1)@O@I(2);
-    //#Info: "= %d" @I(2)
+    #Dinfo: "= %d" @I(2)
     if (!(@I(2))) GammaVirtualMachineSkip=1;
     GammaVirtualMachineStackIndex++;
 }
@@ -142,7 +142,7 @@ foreach op [list || "\\&\\&"] op_name {Or And} {
     GammaOperator $op_name {} $body 
 }
 GammaCommand Reverse {} {
-    double temp=@F(2);
+    float temp=@F(2);
     @F(2)=@F(1);
     @F(1)=temp;
 }
@@ -189,12 +189,12 @@ GammaCommand DeriveDist {} {
 }
 set op_template {
     if (!(@F(1)@O@F(2))) {
-        //#Info: "Failed %g @O %g" @F(1) @F(2)
+        #Dinfo: "Failed %g @O %g" @F(1) @F(2)
 	@I(2)=0;
         GammaVirtualMachineSkip=1;
     } else {
 	@I(2)=1;
-        //#Info: "Passed %g @O %g" @F(1) @F(2)
+        #Dinfo: "Passed %g @O %g" @F(1) @F(2)
     }	
     GammaVirtualMachineStackIndex++;
 }
@@ -214,8 +214,8 @@ GammaCommand Goto {int location} {
 }
 GammaCommand DumpStack {} {
     int i;
-    //#Info: "This is the content of the stack (index=%ld):" GammaVirtualMachineStackIndex
+    #Dinfo: "This is the content of the stack (index=%ld):" GammaVirtualMachineStackIndex
     for (i=GammaVirtualMachineStackSize-1;i>GammaVirtualMachineStackIndex;i--) {
-        //#Info: "Stack[%d] = %f" i GammaVirtualMachineStack[i].F
+        #Dinfo: "Stack[%d] = %f" i GammaVirtualMachineStack[i].F
     }
 }

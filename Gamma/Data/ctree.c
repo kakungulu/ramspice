@@ -174,12 +174,12 @@ void link_POLY(POLY *p) {
     for (i=0;i<argc;i++) {
         if (strcmp(argv[i],"+")==0) {
             SO.v=NULL;
-            add_entry_vector_double(p->polynomial,SO.s);
+            add_entry_vector_float(p->polynomial,SO.s);
             next_is_coeff=1;
             continue;
         }
         if (next_is_coeff) {
-            add_entry_vector_double(p->polynomial,strtod(argv[i],NULL));
+            add_entry_vector_float(p->polynomial,strtod(argv[i],NULL));
             next_is_coeff=0;
             continue;
         }
@@ -192,7 +192,7 @@ void link_POLY(POLY *p) {
             c=create_context(argv[i]);
         }
         SO.v=&(c->value.s);
-        add_entry_vector_double(p->polynomial,SO.s);
+        add_entry_vector_float(p->polynomial,SO.s);
     }
     free(argv);
     free(draft);
@@ -326,7 +326,7 @@ void tcl_append_int(Tcl_Interp *interp,int in_int) {
     sprintf(buf,"%d",in_int);
     Tcl_AppendElement(interp,buf);
 }
-void tcl_append_float(Tcl_Interp *interp,double in_int) {
+void tcl_append_float(Tcl_Interp *interp,float in_int) {
     char buf[16];
     sprintf(buf,"%g",in_int);
     Tcl_AppendElement(interp,buf);
@@ -2326,7 +2326,7 @@ PAT *new_PAT() {
 POLY *new_POLY() {
     POLY *p=(POLY *)malloc(sizeof(POLY));
     p->expression="";
-    p->polynomial=new_vector_double();
+    p->polynomial=new_vector_float();
     p->denom=NULL;
     return(p);
 }
@@ -2992,68 +2992,68 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
 float calc_POLY(POLY *p) {
     ordinal i=0;
     int next_is_coeff=1;
-    double total=0;
-    so_union SO;
+    float total=0;
+    FC SO;
     //#Info: "POLY %x = %s" p p->expression
     for (i=0;i<p->polynomial->num_of;i++) {
-        SO.s=get_entry_vector_double(p->polynomial,i);
+        SO.F=get_entry_vector_float(p->polynomial,i);
         next_is_coeff=1;
-        double term=0;
-        while ((SO.v)&&(i<p->polynomial->num_of)) {
+        float term=0;
+        while ((SO.P)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
-                term=SO.s;
+                term=SO.F;
                 //#Info: "POLY %x const=%g" p term
                 next_is_coeff=0;
                 i++;
-                if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+                if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
                 continue;
             }
-            double var=*((double *)SO.v);
-            //#Info: "POLY %x var %x=%g" p SO.v var
+            float var=*((float *)SO.P);
+            #Dinfo: "POLY %x var %x=%g" p SO.P var
             term*=var;
             i++;
-            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+            if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
         }
         total+=term;
     }
     float retval=total;
-    //#Info: "POLY %x total=%g" p total
+    #Dinfo: "POLY %x total=%g" p total
     if (p->denom) {
         retval/=calc_POLY(p->denom);
-        //#Info: "POLY %x divided to total=%g" p retval
+        #Dinfo: "POLY %x divided to total=%g" p retval
     }
     return(retval);
 }
 float derive_POLY(POLY *p,void *by_var) {
     ordinal i=0;
     int next_is_coeff=1;
-    double total=0;
-    so_union SO;
+    float total=0;
+    FC SO;
     for (i=0;i<p->polynomial->num_of;i++) {
-        SO.s=get_entry_vector_double(p->polynomial,i);
+        SO.F=get_entry_vector_float(p->polynomial,i);
         next_is_coeff=1;
-        double term=0;
+        float term=0;
         int num_of_by_var=0;
-        while ((SO.v)&&(i<p->polynomial->num_of)) {
+        while ((SO.P)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
-                term=SO.s;
+                term=SO.F;
                 next_is_coeff=0;
                 i++;
-                if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+                if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
                 continue;
             }
-            if (SO.v==by_var) {
+            if (SO.P==by_var) {
                 num_of_by_var++;
                 if (num_of_by_var==1) {
                     i++;
-                    if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+                    if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
                     continue;
                 }
             }
-            double var=*((double *)SO.v);
+            float var=*((float *)SO.P);
             term*=var;
             i++;
-            if (i<p->polynomial->num_of) SO.s=get_entry_vector_double(p->polynomial,i);
+            if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
         }
         total+=term*num_of_by_var;
     }
@@ -3071,12 +3071,12 @@ float derive_POLY(POLY *p,void *by_var) {
     }
     return(retval);
 }
-float root_POLY(POLY *p,void *by_var,double init) {
-    double total=init;
-    double *by=(double *)by_var;
-    double original_value=*by;
+float root_POLY(POLY *p,void *by_var,float init) {
+    float total=init;
+    float *by=(float *)by_var;
+    float original_value=*by;
     *by=total;
-    double dist=calc_POLY(p);
+    float dist=calc_POLY(p);
     while (fabs(dist)>1e-20) {
         total-=dist/derive_POLY(p,by_var);
         *by=total;
@@ -3086,13 +3086,13 @@ float root_POLY(POLY *p,void *by_var,double init) {
     *by=original_value;
     return(retval);
 }
-float imp_derive_POLY(POLY *p,void *by_var,void *root_var,double init) {
-    double root_value=root_POLY(p,root_var,init);
-    double *root=(double *)root_var;
-    double original_value=*root;
+float imp_derive_POLY(POLY *p,void *by_var,void *root_var,float init) {
+    float root_value=root_POLY(p,root_var,init);
+    float *root=(float *)root_var;
+    float original_value=*root;
     *root=root_value;
-    double nom=derive_POLY(p,by_var);
-    double denom=derive_POLY(p,root_var);
+    float nom=derive_POLY(p,by_var);
+    float denom=derive_POLY(p,root_var);
     *root=original_value;
     float retval=-nom/denom;
     return(retval);
@@ -3226,7 +3226,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The root command requires a by-variable"
             return TCL_ERROR;
         }
-        double init=0;
+        float init=0;
         if (argc==5) init=strtod(argv[4],NULL);
         context *by=Context;
         float *array_entry;
@@ -3252,7 +3252,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The implicit derivative command requires two by-variables"
             return TCL_ERROR;
         }
-        double init=0;
+        float init=0;
         if (argc==6) init=strtod(argv[5],NULL);
         float *array_context;
         context *by=Context;

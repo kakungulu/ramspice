@@ -1,4 +1,4 @@
-RAMSpice "Mengo" build
+RAMSpice "Elgon" build
 ======================
 
     Setup

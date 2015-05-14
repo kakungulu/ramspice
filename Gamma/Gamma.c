@@ -6,11 +6,11 @@ void GammaCommandPush() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Push" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
-        double F=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].F;
+    #Dinfo: "%ld: Push" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+        float F=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].F;
 
-    //#Info: "Pushing Constant (%g)" F
+    #Dinfo: "Pushing Constant (%g)" F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F=F;
     GammaVirtualMachineStackIndex--;
     }
@@ -20,10 +20,10 @@ void GammaCommandDefault() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Default" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
-        double *Var=(double *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
-        double Val=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+2].F;
+    #Dinfo: "%ld: Default" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+        float *Var=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
+        float Val=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+2].F;
 
     if (isnan(*Var)) {
         *Var=Val;
@@ -35,11 +35,11 @@ void GammaCommandGoSub() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: GoSub" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: GoSub" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         ordinal SubRoutine=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].I;
 
-    //#Info: "%ld/%ld: Gosub to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize SubRoutine
+    #Dinfo: "%ld/%ld: Gosub to %ld" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize SubRoutine
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineBatchProgramCounter;
     GammaVirtualMachineGosubStackIndex--;
     GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I=GammaVirtualMachineStackArgs;
@@ -53,12 +53,12 @@ void GammaCommandReturn() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Return" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Return" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         ordinal NumOfArguments=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].I;
 
     if (GammaVirtualMachineGosubStackIndex+1>=GammaVirtualMachineGosubStackSize) {
-        //#Info: "Returning to nothing. Stoping!"
+        #Dinfo: "Returning to nothing. Stoping!"
         GammaVirtualMachineReset();
 	return;
     }
@@ -66,7 +66,7 @@ void GammaCommandReturn() {
     GammaVirtualMachineStackArgs=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
     GammaVirtualMachineGosubStackIndex++;
     GammaVirtualMachineBatchProgramCounter=GammaVirtualMachineGosubStack[GammaVirtualMachineGosubStackIndex].I;
-    //#Info: "%ld/%ld: Returning to %ld with value=%g" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F
+    #Dinfo: "%ld/%ld: Returning to %ld with value=%g" GammaVirtualMachineGosubStackIndex GammaVirtualMachineGosubStackSize GammaVirtualMachineBatchProgramCounter+2 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+NumOfArguments+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
     GammaVirtualMachineStackIndex+=NumOfArguments;
     }
@@ -76,8 +76,8 @@ void GammaCommandPushArg() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PushArg" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: PushArg" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         ordinal Arg=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].I;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F=GammaVirtualMachineStack[GammaVirtualMachineStackArgs+Arg].F;
@@ -89,12 +89,12 @@ void GammaCommandTestVar() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: TestVar" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: TestVar" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         char *VarName=(char *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
-        double *C=(double *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+2].P;
+        float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+2].P;
 
-    #Info: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
+    #Dinfo: "Test Point %s=%g (%x) (%ld:)" VarName *C C GammaVirtualMachineBatchProgramCounter
     }
     GammaVirtualMachineBatchProgramCounter+=3;
 }
@@ -102,8 +102,8 @@ void GammaCommandTcl() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Tcl" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Tcl" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         char *Code=(char *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
     if (Tcl_Eval(interp,Code)==TCL_ERROR) {
@@ -116,12 +116,12 @@ void GammaCommandPushVar() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PushVar" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
-        double *C=(double *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
+    #Dinfo: "%ld: PushVar" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+        float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F=*C;
-    #Info: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex--;
     }
     GammaVirtualMachineBatchProgramCounter+=2;
@@ -130,11 +130,11 @@ void GammaCommandPushPointer() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PushPointer" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
-        double *C=(double *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
+    #Dinfo: "%ld: PushPointer" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+        float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
-    //#Info: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing pointer %x to %d" C GammaVirtualMachineStackIndex
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].P=C;
     GammaVirtualMachineStackIndex--;
     }
@@ -144,12 +144,12 @@ void GammaCommandPushPOLY() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PushPOLY" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: PushPOLY" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         POLY *P=(POLY *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].P=P;
-    #Info: "Pushing POLY %x" P
+    #Dinfo: "Pushing POLY %x" P
     GammaVirtualMachineStackIndex--;
     }
     GammaVirtualMachineBatchProgramCounter+=2;
@@ -158,11 +158,11 @@ void GammaCommandPushLUT() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PushLUT" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: PushLUT" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         LUT *C=(LUT *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
-    //#Info: "Pushing pointer %x" C 
+    #Dinfo: "Pushing pointer %x" C 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].P=C;
     GammaVirtualMachineStackIndex--;
     }
@@ -172,13 +172,13 @@ void GammaCommandPopVar() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: PopVar" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
-        double *C=(double *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
+    #Dinfo: "%ld: PopVar" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
+        float *C=(float *)GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].P;
 
     GammaVirtualMachineStackIndex++;
-    #Info: "Poping Var %x (%g->%g)" C *((double*)C) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F
-    *((double *)C)=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F;
+    #Dinfo: "Poping Var %x (%g->%g)" C *((float*)C) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F
+    *((float *)C)=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F;
     }
     GammaVirtualMachineBatchProgramCounter+=2;
 }
@@ -186,8 +186,8 @@ void GammaCommandPop() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Pop" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Pop" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStackIndex++;
     }
@@ -197,11 +197,11 @@ void GammaCommandPolynomial() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Polynomial" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Polynomial" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=calc_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -209,11 +209,11 @@ void GammaCommandRoot() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Root" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Root" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=root_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P,0);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -222,11 +222,11 @@ void GammaCommandDerive() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Derive" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Derive" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=derive_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex++;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -235,11 +235,11 @@ void GammaCommandImpDerive() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: ImpDerive" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: ImpDerive" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F=imp_derive_POLY(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].P,GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].P,0);
-    //#Info: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
+    #Dinfo: "Pushing var %x (%g=>%g) to %d" C *C GammaVirtualMachineStack[GammaVirtualMachineStackIndex+0].F GammaVirtualMachineStackIndex
     GammaVirtualMachineStackIndex+=2;
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -248,12 +248,12 @@ void GammaCommandInterpolate() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Interpolate" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Interpolate" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-//    #Info: "Accessing LUT at %x" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P
+    #Dinfo: "Accessing LUT at %x" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P
     LUT *a=(LUT *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P;
-//    #Info: "Calling interpolation %x" a->gamma_interpolate
+    #Dinfo: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_interpolate(a);
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -262,12 +262,12 @@ void GammaCommandInterpolateg() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Interpolateg" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Interpolateg" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    //#Info: "Accessing LUT at %x" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P
+    #Dinfo: "Accessing LUT at %x" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P
     LUT *a=(LUT *)GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].P;
-    //#Info: "Calling interpolation %x" a->gamma_interpolate
+    #Dinfo: "Calling interpolation %x" a->gamma_interpolate
     a->gamma_gradient(a);
     }
     GammaVirtualMachineBatchProgramCounter+=1;
@@ -276,10 +276,10 @@ void GammaCommandPlus() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Plus" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Plus" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    double F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F+GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F+GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     if (isinf(F)==1) {
         //#Warning: "Overflow!"
         F=DBL_MAX;
@@ -291,7 +291,7 @@ void GammaCommandPlus() {
     if (fabs(F)>1e20) {
         //#Warning: "Large Number: %g" F
     }	
-    //#Info: "%g+%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
+    #Dinfo: "%g+%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=F;
     GammaVirtualMachineStackIndex++;
     }
@@ -301,10 +301,10 @@ void GammaCommandMinus() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Minus" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Minus" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    double F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     if (isinf(F)==1) {
         //#Warning: "Overflow!"
         F=DBL_MAX;
@@ -316,7 +316,7 @@ void GammaCommandMinus() {
     if (fabs(F)>1e20) {
         //#Warning: "Large Number: %g" F
     }	
-    //#Info: "%g-%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
+    #Dinfo: "%g-%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=F;
     GammaVirtualMachineStackIndex++;
     }
@@ -326,10 +326,10 @@ void GammaCommandMult() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Mult" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Mult" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    double F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F*GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F*GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     if (isinf(F)==1) {
         //#Warning: "Overflow!"
         F=DBL_MAX;
@@ -341,7 +341,7 @@ void GammaCommandMult() {
     if (fabs(F)>1e20) {
         //#Warning: "Large Number: %g" F
     }	
-    //#Info: "%g*%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
+    #Dinfo: "%g*%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=F;
     GammaVirtualMachineStackIndex++;
     }
@@ -351,10 +351,10 @@ void GammaCommandDiv() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Div" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Div" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    double F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F/GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F/GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     if (isinf(F)==1) {
         //#Warning: "Overflow!"
         F=DBL_MAX;
@@ -366,7 +366,7 @@ void GammaCommandDiv() {
     if (fabs(F)>1e20) {
         //#Warning: "Large Number: %g" F
     }	
-    //#Info: "%g/%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
+    #Dinfo: "%g/%g=%g  =>  %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F F GammaVirtualMachineStackIndex+2
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=F;
     GammaVirtualMachineStackIndex++;
     }
@@ -376,10 +376,10 @@ void GammaCommandLimit() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Limit" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Limit" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    //#Info: "Limit %g (%g,%g)" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F
+    #Dinfo: "Limit %g (%g,%g)" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+3].F;
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     }
@@ -389,12 +389,12 @@ void GammaCommandOr() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Or" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Or" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    //#Info: "%d||%d   %g||%g " GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+    #Dinfo: "%d||%d   %g||%g " GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I||GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I;
-    //#Info: "= %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I
+    #Dinfo: "= %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I)) GammaVirtualMachineSkip=1;
     GammaVirtualMachineStackIndex++;
     }
@@ -404,12 +404,12 @@ void GammaCommandAnd() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: And" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: And" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    //#Info: "%d&&%d   %g&&%g " GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+    #Dinfo: "%d&&%d   %g&&%g " GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].I&&GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I;
-    //#Info: "= %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I
+    #Dinfo: "= %d" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I)) GammaVirtualMachineSkip=1;
     GammaVirtualMachineStackIndex++;
     }
@@ -419,10 +419,10 @@ void GammaCommandReverse() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Reverse" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Reverse" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
-    double temp=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
+    float temp=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F;
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=temp;
     }
@@ -432,8 +432,8 @@ void GammaCommandAbs() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Abs" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Abs" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=fabs(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);    }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -441,8 +441,8 @@ void GammaCommandLog10() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Log10" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Log10" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=log10(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);    }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -450,8 +450,8 @@ void GammaCommandSqrt() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Sqrt" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Sqrt" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=sqrt(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);    }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
@@ -459,8 +459,8 @@ void GammaCommandSquare() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Square" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Square" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F*GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F;
     }
@@ -470,8 +470,8 @@ void GammaCommandDistAtLeast() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DistAtLeast" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DistAtLeast" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) {
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=0;
@@ -485,8 +485,8 @@ void GammaCommandDistAtMost() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DistAtMost" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DistAtMost" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) {
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=0;
@@ -500,8 +500,8 @@ void GammaCommandDist() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Dist" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Dist" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F)*(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);
     }
@@ -511,8 +511,8 @@ void GammaCommandDeriveDistAtLeast() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DeriveDistAtLeast" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DeriveDistAtLeast" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) {
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=0;
@@ -526,8 +526,8 @@ void GammaCommandDeriveDistAtMost() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DeriveDistAtMost" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DeriveDistAtMost" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F) {
         GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=0;
@@ -541,8 +541,8 @@ void GammaCommandDeriveDist() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DeriveDist" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DeriveDist" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F=2*fabs(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F);
     }
@@ -552,16 +552,16 @@ void GammaCommandLessThan() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: LessThan" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: LessThan" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g < %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g < %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g < %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g < %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -571,16 +571,16 @@ void GammaCommandGreaterThan() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: GreaterThan" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: GreaterThan" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g > %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g > %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g > %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g > %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -590,16 +590,16 @@ void GammaCommandAtMost() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: AtMost" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: AtMost" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F<=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g <= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g <= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g <= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g <= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -609,16 +609,16 @@ void GammaCommandAtLeast() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: AtLeast" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: AtLeast" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F>=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g >= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g >= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g >= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g >= %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -628,16 +628,16 @@ void GammaCommandEqual() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Equal" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Equal" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F==GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g == %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g == %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g == %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g == %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -647,16 +647,16 @@ void GammaCommandDifferent() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (1) {
-    #Info: "%ld: Different" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Different" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     if (!(GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F!=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F)) {
-        //#Info: "Failed %g != %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Failed %g != %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=0;
         GammaVirtualMachineSkip=1;
     } else {
 	GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].I=1;
-        //#Info: "Passed %g != %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
+        #Dinfo: "Passed %g != %g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+1].F GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2].F
     }	
     GammaVirtualMachineStackIndex++;
     }
@@ -666,8 +666,8 @@ void GammaCommandBranch() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Branch" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Branch" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         ordinal step=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].I;
 
     GammaVirtualMachineBatchProgramCounter+=step;
@@ -678,8 +678,8 @@ void GammaCommandStop() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Stop" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Stop" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     GammaVirtualMachineReset();
     }
@@ -689,8 +689,8 @@ void GammaCommandGoto() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: Goto" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: Goto" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
         ordinal location=GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramCounter+1].I;
 
     GammaVirtualMachineBatchProgramCounter=location-2;
@@ -701,19 +701,19 @@ void GammaCommandDumpStack() {
     int GammaVirtualMachineTempSkip=GammaVirtualMachineSkip;
     GammaVirtualMachineSkip=0;
     if (!GammaVirtualMachineTempSkip) {
-    #Info: "%ld: DumpStack" GammaVirtualMachineBatchProgramCounter
- DC FCUNION;
+    #Dinfo: "%ld: DumpStack" GammaVirtualMachineBatchProgramCounter
+ FC FCUNION;
 
     int i;
-    //#Info: "This is the content of the stack (index=%ld):" GammaVirtualMachineStackIndex
+    #Dinfo: "This is the content of the stack (index=%ld):" GammaVirtualMachineStackIndex
     for (i=GammaVirtualMachineStackSize-1;i>GammaVirtualMachineStackIndex;i--) {
-        //#Info: "Stack[%d] = %f" i GammaVirtualMachineStack[i].F
+        #Dinfo: "Stack[%d] = %f" i GammaVirtualMachineStack[i].F
     }
     }
     GammaVirtualMachineBatchProgramCounter+=1;
 }
 int tcl_gamma_AtMost(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -722,7 +722,7 @@ int tcl_gamma_AtMost(ClientData clientData,Tcl_Interp *interp,int argc,char *arg
     return TCL_OK;
 }
 int tcl_gamma_GoSub(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (int SubRoutine)" argv[0]
     }
@@ -733,7 +733,7 @@ int tcl_gamma_GoSub(ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_OK;
 }
 int tcl_gamma_Return(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (int NumOfArguments)" argv[0]
     }
@@ -744,7 +744,7 @@ int tcl_gamma_Return(ClientData clientData,Tcl_Interp *interp,int argc,char *arg
     return TCL_OK;
 }
 int tcl_gamma_PopVar(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (var C)" argv[0]
     }
@@ -757,7 +757,7 @@ int tcl_gamma_PopVar(ClientData clientData,Tcl_Interp *interp,int argc,char *arg
     return TCL_OK;
 }
 int tcl_gamma_Goto(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (int location)" argv[0]
     }
@@ -768,7 +768,7 @@ int tcl_gamma_Goto(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_DeriveDistAtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -777,7 +777,7 @@ int tcl_gamma_DeriveDistAtLeast(ClientData clientData,Tcl_Interp *interp,int arg
     return TCL_OK;
 }
 int tcl_gamma_Square(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -786,7 +786,7 @@ int tcl_gamma_Square(ClientData clientData,Tcl_Interp *interp,int argc,char *arg
     return TCL_OK;
 }
 int tcl_gamma_LessThan(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -795,7 +795,7 @@ int tcl_gamma_LessThan(ClientData clientData,Tcl_Interp *interp,int argc,char *a
     return TCL_OK;
 }
 int tcl_gamma_Sqrt(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -804,7 +804,7 @@ int tcl_gamma_Sqrt(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_PushArg(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (int Arg)" argv[0]
     }
@@ -815,7 +815,7 @@ int tcl_gamma_PushArg(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_Log10(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -824,7 +824,7 @@ int tcl_gamma_Log10(ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_OK;
 }
 int tcl_gamma_And(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -833,7 +833,7 @@ int tcl_gamma_And(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 int tcl_gamma_Reverse(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -842,7 +842,7 @@ int tcl_gamma_Reverse(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_Polynomial(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -851,22 +851,22 @@ int tcl_gamma_Polynomial(ClientData clientData,Tcl_Interp *interp,int argc,char 
     return TCL_OK;
 }
 int tcl_gamma_Default(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=3) {
-        #Error: "%s requires the following arguments: (var Var,double Val)" argv[0]
+        #Error: "%s requires the following arguments: (var Var,float Val)" argv[0]
     }
     GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandDefault;
     context *GammaContext1;
     resolve_context(argv[1],&(GammaContext1),NULL);
     GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].P=(void *)(&(GammaContext1->value.s));
 
-    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].F=strtod(argv[2],NULL);
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].F=strtof(argv[2],NULL);
 
     #Info: "Assembly %ld: %x Default %s %x %s " GammaVirtualMachineBatchProgramSize-3 GammaCommandDefault argv[1] (&(GammaContext1->value.s)) argv[2] 
     return TCL_OK;
 }
 int tcl_gamma_PushLUT(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (LUT C)" argv[0]
     }
@@ -877,7 +877,7 @@ int tcl_gamma_PushLUT(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_Stop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -886,7 +886,7 @@ int tcl_gamma_Stop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_Abs(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -895,7 +895,7 @@ int tcl_gamma_Abs(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 int tcl_gamma_Pop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -904,7 +904,7 @@ int tcl_gamma_Pop(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 int tcl_gamma_Equal(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -913,18 +913,18 @@ int tcl_gamma_Equal(ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_OK;
 }
 int tcl_gamma_Push(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
-        #Error: "%s requires the following arguments: (double F)" argv[0]
+        #Error: "%s requires the following arguments: (float F)" argv[0]
     }
     GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].func=GammaCommandPush;
-    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].F=strtod(argv[1],NULL);
+    GammaVirtualMachineBatch[GammaVirtualMachineBatchProgramSize++].F=strtof(argv[1],NULL);
 
     #Info: "Assembly %ld: %x Push %s " GammaVirtualMachineBatchProgramSize-2 GammaCommandPush argv[1] 
     return TCL_OK;
 }
 int tcl_gamma_Or(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -933,7 +933,7 @@ int tcl_gamma_Or(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     return TCL_OK;
 }
 int tcl_gamma_TestVar(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=3) {
         #Error: "%s requires the following arguments: (string VarName,var C)" argv[0]
     }
@@ -950,7 +950,7 @@ int tcl_gamma_TestVar(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_PushVar(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (var C)" argv[0]
     }
@@ -963,7 +963,7 @@ int tcl_gamma_PushVar(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_PushPointer(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (var C)" argv[0]
     }
@@ -976,7 +976,7 @@ int tcl_gamma_PushPointer(ClientData clientData,Tcl_Interp *interp,int argc,char
     return TCL_OK;
 }
 int tcl_gamma_DistAtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -985,7 +985,7 @@ int tcl_gamma_DistAtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char
     return TCL_OK;
 }
 int tcl_gamma_Mult(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -994,7 +994,7 @@ int tcl_gamma_Mult(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_DeriveDist(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1003,7 +1003,7 @@ int tcl_gamma_DeriveDist(ClientData clientData,Tcl_Interp *interp,int argc,char 
     return TCL_OK;
 }
 int tcl_gamma_DeriveDistAtMost(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1012,7 +1012,7 @@ int tcl_gamma_DeriveDistAtMost(ClientData clientData,Tcl_Interp *interp,int argc
     return TCL_OK;
 }
 int tcl_gamma_Div(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1021,7 +1021,7 @@ int tcl_gamma_Div(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 int tcl_gamma_Tcl(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (string Code)" argv[0]
     }
@@ -1034,7 +1034,7 @@ int tcl_gamma_Tcl(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
     return TCL_OK;
 }
 int tcl_gamma_DumpStack(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1043,7 +1043,7 @@ int tcl_gamma_DumpStack(ClientData clientData,Tcl_Interp *interp,int argc,char *
     return TCL_OK;
 }
 int tcl_gamma_Dist(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1052,7 +1052,7 @@ int tcl_gamma_Dist(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_DistAtMost(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1061,7 +1061,7 @@ int tcl_gamma_DistAtMost(ClientData clientData,Tcl_Interp *interp,int argc,char 
     return TCL_OK;
 }
 int tcl_gamma_Minus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1070,7 +1070,7 @@ int tcl_gamma_Minus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_OK;
 }
 int tcl_gamma_Plus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1079,7 +1079,7 @@ int tcl_gamma_Plus(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_Root(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1088,7 +1088,7 @@ int tcl_gamma_Root(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
     return TCL_OK;
 }
 int tcl_gamma_PushPOLY(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (POLY P)" argv[0]
     }
@@ -1099,7 +1099,7 @@ int tcl_gamma_PushPOLY(ClientData clientData,Tcl_Interp *interp,int argc,char *a
     return TCL_OK;
 }
 int tcl_gamma_GreaterThan(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1108,7 +1108,7 @@ int tcl_gamma_GreaterThan(ClientData clientData,Tcl_Interp *interp,int argc,char
     return TCL_OK;
 }
 int tcl_gamma_ImpDerive(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1117,7 +1117,7 @@ int tcl_gamma_ImpDerive(ClientData clientData,Tcl_Interp *interp,int argc,char *
     return TCL_OK;
 }
 int tcl_gamma_Branch(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=2) {
         #Error: "%s requires the following arguments: (int step)" argv[0]
     }
@@ -1128,7 +1128,7 @@ int tcl_gamma_Branch(ClientData clientData,Tcl_Interp *interp,int argc,char *arg
     return TCL_OK;
 }
 int tcl_gamma_AtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1137,7 +1137,7 @@ int tcl_gamma_AtLeast(ClientData clientData,Tcl_Interp *interp,int argc,char *ar
     return TCL_OK;
 }
 int tcl_gamma_Interpolateg(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1146,7 +1146,7 @@ int tcl_gamma_Interpolateg(ClientData clientData,Tcl_Interp *interp,int argc,cha
     return TCL_OK;
 }
 int tcl_gamma_Different(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1155,7 +1155,7 @@ int tcl_gamma_Different(ClientData clientData,Tcl_Interp *interp,int argc,char *
     return TCL_OK;
 }
 int tcl_gamma_Limit(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1164,7 +1164,7 @@ int tcl_gamma_Limit(ClientData clientData,Tcl_Interp *interp,int argc,char *argv
     return TCL_OK;
 }
 int tcl_gamma_Interpolate(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }
@@ -1173,7 +1173,7 @@ int tcl_gamma_Interpolate(ClientData clientData,Tcl_Interp *interp,int argc,char
     return TCL_OK;
 }
 int tcl_gamma_Derive(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    DC FCUNION;
+    FC FCUNION;
     if (argc!=1) {
         #Error: "%s requires the following arguments: ()" argv[0]
     }

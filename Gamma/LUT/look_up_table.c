@@ -631,7 +631,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             #tcl incr weighing_dim
         }
 	GammaVirtualMachineStackIndex+=$DIM;
-	double *derivative;
+	float *derivative;
 	#For: {set i 0} {$i<$DIM} {incr i} { 
 	    derivative=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].P;
 	    //#Info: "Accessing %d/%d  %x=%g" GammaVirtualMachineStackIndex+2+$i GammaVirtualMachineStackSize derivative gradient_buffer${i}_0/a->hypercube_volume

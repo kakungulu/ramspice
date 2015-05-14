@@ -76,6 +76,7 @@ int set_BMP_pixel_html(BMP *bm, int x, int y, int rgb) {
     bm->array[index].b = b;
     return(1);
 }
+/*
   // Example for generating bitmap with a pallet
 void main() {
     int i,j;
@@ -116,7 +117,7 @@ void main() {
     save_BMP(O,bmp);
     fclose(O);
 }
-
+*/
 /*
   // Example for generating bitmap with a random RGB pixels
 void main() {
