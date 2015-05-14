@@ -1089,14 +1089,14 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
         write_ordinal(O,d->v_length);
         if (factor_mode) {
             for (i=0;i<d->v_length;i++) {
-                //		#Info: "%s   %g/((%g-%g)-(%g-%g))=%g" d->v_name factor d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
+                		#Dinfo: "%s   %g/((%g-%g)-(%g-%g))=%g" d->v_name factor d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
                 write_float(O,factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i])));
                 previous_offset[i]=d->v_realdata[i];
                 baseline_previous_offset[i]=b->v_realdata[i];
             }
         } else {
             for (i=0;i<d->v_length;i++) {
-                //		#Info: "%s   ((%g-%g)-(%g-%g))*%g=%g" d->v_name d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor factor*((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
+                		#Dinfo: "%s   ((%g-%g)-(%g-%g))*%g=%g" d->v_name d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor factor*((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
                 write_float(O,((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))*factor);
                 previous_offset[i]=d->v_realdata[i];
                 baseline_previous_offset[i]=b->v_realdata[i];
@@ -1127,7 +1127,7 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         ordinal length=read_ordinal();
         for (i=0;i<length; i++) {
             get_float(&(a->content[offset+i]));
-            //   #Info: "%ld+%ld  =  %g" offset i a->content[offset+i]
+               #Dinfo: "%ld+%ld  =  %g" offset i a->content[offset+i]
         }    
     }
     done_reading();
@@ -1346,7 +1346,7 @@ void context_load(context *c) {
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
-        // #Info: "num_of_children=%ld" num_of_children
+         #Dinfo: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context);
         break;
@@ -2311,7 +2311,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         }
         temp_context=next_context;
     }
-    // #Info: "Resolved context %s -> %x (%x,%g)" i_key temp_context &(temp_context->value.s) temp_context->value.s
+     #Dinfo: "Resolved context %s -> %x (%x,%g)" i_key temp_context &(temp_context->value.s) temp_context->value.s
     *i_context=temp_context;
     return 1;
 }
@@ -2994,7 +2994,7 @@ float calc_POLY(POLY *p) {
     int next_is_coeff=1;
     float total=0;
     FC SO;
-    //#Info: "POLY %x = %s" p p->expression
+    #Dinfo: "POLY %x = %s" p p->expression
     for (i=0;i<p->polynomial->num_of;i++) {
         SO.F=get_entry_vector_float(p->polynomial,i);
         next_is_coeff=1;
@@ -3002,7 +3002,7 @@ float calc_POLY(POLY *p) {
         while ((SO.P)&&(i<p->polynomial->num_of)) {
             if (next_is_coeff) {
                 term=SO.F;
-                //#Info: "POLY %x const=%g" p term
+                #Dinfo: "POLY %x const=%g" p term
                 next_is_coeff=0;
                 i++;
                 if (i<p->polynomial->num_of) SO.F=get_entry_vector_float(p->polynomial,i);
@@ -3058,16 +3058,16 @@ float derive_POLY(POLY *p,void *by_var) {
         total+=term*num_of_by_var;
     }
     float retval=total;
-    //#Info: "derive %x/%x total=%g" p by_var total
+    #Dinfo: "derive %x/%x total=%g" p by_var total
     if (p->denom) {
         float nom=calc_POLY(p);
-        //#Info: "derive %x nom=%g" p nom
+        #Dinfo: "derive %x nom=%g" p nom
         float denom=calc_POLY(p->denom);
-        //#Info: "derive %x denom=%g" p denom
+        #Dinfo: "derive %x denom=%g" p denom
         float d_denom=derive_POLY(p->denom,by_var);
-        //#Info: "derive %x d_denom=%g" p d_denom
+        #Dinfo: "derive %x d_denom=%g" p d_denom
         retval=(total*denom-nom*d_denom)/(denom*denom);	
-        //#Info: "derive %x retval=(total*denom-nom*d_denom)/(denom*denom)=%g" p retval
+        #Dinfo: "derive %x retval=(total*denom-nom*d_denom)/(denom*denom)=%g" p retval
     }
     return(retval);
 }
@@ -4410,7 +4410,7 @@ void map_slice_separation(LUT *a,ordinal **separation) {
     for (i=0;i<a->dim;i++) for (j=1;j<a->size[i]-1;j++) {
         if (total[i][j]==0) continue;
         separation[i][j]/=total[i][j];
-        //     #Info: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
+             #Dinfo: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
     }
     for (i=0;i<a->dim;i++) {
         free(total[i]);
@@ -4585,7 +4585,7 @@ hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
         }
     }
     if (seperation_dim>=0) {
-        //        #Info: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
+                #Dinfo: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
         hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*5);
         hit[HIT_TYPE].o=HIT_DIVIDER;
         hit[HIT_DIM].o=seperation_dim;
@@ -4600,7 +4600,7 @@ hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
         array2hit_partial_legend_top[seperation_dim]=orig_top;
         return(hit);
     }
-    //    #Info: "%s Cell" indent
+        #Dinfo: "%s Cell" indent
     ordinal num_of_corners;
     num_of_corners=1<<a->dim;
     ordinal index=0;
@@ -4645,8 +4645,8 @@ ordinal merge_hit_leaves(hit_node **hit) {
     for (i=0;i<num_of_corners;i++) if (isnan(hit_t[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
     for (i=0;i<num_of_corners;i++) if (isnan(hit_b[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
     if (boundary_cell) return(retval);
-    //	#Info: "   Cells!" 
-    //	#Info: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
+    	#Dinfo: "   Cells!" 
+    	#Dinfo: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
     float max_error=0;
     ordinal split_dim=(*hit)[HIT_DIM].o;
     float b=1/(hit_t[HIT_VALUES+2*split_dim+1].s);
@@ -4655,7 +4655,7 @@ ordinal merge_hit_leaves(hit_node **hit) {
     float weight_bottom=b/(a+b);
     int mask=1<<split_dim;
     float failed_M,failed_I;
-    //    #Info: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
+        #Dinfo: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
     for (i=0;i<num_of_corners;i++) {
         if (!(i&mask)) continue;
         int j=i-mask;
@@ -4667,11 +4667,11 @@ ordinal merge_hit_leaves(hit_node **hit) {
             #Error: "Mismatched hypercubes: %g!=%g" M hit_t[HIT_VALUES+2*merge_dim+j].s
         }
         float error=fabs(I/M-1)*100;
-        //	#Info: "T=%g B=%g M=%g I=%g E=%g" T B M I error
+        	#Dinfo: "T=%g B=%g M=%g I=%g E=%g" T B M I error
         //if (fabs(I-M)<1e-9) error=0;
         if (error>max_error) max_error=error;
     }
-    //    #Info: "max_error=%g" max_error
+        #Dinfo: "max_error=%g" max_error
     if (max_error>1) return retval;
     free(*hit);
     *hit=(hit_node *)malloc(sizeof(hit_node)*(2+2*merge_dim+num_of_corners));
@@ -4692,10 +4692,10 @@ ordinal merge_hit_leaves(hit_node **hit) {
             (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_b[HIT_VALUES+2*merge_dim+i].s;
         }
     }
-    //    #Info: "MERGED!"
-    //    for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
-        //        #Info: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
-    //    }
+        #Dinfo: "MERGED!"
+        for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
+                #Dinfo: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
+        }
     free(hit_t);
     free(hit_b);
     retval++;
