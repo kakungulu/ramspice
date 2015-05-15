@@ -160,6 +160,7 @@ proc all_paths {{dir .} {visited {}}} {
     return $retval
 }
 foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION} {
+    if {$binary=="ramspice"} continue
     foreach target [list regular silent debug] target_flag {TCL_MSG_REG TCL_MSG_SILENT TCL_MSG_DEBUG} {
         define_message_templates
         set preprocessed /tmp/${binary}_build/preprocessed-$target
@@ -173,6 +174,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
             foreach dir [file split [set $var]] {
                 if {$dir=={}} continue
                 if {![file exists $dir]} {
+		    puts "Info: new build dir: $dir"
                     file mkdir $dir
                 }
                 cd $dir
@@ -183,8 +185,8 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         set O [open compile${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
-        set pre_c "/usr/bin/gcc -I${preprocessed}  -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
-        set pre_cpp "/usr/bin/g++  -I${preprocessed} -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
+        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
+        set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
         array set mtimes {}
         set copied_filenames {}
         foreach path [all_paths] {
@@ -281,6 +283,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         set O [open link${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
+        puts $O "echo \"Info: $object_files links to $target_name\""
         puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl  -ldb-4.7  $object_files/*.o -o $target_name | & tee -a log"
 	puts $O exit
         close $O
@@ -294,8 +297,8 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         exec ./compile${binary}-$target.tcsh
         puts "Info: Linking [c]"
         exec ./link${binary}-$target.tcsh
-        file delete compile${binary}-$target.tcsh
-        file delete link${binary}-$target.tcsh
+#        file delete compile${binary}-$target.tcsh
+#        file delete link${binary}-$target.tcsh
     }
     if {![file exists $::env(RAMSPICE)/${binary}]} {
         file link -s ${binary} bin/${binary}-regular

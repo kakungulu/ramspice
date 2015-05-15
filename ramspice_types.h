@@ -15,7 +15,7 @@ int verbose;
     typedef float half_scalar;
 typedef union {
     ordinal o;
-    double s;
+    float s;
     unsigned char b[BYTES_PER_SCALAR];
     half_scalar h[2];
     void *v;

@@ -342,6 +342,10 @@ gamma_info (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
         Tcl_AppendElement(interp,"$::target");
         return TCL_OK;
     }
+    if (strcmp(argv[1],"binary")==0) {
+        Tcl_AppendElement(interp,"$::binary");
+        return TCL_OK;
+    }
     if (strcmp(argv[1],"version")==0) {
         Tcl_AppendElement(interp,"$::compilation_time");
         return TCL_OK;
