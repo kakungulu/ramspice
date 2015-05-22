@@ -325,7 +325,9 @@ proc derive_expr {var expression} {
     if {$expression=={}} {
         return {}
     } 
+    Dinfo: expression=$expression [array names ::DEF]
     if {[llength $expression]==1} {
+        regsub -all {^@+} $expression @ expression
         if {$expression==$var} {
             return 1
         } 
@@ -345,9 +347,14 @@ proc derive_expr {var expression} {
             Info: $expression is dependent on $::DEF($expression)
             return [derive_expr $var [analyse_expr $::DEF($expression)]]
         }
+        if {[info exists ::DEF(@$expression)]} {
+            Info: $expression is dependent on $::DEF(@$expression)
+            return [derive_expr $var [analyse_expr $::DEF(@$expression)]]
+        }
         return 0
     }	
     set op [lindex $expression 0] 
+    # Info: op=$op
     switch $op {
         func {
             set func [lindex $expression 1]
@@ -380,6 +387,7 @@ proc derive_expr {var expression} {
     }
 }
 proc beatufy_expression {varname} {
+
     upvar $varname var
     set continue 1
     while {$continue} {
@@ -409,7 +417,7 @@ proc derive_expression {var expression} {
         set analyzed [lindex $analyzed 0]
     }
     set retval [derive_expr $var $analyzed]
-    beatufy_expression retval
+#    beatufy_expression retval
     return $retval
 }
 proc define_derivative {name var mode value} {

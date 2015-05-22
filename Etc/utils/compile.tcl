@@ -160,7 +160,6 @@ proc all_paths {{dir .} {visited {}}} {
     return $retval
 }
 foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION} {
-    if {$binary=="ramspice"} continue
     foreach target [list regular silent debug] target_flag {TCL_MSG_REG TCL_MSG_SILENT TCL_MSG_DEBUG} {
         define_message_templates
         set preprocessed /tmp/${binary}_build/preprocessed-$target
@@ -185,8 +184,8 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
         set O [open compile${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
-        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
-        set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
+        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
+        set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
         array set mtimes {}
         set copied_filenames {}
         foreach path [all_paths] {
@@ -210,6 +209,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                 set target_file $fileroot$fileext
                 set alternate_index 0
                 while {[lsearch $copied_filenames $target_file]!=-1} {
+		    puts "Warning: $target_file is renamed"
                     set target_file $fileroot$alternate_index$fileext
                     incr alternate_index
                 }

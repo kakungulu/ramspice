@@ -583,6 +583,65 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
     }
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
+    float gamma_gcc_interpolate_$DIM(LUT *i_a
+        #For: {set j 0} {$j<$DIM} {incr j} {
+            ,float c$j
+	}
+    ) {
+        #Dinfo: "Gamma machine's interpolation function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
+        #tcl set num_of_corners [expr 1<<$DIM]
+	LUT *a=(LUT *)i_a;
+        Tcl_Time start_time,end_time; 
+        Tcl_GetTime(&start_time);
+   //     linear_interpolation_table *L=a->LIT;
+        ordinal i,j,end;
+        // Find the hyper-cube 
+        float retval=0;
+        ordinal index=0;
+	float i_f;
+        #For: {set i 0} {$i<$DIM} {incr i} {
+	    int key${i};
+                i_f=(c$i-a->legend[$i][0])*a->physical_factor[$i];
+	    if (a->physical_factor[$i]>0) {
+	        key${i}=(int)i_f;
+	    } else {
+	        key${i}=-((int)(-i_f));
+	    }
+	    #Dinfo: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
+	    if (key${i}<0) key${i}=0;
+	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;
+            index+=key${i}*a->sizer[$i];
+	    #Dinfo: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
+	}    
+        // Full interpolation, refer back to the original array
+	float *hypercube=&(a->content[index]);
+        #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
+            float interpolation_buffer$corner=hypercube[a->neighbors[$corner]];
+	    #Dinfo: "Corner $corner=%g" interpolation_buffer$corner
+        }
+	float w1,w2;
+        #tcl set weighing_dim 0
+        #For: {set breadth $num_of_corners} {$breadth>1} {set breadth [expr $breadth/2]} {
+	    #Dinfo: "Dim $weighing_dim: key=%d" key${weighing_dim} 
+	    w1=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F-a->legend[$weighing_dim][key${weighing_dim}];
+	    w2=a->legend[$weighing_dim][key${weighing_dim}+1]-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F;
+            #tcl set j 0
+	    #Dinfo: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
+            #For: {set i 0} {$i<$breadth} {incr i 2} {
+                #tcl set k [expr $i+1]
+                interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
+		#Dinfo: "interpolation_buffer$j=%g" interpolation_buffer$j
+                #tcl incr j
+            }
+            #tcl incr weighing_dim
+        }
+        Tcl_GetTime(&end_time);
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
+	return(interpolation_buffer0/a->hypercube_volume);
+    }
+} 
+#For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
     void lut_gamma_gradient_$DIM(void *i_a) {
      #Dinfo: "Gamma machine's gradient function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
         #tcl set num_of_corners [expr 1<<$DIM]
@@ -647,6 +706,73 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
         Tcl_GetTime(&end_time);
         get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
         get_Tcl_counter++;
+    }
+} 
+#For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {
+    float gamma_gcc_interpolateg_$DIM(LUT *i_a
+        #For: {set j 0} {$j<$DIM} {incr j} {
+            ,float c$j
+	}
+        #For: {set j 0} {$j<$DIM} {incr j} {
+            ,float *p$j
+	}
+    ) {
+     #Dinfo: "Gamma machine's gradient function for ${DIM}D  (Starting from %ld)" GammaVirtualMachineStackIndex
+        #tcl set num_of_corners [expr 1<<$DIM]
+	LUT *a=(LUT *)i_a;
+        Tcl_Time start_time,end_time; 
+        Tcl_GetTime(&start_time);
+        ordinal i,j,end;
+        // Find the hyper-cube 
+        float retval=0;
+        ordinal index=0;
+	float i_f;
+        #For: {set i 0} {$i<$DIM} {incr i} {
+	    i_f=(c$i-a->legend[$i][0])*a->physical_factor[$i];
+	    #Dinfo: "coord$i=%g base=%g factor=%g Key=%g" GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$i].F a->legend[$i][0] a->physical_factor[$i] i_f
+	    int key${i}=(int)i_f;
+	    if (key${i}<0) key${i}=0;
+	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;
+            index+=key${i}*a->sizer[$i];
+	    #Dinfo: "key$i=%d/%d %d index=%ld" key${i} a->size[$i]  a->sizer[$i] index
+	}    
+        // Full interpolation, refer back to the original array
+	float *hypercube=&(a->content[index]);
+        #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
+            float interpolation_buffer$corner=hypercube[a->neighbors[$corner]];
+	    #Dinfo: "Corner $corner=%g" interpolation_buffer$corner
+        }
+	float w1,w2;
+        #tcl set weighing_dim 0
+        #For: {set breadth $num_of_corners} {$breadth>1} {set breadth [expr $breadth/2]} {
+	    #Dinfo: "Dim $weighing_dim: key=%d" key${weighing_dim} 
+	    w1=GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F-a->legend[$weighing_dim][key${weighing_dim}];
+	    w2=a->legend[$weighing_dim][key${weighing_dim}+1]-GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F;
+            #tcl set j 0
+	    #Dinfo: "Dim $weighing_dim: key=%d %g (%g,%g) (%g,%g)" key${weighing_dim}  GammaVirtualMachineStack[GammaVirtualMachineStackIndex+2+$weighing_dim].F a->legend[$weighing_dim][key${weighing_dim}] a->legend[$weighing_dim][key${weighing_dim}+1] w1 w2
+            #For: {set i 0} {$i<$breadth} {incr i 2} {
+                #tcl set k [expr $i+1]
+                interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
+		float gradient_buffer${weighing_dim}_$j=interpolation_buffer$k-interpolation_buffer$i;
+		#For: {set l 0} {$l<$weighing_dim} {incr l} {
+		    gradient_buffer${l}_$j=gradient_buffer${l}_$k*w1+gradient_buffer${l}_$i*w2;
+		    #Dinfo: "grad_buffer${l}_$j=%g" gradient_buffer${l}_$j
+		}
+		#Dinfo: "interpolation_buffer$j=%g" interpolation_buffer$j
+                #tcl incr j
+            }
+            #tcl incr weighing_dim
+        }
+	#For: {set i 0} {$i<$DIM} {incr i} { 
+	    if (p$i) *p$i=gradient_buffer${i}_0/a->hypercube_volume;
+	    #Dinfo: "Derivative %d: %g" $i *p$i
+	}    
+	#Dinfo: "Result: %g" interpolation_buffer0/a->hypercube_volume
+        interpolation_time_$DIM:
+        Tcl_GetTime(&end_time);
+        get_Tcl_timer+=end_time.sec*1e6+end_time.usec-start_time.sec*1e6-start_time.usec;
+        get_Tcl_counter++;
+	return(interpolation_buffer0/a->hypercube_volume);
     }
 } 
 #For: {set DIM 1} {$DIM<$::MAXDIM} {incr DIM} {

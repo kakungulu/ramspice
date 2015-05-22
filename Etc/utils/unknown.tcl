@@ -36,6 +36,7 @@ proc unknown {args} {
         return
     }
     if {[regexp {^([A-Za-z_/:][:/A-Za-z0-9_]*)\s*=>\s*(.*)$} $args -> var expression]} {
+        Info: DEF $var=$expression
         set ::DEF($var) $expression
 	return
     }

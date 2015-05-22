@@ -129,6 +129,9 @@ proc pseudo_inv {M_var N_var} {
     mat_print MtMi
     mat_mult MtMi Mt N
 }
+proc DET {M_var} {
+    return [regsub -all {([^\-\+\*/\(\)0-9][^\-\+\*/\(\)]*)} [det $M_var] {@\1} ];
+}
 proc det {
     M_var 
     {row 0} 

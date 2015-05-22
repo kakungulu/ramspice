@@ -1,4 +1,10 @@
 namespace eval ::POLY {}
+proc p2c {target poly} {
+    regsub -all {([\^\-\+\*/\(\)0-9\x26])([^\-\+\*\/\(\)0-9][^\-\+\*\/\(\)]*)([^\(])} $poly {\1@\2\3} c_poly
+    Info: IN $poly 
+    Info: OUT $c_poly
+    *c "@$target=$c_poly;"
+}
 proc synthesize_minterms {{expression {}}} {
     #    Info: [.]SYNTH $expression
     if {[llength $expression]<=1} {
@@ -181,11 +187,13 @@ proc unit_poly {a} {
 }
 proc derive_poly {a d c} {
     remove_poly $c
+    regsub {^@+} $d {} d
     foreach a_term [array names ::POLY::$a] {
         set count 0
         set c_term {}
         set sensitive_vars {}
         foreach var [split $a_term ,] {
+	    regexp {(@*)(.*)} $var -> prefix var
             if {$var==$d} {
                 if {$count} {
                     lappend c_term $var
@@ -195,7 +203,7 @@ proc derive_poly {a d c} {
             } elseif {[info exists ::sensitivity($var,$d)]} {
                 lappend sensitive_vars $var
             }
-            lappend c_term $var
+            lappend c_term $prefix$var
         }
         set c_term [join $c_term ,]
 	regsub -all {,\{\}} $c_term {} c_term
@@ -205,6 +213,7 @@ proc derive_poly {a d c} {
             set count 0
             set c_term $::sensitivity($dd,$d)
             foreach var [split $a_term ,] {
+	        regexp {(@*)(.*)} $var -> prefix var
                 if {$var==$dd} {
                     if {$count} {
                         lappend c_term $var
@@ -212,7 +221,7 @@ proc derive_poly {a d c} {
                     incr count
                     continue
                 }
-                lappend c_term $var
+                lappend c_term $prefix$var
             }
             set c_term [join $c_term ,]
 	    regsub -all {,\{\}} $c_term {} c_term
@@ -332,6 +341,38 @@ proc present_poly {p {name {}}}  {
 	}
         set first 0
     }
+    return $retval
+}
+proc present_poly_c {p {name {}}}  {
+    set first 1
+    set retval {}
+    foreach minterm [lsort [array names ::POLY::$p]] {
+        set const [set ::POLY::${p}($minterm)]
+	skip {$const==0}
+	if {$minterm=={}} {
+	    if {$first} {
+	        append retval $const
+	    } else {
+	        if {$const>0} {
+		    append retval +$const
+		} else {
+		    append retval $const
+		}
+	    }
+	} else {
+	    if {!$first && ($const>0)} {
+                append retval +
+	    }	    
+	    if {$const==-1} {
+	        append retval -
+	    } elseif {$const!=1} {	
+	        append retval $const*
+	    }
+	    append retval @[join [split $minterm ,] *@]
+	}
+        set first 0
+    }
+    regsub -all {@+} $retval @ retval
     return $retval
 }
 

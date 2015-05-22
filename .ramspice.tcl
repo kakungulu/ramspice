@@ -683,7 +683,7 @@ if {![info exists ::env(HOSTNAME)]} {
 proc load_tech {} {
     default ::opt(tech) tsmc018
     default ::tech $::opt(tech)
-    set bin_file $::env(RAMSPICE)/Tech_DB/${::tech}/binning_$::tech.tcl
+    set bin_file $::env(RAMSPICE)/Etc/Tech_DB/${::tech}/binning_$::tech.tcl
     if {[file exists $bin_file]} {
         source $bin_file
     } elseif {[file exists $::env(RAMSPICE_TECH)]} {

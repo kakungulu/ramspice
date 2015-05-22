@@ -23,6 +23,11 @@ if {[lsearch {-help -h --help} $argv]!=-1} {
     }
     return
 }
+if {[ginfo binary]!="ramspice"} {
+    Error: This executable can't run simulations and not suitable for characterizing libraries. 
+    Info: Run: % rsc regular
+    exit
+}
 textbox {
     ###########################################################
     ###########################################################
@@ -248,19 +253,19 @@ foreach var {vgs vds vbs l} {
 textbox "Size estimate for dominant views is [eng $size_estimate B]"
 load_tech
 set ::rez [join [list $vgs_rez $vds_rez $vbs_rez $l_rez] :]
-if {![file exists $::env(RAMSPICE)/Tech_DB]} {
-    file mkdir $::env(RAMSPICE)/Tech_DB
+if {![file exists $::env(RAMSPICE)/Etc/Tech_DB]} {
+    file mkdir $::env(RAMSPICE)/Etc/Tech_DB
 }
-if {![file exists $::env(RAMSPICE)/Tech_DB/${tech}]} {
-    file mkdir $::env(RAMSPICE)/Tech_DB/${tech}
+if {![file exists $::env(RAMSPICE)/Etc/Tech_DB/${tech}]} {
+    file mkdir $::env(RAMSPICE)/Etc/Tech_DB/${tech}
 }
-if {![file exists $::env(RAMSPICE)/Tech_DB/${tech}/4d]} {
-    file mkdir $::env(RAMSPICE)/Tech_DB/${tech}/4d
+if {![file exists $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d]} {
+    file mkdir $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d
 }
-if {![file exists $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}]} {
-    file mkdir $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}
+if {![file exists $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}]} {
+    file mkdir $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}
 }
-set output_tech_file $::env(RAMSPICE)/Tech_DB/${tech}/${tech}.sp
+set output_tech_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp
 if {![file exists $output_tech_file]} {
     textbox "Generating $output_tech_file"
     source_rf $scs
@@ -351,7 +356,7 @@ textbox {
     #######################################################
     #######################################################
 }
-source $::env(RAMSPICE)/tests/geo_values.tcl
+source $::env(RAMSPICE)/Etc/tests/geo_values.tcl
 set ::geo_stepping 20
 foreach dim {l w} {
     set values {}
@@ -392,14 +397,14 @@ foreach type [split $device :] {
     if {[regexp {^p} $type]} {
         set max_supply [expr -$topv]
     }
-    set vt_db_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_vt.db
-    set va_db_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_va.db
-    set min_vt_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_min_vt.tcl
-    set ids_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids.db
-    set gm_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_gm.db
-    set ro_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ro.db
-    set vth_mis_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_vth_mis.db
-    set ids_mis_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids_mis.db
+    set vt_db_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_vt.db
+    set va_db_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_va.db
+    set min_vt_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_min_vt.tcl
+    set ids_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids.db
+    set gm_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_gm.db
+    set ro_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ro.db
+    set vth_mis_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_vth_mis.db
+    set ids_mis_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids_mis.db
     if {[file exists $vt_db_file]&&[file exists $min_vt_file]&&[file exists $va_db_file]} {
         source $min_vt_file
     } else {
@@ -439,7 +444,7 @@ foreach type [split $device :] {
                 set ::minVt $max_supply
                 textbox "Corner [string toupper $::corner], Temperature=$::temp degC"
                 ######### Template netlist
-                netlist ".include $::env(RAMSPICE)/Tech_DB/${tech}/${tech}.sp"
+                netlist ".include $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp"
                 netlist {
                     ** the N-transistor
                     * name D G S B model L W 
@@ -469,7 +474,11 @@ foreach type [split $device :] {
                 foreach L $l_values {
                     set Ids_low  [get_spice_data V(${i2}) 0]
                     set Ids_high [get_spice_data V(${i2}) 1]
-                    set slope [expr ($Ids_high-$Ids_low)/$epsilon]
+                    if {[catch {set slope [expr ($Ids_high-$Ids_low)/$epsilon]} msg]} {
+			Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
+		        Error: $msg
+			exit
+		    }
                     set Vt [expr $max_supply/2-$Ids_high/$slope]
                     if {[regexp {^p} $type]} {
                         set Vt [expr -$Vt]
@@ -489,7 +498,11 @@ foreach type [split $device :] {
                 foreach L $l_values {
                     set Ids_low  [get_spice_data V(${i2}) 0]
                     set Ids_high [get_spice_data V(${i2}) 1]
-                    set slope [expr ($Ids_high-$Ids_low)/$epsilon]
+                    if {[catch {set slope [expr ($Ids_high-$Ids_low)/$epsilon]} msg]} {
+			Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
+		        Error: $msg
+			exit
+		    }
                     set Va [expr $max_supply-$Ids_high/$slope]
                     ^ @ look_up_tables/$type/Va/${::corner}($i3) = $Va
                     incr i3
@@ -513,7 +526,7 @@ foreach type [split $device :] {
 	Info: Saving Arrays
         @ /look_up_tables/$type/Vt save $vt_db_file
         @ /look_up_tables/$type/Va save $va_db_file
-        set minVt 0.6
+        set minVt 0.3
         Info: minVt=$minVt
         set MVT [open $min_vt_file w]
         puts $MVT [list set minVt [set minVt]]
@@ -552,7 +565,7 @@ foreach type [split $device :] {
             fork_task char_vig_task {
                 
                 Info: "Corner [string toupper $::corner], Temperature=$::temp degC"
-                netlist ".include $::env(RAMSPICE)/Tech_DB/${tech}/${tech}.sp"
+                netlist ".include $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp"
                 netlist {
                     ** the N-transistor
                     * name D G S B model L W 
@@ -638,7 +651,7 @@ foreach type [split $device :] {
         foreach char_file [glob -nocomplain /tmp/char_vig_task*] {
             file delete $char_file
         }
-	Info: Ids=[expr [@ /look_up_tables/$type/Ids/ss calc 1.8 1.8 0 180e-9]*220/180]
+#	Info: Ids=[expr [@ /look_up_tables/$type/Ids/ss calc 1.8 1.8 0 180e-9]*220/180]
     }
     if {![file exists $vth_mis_file]||![file exists $ids_mis_file]} {
         textbox    "Characterizing Ids and Vt mismatch for $type"    
@@ -676,7 +689,7 @@ foreach type [split $device :] {
             fork_task char_mis_task {
                 textbox "Corner [string toupper $::corner], Temperature=$::temp degC"
                 ######### Template netlist
-                netlist ".include $::env(RAMSPICE)/Tech_DB/${tech}/${tech}.sp"
+                netlist ".include $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp"
                 netlist {
                     ** the N-transistor
                     * name D G S B model L W 
@@ -709,6 +722,7 @@ foreach type [split $device :] {
                 ######### Characterizing loops
                 Info: simulation started ([clock format [clock seconds]])
                 set result [monte_carlo_${::bsim_version} 200 /simulation_config/mc $vars_of_interest ::spice::op]
+		Info: result=[join $result \n]
                 Info: done Mismatch running. Saving results. ([clock format [clock seconds]])
                 Info: Done ([clock format [clock seconds]])
                 set i 0
@@ -759,10 +773,10 @@ foreach type [split $device :] {
     }
     set noise_complete 1
     foreach ::corner $::corner_list {
-        set thermal_noise_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
-        set flicker_noise_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
-	set cgs_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
-	set cds_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
+        set thermal_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
+        set flicker_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
+	set cgs_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
+	set cds_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
         if {[file exists $thermal_noise_file]} continue
         set noise_complete 0
         break
@@ -792,10 +806,10 @@ foreach type [split $device :] {
         lappend index_range [llength $l_values]
         set_spice_var Captured_Quick_Noise 1
         foreach ::corner $::corner_list {
-            set thermal_noise_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
-            set flicker_noise_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
-            set cgs_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
-            set cds_file $::env(RAMSPICE)/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
+            set thermal_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
+            set flicker_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
+            set cgs_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
+            set cds_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
             if {[file exists $thermal_noise_file]} continue
             set ::temp $::corner_to_temp($::corner)
             foreach array $views {
@@ -826,7 +840,7 @@ foreach type [split $device :] {
                 set dummy_thermal 5e-11
                 set dummy_count_flicker 1
                 set dummy_count_thermal 1
-                netlist ".include $::env(RAMSPICE)/Tech_DB/${tech}/${tech}.sp"
+                netlist ".include $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp"
                 netlist ".temp $temp"
                 netlist {
                     ** the N-transistor
