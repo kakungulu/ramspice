@@ -33,6 +33,10 @@ foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     foreach param {ids gm ro} {
         @ /look_up_tables/$dev load $::opt(source)/$::opt(tech)_${dev}_${param}.db
     }
+    @ /look_up_tables/$dev/thermal_noise/ !
+    @ /look_up_tables/$dev/flicker_noise/ !
+    @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
+    @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
 }
 
 proc .property {name args} {
@@ -343,6 +347,8 @@ proc .prep_kcl {mode} {
         } else {
             set ::Ids_equations($name) "-gamma_gcc_interpolate_4(&@:look_up_tables:$type:Ids:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L)*@$W-@$name:gm*[Vdiff $Vg $Vs]-@$name:go*[Vdiff $Vd $Vs]"
         }
+	set ::Nt_equations($name) "gamma_gcc_interpolateg_4(&@:look_up_tables:$type:thermal_noise:ss:,[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L,&(@$name:dNt_dvgs),&(@$name:dNt_dvds),&(@$name:dNt_dvbs),&(@$name:dNt_dl))*sqrt(@$name:gm)"
+	set ::Nf_equations($name) "gamma_gcc_interpolateg_4(&@:look_up_tables:$type:flicker_noise:ss:,[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L,&(@$name:dNf_dvgs),&(@$name:dNf_dvds),&(@$name:dNf_dvbs),&(@$name:dNf_dl))*@$name:gm/sqrt(@$W*@$L*@$L)"
         set ::gm_equations($name) "gamma_gcc_interpolateg_4(&@:look_up_tables:$type:gm:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L,&(@$name:dgm_dvgs),&(@$name:dgm_dvds),&(@$name:dgm_dvbs),&(@$name:dgm_dl))*@$W"
         set ::go_equations($name) "@$W/gamma_gcc_interpolateg_4(&@:look_up_tables:$type:ro:$::opt(process),[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L,&(@$name:dro_dvgs),&(@$name:dro_dvds),&(@$name:dro_dvbs),&(@$name:dro_dl))"
         @ $name:Ideq = 0
@@ -595,7 +601,9 @@ proc .compile_circuit {} {
     	*c "@BW_${c}=-([join $chain +])/@dBW_ds;"
     	*c "@ts_${c}=-([join $chain +])/@dts_ds;"
     }
-    .prep_kcl noise
+    foreach transistor $::all_transistors {
+        set dpoly(out_Ideq,$transistor) [derive_expression @$transistor:Ideq $expression(outp)]
+    }    
     # Define Data Dependencies
     gcc Op_$::opt(topology)
     exit

@@ -517,7 +517,7 @@ foreach type [split $device :] {
             foreach array $short_views {
                 set i3 0
                 foreach L $l_values {
-                    array_set_legend /look_up_tables/$type/$array/${::corner} 0 $i3 $L
+                    LUT_set_legend /look_up_tables/$type/$array/${::corner} 0 $i3 $L
                     incr i3
                 }
             }
@@ -621,17 +621,17 @@ foreach type [split $device :] {
             }
             foreach array $views {
                 foreach_in_range Vgs i0 { 
-                    array_set_legend /look_up_tables/$type/$array/$::corner 0 $i0 $Vgs
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 0 $i0 $Vgs
                 }
                 foreach_in_range Vds i1 {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 1 $i1 $Vds
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 1 $i1 $Vds
                 }
                 foreach_in_range Vbs i2 {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 2 $i2 $Vbs
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 2 $i2 $Vbs
                 }
                 set i3 0
                 foreach L $l_values {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 3 $i3 $L
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 3 $i3 $L
                     incr i3
                 }
             }
@@ -752,7 +752,7 @@ foreach type [split $device :] {
             foreach array $views {
                 set i3 0
                 foreach L $l_values {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 0 $i3 $L
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 0 $i3 $L
                     incr i3
                 }
             }
@@ -784,9 +784,14 @@ foreach type [split $device :] {
     if {!$noise_complete} {
         #        textbox    "Characterizing Noise for $type Vgs=($minVt,$max_supply) Vds=(0,$max_supply)"    
         textbox    "Characterizing Noise for $type "    
+#        constrain "
+#        Vgs  $minVt			$max_supply		7
+#        Vds  [expr $max_supply/20]	$max_supply		4
+#        Vbs  [expr -$max_supply/3]	0			1
+#        "
         constrain "
-        Vgs  $minVt			$max_supply		7
-        Vds  [expr $max_supply/20]	$max_supply		4
+        Vgs  $minVt			$max_supply		2
+        Vds  [expr $max_supply/20]	$max_supply		2
         Vbs  [expr -$max_supply/3]	0			1
         "
         set ::fork_limit 1
@@ -816,18 +821,22 @@ foreach type [split $device :] {
                 @ look_up_tables/$type/$array/${::corner}([join $index_range ,]) !
             }
             foreach array $views {
-                foreach_in_range Vgs i0 { 
-                    array_set_legend /look_up_tables/$type/$array/$::corner 0 $i0 $Vgs
+                foreach_in_range Vgs i0 {  
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 0 $i0 $Vgs
+		    Info: 0/$i0 $Vgs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 0 $i0]
                 }
                 foreach_in_range Vds i1 {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 1 $i1 $Vds
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 1 $i1 $Vds
+		    Info: 1/$i1 $Vds=[LUT_get_legend /look_up_tables/$type/$array/$::corner 1 $i1]
                 }
                 foreach_in_range Vbs i2 {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 2 $i2 $Vbs
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 2 $i2 $Vbs
+		    Info: 2/$i2 $Vbs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 2 $i2]
                 }
                 set i3 0
                 foreach L $l_values {
-                    array_set_legend /look_up_tables/$type/$array/$::corner 3 $i3 $L
+                    LUT_set_legend /look_up_tables/$type/$array/$::corner 3 $i3 $L
+		    Info: 3/$i3 $L=[LUT_get_legend /look_up_tables/$type/$array/$::corner 3 $i3]
                     incr i3
                 }
             }

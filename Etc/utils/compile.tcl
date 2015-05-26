@@ -209,7 +209,7 @@ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION
                 set target_file $fileroot$fileext
                 set alternate_index 0
                 while {[lsearch $copied_filenames $target_file]!=-1} {
-		    puts "Warning: $target_file is renamed"
+	#	    puts "Warning: $target_file is renamed"
                     set target_file $fileroot$alternate_index$fileext
                     incr alternate_index
                 }

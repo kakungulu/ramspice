@@ -468,7 +468,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	float i_f;
         #For: {set i 0} {$i<$DIM} {incr i} {
 	    i_f=(coord[$i]-a->legend[$i][0])*a->physical_factor[$i];
-	     #Dinfo: "coord$i=%g base=%g factor=%g Key=%g" coord[$i] a->legend[$i][0] a->physical_factor[$i] i_f
+	     #Dinfo: "coord$i=%g base=%g next=%g factor=%g Key=%g" coord[$i] a->legend[$i][0] a->legend[$i][1] a->physical_factor[$i] i_f
 	    int key${i}=(int)i_f;
 	    if (key${i}<0) key${i}=0;
 	    if (key${i}>=a->size[$i]-1) key${i}=a->size[$i]-2;

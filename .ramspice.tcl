@@ -826,6 +826,20 @@ proc default {varname {val {}}} {
     }
 }
 proc get_opts {args} {
+    if {[info level]!=1} {
+      upvar opt uopt
+      upvar args uargs
+      array set uopt $args
+      foreach arg $uargs {
+           if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
+               set key $found_key
+               set $key {}
+               continue
+           }
+           set uopt($key) $arg
+      }
+      return 
+    } 
     array set ::opt $args
     foreach arg [lrange $::argv 2 end] {
         if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
