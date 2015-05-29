@@ -25,12 +25,14 @@ typedef struct {
     void lut_gamma_interpolation_$i(void *a);
     void lut_gamma_gradient_$i(void *a);
     float lut_cluster_interpolation_$i(LUT *a,float *coord,cluster **i_cluster);
-    float gamma_gcc_interpolate_$i(LUT *a
+    float gamma_gcc_interpolate_$i(
+        void *i_a
         #For: {set j 0} {$j<$i} {incr j} {
             ,float c$j
 	}
     );
-    float gamma_gcc_interpolateg_$i(LUT *a
+    float gamma_gcc_interpolateg_$i(
+        void *i_a
         #For: {set j 0} {$j<$i} {incr j} {
             ,float c$j
 	}

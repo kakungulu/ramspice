@@ -15,6 +15,7 @@
 #include "ngspice/cktdefs.h"
 #include "ngspice/hash.h"
 #include "spicelib/parser/inp2dot.c"
+#include "Gamma/Data/ctree_spice.h"
 #Foreach: bsim_version {3v32 4v5} {
     #include "spicelib/devices/bsim${bsim_version}/bsim${bsim_version}def.h"
 }

@@ -6,29 +6,6 @@
 #include <signal.h>
 #include <math.h>
 #include "ramspice_types.h"
-#ifdef SPICE_COMPILATION
-#include "ngspice/config.h"
-#include "ngspice/macros.h"
-#include "frontend/parser/complete.h"
-#include "ngspice/ngspice.h"
-#include "ngspice/defines.h"
-#include "frontend/signal_handler.h"
-#include "frontend/quote.h"
-#include "frontend/variable.h"
-#include "frontend/plotting/plotting.h"
-#include "frontend/plotting/pvec.h"
-#include "frontend/numparam/general.h"
-#include "frontend/numparam/numparam.h"
-#include "ngspice/wordlist.h"
-#include "ngspice/iferrmsg.h"
-#include "ngspice/ftedefs.h"
-#include "ngspice/devdefs.h"
-#include "spicelib/devices/dev.h"
-#include "spicelib/analysis/analysis.h"
-#include "misc/ivars.h"
-#include "misc/misc_time.h"
-#include "frontend/outitf.h"
-#endif
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -304,11 +281,9 @@ int resolve_real_token_greater_thit(char *i_token,node **i_node);
 #define HOSTNAME_SIZE 64
 #define CLIENT_COUNT 1024
 node *context_stack[CONTEXT_STACK_SIZE];
+context *create_context(char *i_key);
 int context_stack_pointer;
 char my_ip[HOSTNAME_SIZE];
-#ifdef SPICE_COMPILATION
-wordlist *args2wordlist(int argc, char **argv);
-#endif
 int my_port;
 char base_ip[32];
 int base_port;
@@ -330,10 +305,6 @@ int vector_buffer_allocation;
 char *vector_buffer;
 net_mode network_node_type;
 int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]);
-#ifdef SPICE_COMPILATION
-int Spice_Init(Tcl_Interp *interp);
-int SIMinit(IFfrontEnd *frontEnd, IFsimulator **simulator);
-#endif
 float debug_entries[MAXDIM];
 int debug_entries_index;
 float get_Tcl_timer;

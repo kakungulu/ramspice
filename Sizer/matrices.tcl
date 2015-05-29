@@ -2,9 +2,6 @@
 exec $RAMSPICE/ramspice $0 $argv
 get_opts
 
-proc deti {M i y} {
-    return [det $M 0 {} $i $y]
-}
 proc derive {var {expression {}}} {
     incr ::Gamma_expression_counter
     if {[regexp {^(.*[^A-Za-z0-9_]|)([A-Za-z0-9_]*)\(([^\(\)]*)\)(.*)$} $expression -> pre func arguments post]} {
@@ -129,8 +126,13 @@ proc pseudo_inv {M_var N_var} {
     mat_print MtMi
     mat_mult MtMi Mt N
 }
-proc DET {M_var} {
-    return [regsub -all {([^\-\+\*/\(\)0-9][^\-\+\*/\(\)]*)} [det $M_var] {@\1} ];
+proc deti {M i y} {
+    return [det $M 0 {} $i $y]
+}
+proc DET {M_var {i -1} {y {}}} {
+    regsub -all {([^\-\+\*/\(\)0-9\.][^\-\+\*/\(\)]*)} [det $M_var 0 {} $i $y] {@\1} line
+    regsub -all {@+} $line @ line
+    return $line
 }
 proc det {
     M_var 

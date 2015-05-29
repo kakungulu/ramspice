@@ -159,8 +159,10 @@ proc all_paths {{dir .} {visited {}}} {
     }
     return $retval
 }
-foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION} {
-    foreach target [list regular silent debug] target_flag {TCL_MSG_REG TCL_MSG_SILENT TCL_MSG_DEBUG} {
+ foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION} {
+     foreach target [list regular silent debug] target_flag {TCL_MSG_REG TCL_MSG_SILENT TCL_MSG_DEBUG} {
+# foreach binary {ramspice } binary_flag {SPICE_COMPILATION } 
+ #   foreach target [list  debug] target_flag { TCL_MSG_DEBUG} 
         define_message_templates
         set preprocessed /tmp/${binary}_build/preprocessed-$target
         set object_files /tmp/${binary}_build/object_files-$target

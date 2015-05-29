@@ -1,8 +1,32 @@
 #include "ramspice_types.h"
 #include "ctree.h"
+#ifdef SPICE_COMPILATION
+#include "ngspice/config.h"
+#include "ngspice/macros.h"
+#include "frontend/parser/complete.h"
+#include "ngspice/ngspice.h"
+#include "ngspice/defines.h"
+#include "frontend/signal_handler.h"
+#include "frontend/quote.h"
+#include "frontend/variable.h"
+#include "frontend/plotting/plotting.h"
+#include "frontend/plotting/pvec.h"
+#include "frontend/numparam/general.h"
+#include "frontend/numparam/numparam.h"
+#include "ngspice/wordlist.h"
+#include "ngspice/iferrmsg.h"
+#include "ngspice/ftedefs.h"
+#include "ngspice/devdefs.h"
+#include "spicelib/devices/dev.h"
+#include "spicelib/analysis/analysis.h"
+#include "misc/ivars.h"
+#include "misc/misc_time.h"
+#include "frontend/outitf.h"
+#endif
 #include "Gamma/LUT/look_up_table.h"
 #include "Gamma/Data/serialize.h"
 #ifdef SPICE_COMPILATION
+#include "Gamma/Data/ctree_spice.h"
 #include "spicelib/devices/bsim3v32/bsim3v32def.h"
 #endif
 #include <sys/stat.h>
@@ -2240,7 +2264,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
     if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
     char context_name_buffer[1024];
     int j=0,i=0;
-    #Dinfo: "Resolving Context %s from %x" i_key temp_context
+    #Dinfo: "Started Resolving Context %s from %x" i_key temp_context
     while (i_key[i]) {
         while (((i_key[i]=='/')||(i_key[i]==':'))&&(i_key[i])) i++;
         if (i_key[i]==0) break;
@@ -2250,7 +2274,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         j=0;
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
-                // #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                #Derror: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=temp_context->parent;
@@ -2270,7 +2294,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
                 }
             }
             if (!next_context) {
-                //  #Error: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
+                #Derror: "(resolve_context) No such context: %s, failed at %s" i_key context_name_buffer
                 return 0;
             }
             temp_context=next_context;
@@ -2310,7 +2334,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
             }
         }
         if (!next_context) {
-            // #Error: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
+            #Derror: "(resolve_context) No such context: %s, failed at %s!" i_key context_name_buffer
             return 0;
         }
         temp_context=next_context;
@@ -2334,7 +2358,7 @@ POLY *new_POLY() {
     p->denom=NULL;
     return(p);
 }
-int create_context(char *i_key) {
+context *create_context(char *i_key) {
     context *temp_context=Context;
     if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
     char context_name_buffer[1024];
@@ -2347,8 +2371,8 @@ int create_context(char *i_key) {
         j=0;
         if (strcmp(context_name_buffer,"..")==0) {
             if (temp_context->parent==NULL)  {
-                //                #Error: "(create_context) No such context: %s, failed at %s" i_key context_name_buffer
-                return 0;
+                #Derror: "(create_context) No such context: %s, failed at %s" i_key context_name_buffer
+                return(NULL);
             }
             temp_context=temp_context->parent;
             continue;
@@ -2396,7 +2420,7 @@ int create_context(char *i_key) {
                 add_entry_vector_float(p->margins,margin);
                 p->properties->content[l]=strdup(p->properties->content[l]);
             }
-            #Info: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
+            #Dinfo: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
             continue;
         } else if (context_name_buffer[k]=='(') {
             context_name_buffer[k]=0;
@@ -2458,7 +2482,7 @@ int create_context(char *i_key) {
             } 
             a->LIT=NULL;
             a->hit=NULL;
-            #Info: "new lookup table: %s (size: %ld*%ld=[eng %ld B]) %x" temp_context->name volume sizeof(float) volume*sizeof(float) a
+            #Dinfo: "new lookup table: %s (size: %ld*%ld=[eng %ld B]) %x" temp_context->name volume sizeof(float) volume*sizeof(float) a
             continue;
         }
         context *next_context=NULL;
@@ -2474,13 +2498,14 @@ int create_context(char *i_key) {
             if (strcmp(context_name_buffer,"POLY")==0) {
                 c_type=ctype_POLY;
                 v=new_POLY();
-                #Info: "New POLY at %s (%x %x)"  i_key temp_context v
+                #Dinfo: "New POLY at %s (%x %x)"  i_key temp_context v
             }	
             next_context=new_context(temp_context,context_name_buffer,v,c_type);
         }    
         temp_context=next_context;
     }
-    return 1;
+    #Dinfo: "Context %s created at %x, find scalar at (%x)" i_key temp_context (&temp_context->value.s)
+    return(temp_context);
 }
 int resolve_string_char(char i_char,node **i_node) {
     int upper_index=(i_char & 0xF0)>>4;
@@ -4815,7 +4840,7 @@ int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
             }
         }
         if (argv[i][0]=='-') break;
-        #Info: "Running RAMSpice Script: %s" argv[i]
+        #Info: "Running RAMSpice Script: %s start: \[clock format \[clock seconds\]\]" argv[i]
         if (Tcl_EvalFile(interp,argv[i])==TCL_ERROR) {
             Tcl_Eval(interp,"puts $errorInfo");
         }

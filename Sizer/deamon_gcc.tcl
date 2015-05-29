@@ -277,7 +277,7 @@ proc tmp_sort {t1 t2} {
     return 0
 }
 set ::circuit_components {}
-proc .prep_kcl {mode} {
+proc .prep_kcl_orig {mode} {
      array unset ::KCL
     @ s = 0
     set ::independent_nodes {}
@@ -423,7 +423,7 @@ proc .prep_kcl {mode} {
     set ::KCL(dim) $dim	
     Info: Done preparing matrix for $mode mode
 }
-proc .compile_circuit {} {
+proc .compile_circuit_orig {} {
     .prep_kcl dc
     set dim $::KCL(dim)
     set HTML [open /tmp/KCL.html w]
@@ -828,6 +828,7 @@ switch $::opt(topology) {
         .property PSRR -expression derive(outp,@param:vdd) -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB -more worse
         .property Zout -expression (@n_tail:go+@nin_2:go)/((@n_tail:go*@nin_2:go)+(@n_tail:go+@nin_2:go)*@p_2:go) -unit Ohm -more worse
         .spec Adc > 50
+        .compile_circuit -out outp -inn inm -inp inp -sup param:vdd
         #        .spec Zout < 100
     }
     diffpair_simple {
@@ -855,6 +856,7 @@ switch $::opt(topology) {
         }
         #    rload outp 0 1e+7
         .property Adc -expression (derive(outp:V,pos_input)-derive(outp:V,neg_input))/Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+        .compile_circuit -out outp -inn inm -inp inp
     }
     nmos_cs {
         default ::opt(vin) [expr $::opt(topv)/2]
@@ -879,6 +881,7 @@ switch $::opt(topology) {
         mn_ref  out in 0 0 nch W=size:W L=size:L
         .property Adc -expression derive(out,param:vin)  -denom Det -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         .spec Adc < -15
+        .compile_circuit -out out:V -in param:vin -sup param:vdd
     }
     pmos_cs {
         @ size:L !
@@ -905,13 +908,13 @@ switch $::opt(topology) {
         .property Adc -expression derive(out,param:vin) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         .property Zout -expression out:V/(out:V/param:rload-derive(out,param:rload))-param:rload
         .spec Adc < -15
+        .compile_circuit -out out -in in
     }
     default {
         Error: No support for topology named $::opt(topology)
         exit
     }
 }
-.compile_circuit
 
 #.compile_spec
 #exit

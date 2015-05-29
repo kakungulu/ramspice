@@ -28,6 +28,12 @@ proc flat_expression {equation} {
 }    
 
 proc expr+ {X Y} {
+    if {$X=={}} {
+        set X 0
+    }
+    if {$Y=={}} {
+        set Y 0
+    }
     set retval "$X+$Y"
     evaluate X Y retval
     if {![catch {expr $X==0}]} {
@@ -49,6 +55,12 @@ proc expr+ {X Y} {
     return "($retval)"
 }
 proc expr* {X Y} {
+    if {$X=={}} {
+        set X 0
+    }
+    if {$Y=={}} {
+        set Y 0
+    }
     set retval "$X*$Y"
     evaluate X Y retval
     if {$X==0} {
@@ -325,30 +337,32 @@ proc derive_expr {var expression} {
     if {$expression=={}} {
         return {}
     } 
-    Dinfo: expression=$expression [array names ::DEF]
+    Dinfo: derived $var in $expression
     if {[llength $expression]==1} {
         regsub -all {^@+} $expression @ expression
         if {$expression==$var} {
             return 1
         } 
+        if {$expression=="@$var"} {
+            return 1
+        } 
         default ::DERMODE first
         if {[array names ::sensitivity $expression,*]!={}} {
             if {[info exists ::sensitivity($expression,$var)]} {
-                Info: $expression has predefined derivative
+                Dinfo: $expression has predefined derivative
                 return $::sensitivity($expression,$var)
             }
             if {[info exists ::DER($expression,*,$::DERMODE)]} {
-                Info: $expression has predefined derivative
+                Dinfo: $expression has predefined derivative
                 return $::DER($expression,*,$::DERMODE)
             }
             return 0
         }
         if {[info exists ::DEF($expression)]} {
-            Info: $expression is dependent on $::DEF($expression)
             return [derive_expr $var [analyse_expr $::DEF($expression)]]
         }
         if {[info exists ::DEF(@$expression)]} {
-            Info: $expression is dependent on $::DEF(@$expression)
+            Dinfo: $expression is dependent on $::DEF(@$expression)
             return [derive_expr $var [analyse_expr $::DEF(@$expression)]]
         }
         return 0
@@ -409,9 +423,6 @@ proc beatufy_expression {varname} {
     
 }
 proc derive_expression {var expression} {
-    for {set i 1} {$i<=[info level]} {incr i} {
-        Info: ($i) [info level $i]
-    }
     set analyzed [analyse_expr $expression]
     if {[llength $analyzed]==1} {
         set analyzed [lindex $analyzed 0]

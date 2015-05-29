@@ -84,6 +84,7 @@
  char history_file[512] = {'\0'};
  static char *application_name;
 #endif
+#include "Gamma/Data/ctree_spice.h"
 
 /* Undefine this next line for debug tracing */
 /* #define TRACE */
