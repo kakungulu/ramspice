@@ -1241,6 +1241,7 @@ int array_save(LUT *a,char *filename,int append_mode) {
 }
 void context_save(context *c,FILE *O) {
     if (c->parent) {
+        #Dinfo: "Saving context %s" c->name
         write_string(O,c->name);
         write_ordinal(O,c->value_type);
         if (c->value_type==ctype_void) write_string(O,"");
@@ -1268,6 +1269,7 @@ void context_save(context *c,FILE *O) {
         write_ordinal(O,c->num_of_children);
     }
     int i;
+    #Dinfo: "Saving %d children of %s" c->num_of_children c->name
     for (i=0;i<c->num_of_children;i++) context_save(c->children[i],O);
 }
 void context_load(context *c) {
@@ -1275,10 +1277,11 @@ void context_load(context *c) {
         char name[256];
         read_string(name);
         CTYPE value_type=read_ordinal();
+	#Dinfo: "Loading context %s type=%d" name value_type
         c->value_type=value_type;
         context *next_context;
-        if (value_type==ctype_void) copy_string(c->value.v);
-        if (value_type==ctype_string) copy_string(c->value.v);
+        if (value_type==ctype_void) c->value.v=copy_string();
+        if (value_type==ctype_string) c->value.v=copy_string();
         if (value_type==ctype_real) c->value.s=read_float();
         if (value_type==ctype_integer) c->value.o=read_ordinal();
         if (value_type==ctype_PAT) {
@@ -1377,7 +1380,7 @@ void context_load(context *c) {
          #Dinfo: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context);
-        break;
+	if (c->parent) break;
     }    
 }
 static int

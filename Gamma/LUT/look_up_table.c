@@ -761,7 +761,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             #For: {set i 0} {$i<$breadth} {incr i 2} {
                 #tcl set k [expr $i+1]
                 interpolation_buffer$j=interpolation_buffer$k*w1+interpolation_buffer$i*w2;
-		float gradient_buffer${weighing_dim}_$j=interpolation_buffer$k-interpolation_buffer$i;
+		float gradient_buffer${weighing_dim}_$j=interpolation_buffer$i-interpolation_buffer$k;
 		#For: {set l 0} {$l<$weighing_dim} {incr l} {
 		    gradient_buffer${l}_$j=gradient_buffer${l}_$k*w1+gradient_buffer${l}_$i*w2;
 		    #Dinfo: "grad_buffer${l}_$j=%g" gradient_buffer${l}_$j

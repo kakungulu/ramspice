@@ -179,10 +179,31 @@ proc det {
 	if {[regexp {[\-\+]} $entry]} {
 	    set entry "($entry)"
 	}
-	if {$next_det==1.0} {
-	    set retval "$retval$sign$entry"
+	set this "$retval$sign$entry"
+	if {$this==1.0} {
+	    if {$next_det==1.0} {
+	        set retval 1
+	    } elseif {$next_det==-1.0} {
+	        set retval -1
+	    } else {
+	        set retval $next_det
+	    }
+	} elseif {$this==-1.0} {
+	    if {$next_det==1.0} {
+	        set retval -1
+	    } elseif {$next_det==-1.0} {
+	        set retval 1
+	    } else {
+	        set retval -$next_det
+	    }
 	} else {
-	    set retval "$retval$sign$entry*$next_det"
+	    if {$next_det==1.0} {
+	        set retval "$retval$sign$entry"
+	    } elseif {$next_det==-1.0} {
+	        set retval "-$retval$sign$entry"
+	    } else {
+	        set retval "$retval$sign$entry*$next_det"
+	    }
 	}
     }
     if {$retval=={}} {
