@@ -1250,6 +1250,7 @@ void context_save(context *c,FILE *O) {
         if (c->value_type==ctype_integer) write_ordinal(O,c->value.o);
         if (c->value_type==ctype_PAT) write_pointer_PAT(O,(PAT *)c->value.v);
         if (c->value_type==ctype_LUT) {
+	    #Dinfo: "Saving LUT %s (%x)" c->name c->value.v
             LUT *a=(LUT *)c->value.v;
             write_string(O,a->name);
             write_ordinal(O,a->dim);

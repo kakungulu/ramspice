@@ -394,6 +394,10 @@ proc .prep_mna {mode} {
 #}
 proc .compile_circuit {args} {
     get_opts outp {} out {} outn {} in {} inn {} inp {} vdd {} name {}
+    set ::debug_mode 0
+    if {[ginfo target]=="debug"} {
+        set ::debug_mode 1
+    }
     foreach possible_ports {out outp outn inn inp in vdd} {
 	skip {$opt($possible_ports)!={}}
 	if {[@ param:$possible_ports ?]} {
@@ -462,20 +466,20 @@ proc .compile_circuit {args} {
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
     *c "for (op_it=0;op_it<@op_iterations;op_it++) \{"
-    *c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"
+    if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
     foreach transistor $::all_transistors {
         set L $::transistors($transistor,L)
         set W $::transistors($transistor,W)
         if {[info exists ::gm_equations($transistor)]} {
             *c "@$transistor:gm=$::gm_equations($transistor);"
-            *c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
             *c "@$transistor:go=$::go_equations($transistor);"
-            *c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
         } else {
             *c "@$transistor:g=$::g_equations($transistor);"
         }
         *c "@$transistor:Ideq=$::Ids_equations($transistor);"
-        *c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"
+        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
     }
     foreach name [array names ::G_equations] {
         *c "@Gds_$name=$::G_equations($name);"
@@ -484,19 +488,19 @@ proc .compile_circuit {args} {
     set expression(Det) [DET ::MNA]
     foreach transistor $::all_transistors {
         if {[info exists ::gm_equations($transistor)]} {
-            *c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
             *c "if (@$transistor:gm==0) @$transistor:gm=1e-6;"
-            *c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
             *c "if (@$transistor:go==0) @$transistor:go=1e-6;"
         }    
         
-        *c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"
+        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
     }
     *c "@Det=$expression(Det);"
     *c "@Ted=1/@Det;"
     *c "// Updating node voltages"
-    *c "printf(\"Det=$expression(Det)\\n\");"
-    *c "printf(\"Det=%g Ted=%g\\n\",@Det,@Ted);"
+    if {$::debug_mode} {*c "printf(\"Det=$expression(Det)\\n\");"}
+    if {$::debug_mode} {*c "printf(\"Det=%g Ted=%g\\n\",@Det,@Ted);"}
     set i 0
     foreach node $::independent_nodes {
         set expression($node) [DET ::MNA $i $::MNAy]
@@ -506,7 +510,7 @@ proc .compile_circuit {args} {
             *c "@$node:V=($expression($node))*@Ted;"
             *c "if (@$node:V<0) @$node:V=0;"
             *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
-            *c "printf(\"$node=%g\\n\",@$node:V);"
+            if {$::debug_mode} {*c "printf(\"$node=%g\\n\",@$node:V);"}
         }
         incr i
     }
@@ -523,16 +527,16 @@ proc .compile_circuit {args} {
     @ property foreach_child p {
         set expression($p) [flat_expression  $::properties($p,expression)]
         *c "@property:$p=$expression($p);"
-        *c "printf(\"$p=%g\\n\",@property:$p);"
+        if {$::debug_mode} {*c "printf(\"$p=%g\\n\",@property:$p);"}
     }	
     *c "// Calculating circuit properties' gradients:"
     foreach transistor $::all_transistors {
-        *c "printf(\"d$transistor:dgm_dl=%g $transistor:gm=%g\\n\",@$transistor:dgm_dl,@$transistor:gm);"
+        if {$::debug_mode} {*c "printf(\"d$transistor:dgm_dl=%g $transistor:gm=%g\\n\",@$transistor:dgm_dl,@$transistor:gm);"}
         foreach admittance {gm go} {
             @ $transistor:$admittance:size foreach_child c {
                 if {[info exists ::DEF($transistor:$admittance:size:$c)]} {
                     *c "@$transistor:$admittance:size:$c=$::DEF($transistor:$admittance:size:$c);"
-                    *c "printf(\"d$transistor:$admittance/d$c=%g\\n\",@$transistor:$admittance:size:$c);"
+                    if {$::debug_mode} {*c "printf(\"d$transistor:$admittance/d$c=%g\\n\",@$transistor:$admittance:size:$c);"}
                 }
             }
         }
@@ -567,7 +571,7 @@ proc .compile_circuit {args} {
                 lappend chain "@$transistor:$admittance:size:$c*@property:${p}:${transistor}:${admittance}"
             }
             *c "@property:${p}:${c}=[join $chain +];"
-            *c "printf(\"d${p}/d${c}=%g\\n\",@property:${p}:${c});"
+            if {$::debug_mode} {*c "printf(\"d${p}/d${c}=%g\\n\",@property:${p}:${c});"}
         }
         
     }
@@ -588,7 +592,7 @@ proc .compile_circuit {args} {
     	    lappend chain "@$transistor:$admittance:size:$c*@property:Zout:${transistor}:${admittance}"
     	}
     	*c "@property:Zout:${c}=[join $chain +];"
-    	*c "printf(\"dZout/d${c}=%g\\n\",@property:Zout:${c});"
+    	if {$::debug_mode} {*c "printf(\"dZout/d${c}=%g\\n\",@property:Zout:${c});"}
     }
     .prep_mna ac
     set expression(Det_ac) [DET ::MNA]
@@ -597,13 +601,13 @@ proc .compile_circuit {args} {
         foreach cap {cgs cgd} {
             skip {![@ $transistor:$cap ?]}
             *c "@$transistor:$cap=$::cap_equations($transistor,$cap);"
-            *c "printf(\"$transistor:$cap=%g\\n\",@$transistor:$cap);"
+            if {$::debug_mode} {*c "printf(\"$transistor:$cap=%g\\n\",@$transistor:$cap);"}
         }
     }	    
     *c "@s=-1;"
     *c "int BW_it;"
-    *c "printf(\"num=$expression(Det_ac)\\n\");"
-    *c "printf(\"denom=$expression(dDet_ac)\\n\");"
+    if {$::debug_mode} {*c "printf(\"num=$expression(Det_ac)\\n\");"}
+    if {$::debug_mode} {*c "printf(\"denom=$expression(dDet_ac)\\n\");"}
     *c "for (BW_it=0;BW_it<5;BW_it++) \{"
     *c "    @s-=($expression(Det_ac))/($expression(dDet_ac));"
     #    *c "    @s-=(($expression(Det_ac))*@s)/(($expression(dDet_ac))*@s-($expression(Det_ac)));"
@@ -611,7 +615,7 @@ proc .compile_circuit {args} {
     *c "@property:BW:s=$expression(dDet_ac);"
     *c "@p1=-@s;"
     *c "@property:BW=@p1/(2*3.141592656);"
-    *c "printf(\"BW=%g\\n\",@property:BW);"
+    if {$::debug_mode} {*c "printf(\"BW=%g\\n\",@property:BW);"}
     # Move away from the found root 
     *c "@s-=1e3;"
     # Find next root (=pole)
@@ -619,14 +623,14 @@ proc .compile_circuit {args} {
     *c "    @s-=(($expression(Det_ac))*(@s+@p1-5e2))/(($expression(dDet_ac))*(@s+@p1-5e2)-($expression(Det_ac)));"
     *c "\}"
     *c "@p2=-@s;"
-    *c "printf(\"Poles: %g    %g\\n\",@p1,@p2);"
+    if {$::debug_mode} {*c "printf(\"Poles: %g    %g\\n\",@p1,@p2);"}
     *c "float A1=-@p2/(-@p1+@p2);"
     *c "float A2=-@p1/(-@p1+@p2);"
     *c "@property:ts=0;"
     *c "for (BW_it=0;BW_it<10;BW_it++) \{"
     *c "    @property:ts-=(0.02+A1*exp(-@p1*@property:ts)+A2*exp(-@p2*@property:ts))/(-@p1*A1*exp(-@p1*@property:ts)-@p2*A2*exp(-@p2*@property:ts));"
     *c "\}"
-    *c "printf(\"Settling time=%g\\n\",@property:ts);"
+    if {$::debug_mode} {*c "printf(\"Settling time=%g\\n\",@property:ts);"}
     *c "@property:ts:s=-@p1*A1*exp(-@p1*@property:ts)-@p2*A2*exp(-@p2*@property:ts);"
     foreach transistor $::all_transistors {
         foreach admittance {gm go} {
@@ -696,10 +700,10 @@ proc .compile_circuit {args} {
         }	    
     }
     foreach transistor $::all_transistors {
-        *c "printf(\"$transistor:  Nt=%g (%g%%)  Nf=%g (%g%%)\\n\",@$transistor:Nt,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nt/@property:Nt,@$transistor:Nf,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nf/@property:Nf);"
+        if {$::debug_mode} {*c "printf(\"$transistor:  Nt=%g (%g%%)  Nf=%g (%g%%)\\n\",@$transistor:Nt,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nt/@property:Nt,@$transistor:Nf,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nf/@property:Nf);"}
     }
     *c "@property:fc=@property:Nf/@property:Nt;"
-    *c "printf(\"Corner=%g\\n\",@property:fc);"
+    if {$::debug_mode} {*c "printf(\"Corner=%g\\n\",@property:fc);"}
     @ size foreach_child c {
         *c "@property:fc:$c=@property:Nf:$c/@property:Nt-@property:Nf/(@property:Nt*@property:Nt)*@property:Nt:$c;"
     }	

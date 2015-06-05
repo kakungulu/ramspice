@@ -1,0 +1,4 @@
+#!/bin/tcsh
+
+Etc/utils/compile.tcl $0
+

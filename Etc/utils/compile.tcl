@@ -7,8 +7,25 @@ proc c {} {
 set ::compilation_time [clock seconds]
 source $::env(RAMSPICE)/Etc/utils/templates.tcl
 source $::env(RAMSPICE)/Etc/utils/unknown.tcl
-
-
+array set ::opt {
+    bins {ramspice gamma}
+    targets {regular silent debug}
+}
+array set ::bin2flag {
+    ramspice SPICE_COMPILATION gamma GAMMA_COMPILATION
+}
+array set ::target2flag {
+    regular TCL_MSG_REG silent TCL_MSG_SILENT debug TCL_MSG_DEBUG
+}
+set flag {}
+foreach arg $argv {
+    if {[regexp {^\-(.*)$} $arg -> flag]} continue
+    if {![info exists ::opt($flag)]} {
+        Error: Available flags are [array names ::opt]
+        exit
+    }
+    set ::opt($flag) $arg
+}
 # Gamma support comes in here:
 set gamma_c_mtime 0
 if {[file exists $::env(RAMSPICE)/Gamma/Gamma.c]} {
@@ -159,10 +176,12 @@ proc all_paths {{dir .} {visited {}}} {
     }
     return $retval
 }
- foreach binary {ramspice gamma} binary_flag {SPICE_COMPILATION GAMMA_COMPILATION} {
-     foreach target [list regular silent debug] target_flag {TCL_MSG_REG TCL_MSG_SILENT TCL_MSG_DEBUG} {
-# foreach binary {ramspice } binary_flag {SPICE_COMPILATION } 
- #   foreach target [list  debug] target_flag { TCL_MSG_DEBUG} 
+foreach binary $::opt(bins) {
+    set binary_flag $::bin2flag($binary)
+    foreach target $::opt(targets) {
+        set target_flag $::target2flag($target)
+        # foreach binary {ramspice } binary_flag {SPICE_COMPILATION } 
+        #   foreach target [list  debug] target_flag { TCL_MSG_DEBUG} 
         define_message_templates
         set preprocessed /tmp/${binary}_build/preprocessed-$target
         set object_files /tmp/${binary}_build/object_files-$target
@@ -175,7 +194,7 @@ proc all_paths {{dir .} {visited {}}} {
             foreach dir [file split [set $var]] {
                 if {$dir=={}} continue
                 if {![file exists $dir]} {
-		    puts "Info: new build dir: $dir"
+                    puts "Info: new build dir: $dir"
                     file mkdir $dir
                 }
                 cd $dir
@@ -195,7 +214,7 @@ proc all_paths {{dir .} {visited {}}} {
                 source $file
             }
         }   
-	set skip_compilation 1
+        set skip_compilation 1
         foreach path [all_paths] {
             if {$binary=="gamma" && [string match *spice* $path]} continue
             foreach file [glob -nocomplain $path/*.h $path/*.c $path/*.cpp] {
@@ -211,7 +230,7 @@ proc all_paths {{dir .} {visited {}}} {
                 set target_file $fileroot$fileext
                 set alternate_index 0
                 while {[lsearch $copied_filenames $target_file]!=-1} {
-	#	    puts "Warning: $target_file is renamed"
+                    #	    puts "Warning: $target_file is renamed"
                     set target_file $fileroot$alternate_index$fileext
                     incr alternate_index
                 }
@@ -226,7 +245,7 @@ proc all_paths {{dir .} {visited {}}} {
                     if {[file mtime $target_file]>[file mtime $file]} continue
                 }
                 puts "Info: Preprocessing $file to $target_file"
-		set skip_compilation 0
+                set skip_compilation 0
                 set I [open $file r]
                 set ::templates::O [open $target_file w]
                 set ::rank 0
@@ -235,10 +254,10 @@ proc all_paths {{dir .} {visited {}}} {
                 close $I
             }
         }    
-	if {$skip_compilation} {
+        if {$skip_compilation} {
             puts "Info: ${binary}-${target} is up to date"
-	    continue
-	}
+            continue
+        }
         puts "Info: Creating compilation script [c]"
         foreach path [all_paths ${preprocessed}] {
             foreach file [glob -nocomplain $path/*.c $path/*.cpp] {
@@ -279,7 +298,7 @@ proc all_paths {{dir .} {visited {}}} {
                 }
             }
         }
-	puts $O exit
+        puts $O exit
         close $O
         
         set O [open link${binary}-$target.tcsh w]
@@ -287,7 +306,7 @@ proc all_paths {{dir .} {visited {}}} {
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         puts $O "echo \"Info: $object_files links to $target_name\""
         puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl  -ldb-4.7  $object_files/*.o -o $target_name | & tee -a log"
-	puts $O exit
+        puts $O exit
         close $O
         if {![file exists $object_files]} {
             file mkdir $object_files
@@ -299,8 +318,8 @@ proc all_paths {{dir .} {visited {}}} {
         exec ./compile${binary}-$target.tcsh
         puts "Info: Linking [c]"
         exec ./link${binary}-$target.tcsh
-#        file delete compile${binary}-$target.tcsh
-#        file delete link${binary}-$target.tcsh
+        #        file delete compile${binary}-$target.tcsh
+        #        file delete link${binary}-$target.tcsh
     }
     if {![file exists $::env(RAMSPICE)/${binary}]} {
         file link -s ${binary} bin/${binary}-regular
