@@ -1241,7 +1241,7 @@ int array_save(LUT *a,char *filename,int append_mode) {
 }
 void context_save(context *c,FILE *O) {
     if (c->parent) {
-        #Dinfo: "Saving context %s" c->name
+        #Dinfo: "[c] Saving context %s type=%d" c->name c->value_type
         write_string(O,c->name);
         write_ordinal(O,c->value_type);
         if (c->value_type==ctype_void) write_string(O,"");
@@ -1250,8 +1250,8 @@ void context_save(context *c,FILE *O) {
         if (c->value_type==ctype_integer) write_ordinal(O,c->value.o);
         if (c->value_type==ctype_PAT) write_pointer_PAT(O,(PAT *)c->value.v);
         if (c->value_type==ctype_LUT) {
-	    #Dinfo: "Saving LUT %s (%x)" c->name c->value.v
             LUT *a=(LUT *)c->value.v;
+	    #Dinfo: "Saving LUT %s (%x) name=%s dim=%d" c->name c->value.v a->name a->dim
             write_string(O,a->name);
             write_ordinal(O,a->dim);
             ordinal i,j;
@@ -1270,33 +1270,34 @@ void context_save(context *c,FILE *O) {
         write_ordinal(O,c->num_of_children);
     }
     int i;
-    #Dinfo: "Saving %d children of %s" c->num_of_children c->name
+    #Dinfo: "[c] Saving %d children of %s" c->num_of_children c->name
     for (i=0;i<c->num_of_children;i++) context_save(c->children[i],O);
 }
-void context_load(context *c) {
+void context_load(context *c,int level) {
     while (more_to_read()) {
         char name[256];
         read_string(name);
         CTYPE value_type=read_ordinal();
-	#Dinfo: "Loading context %s type=%d" name value_type
-        c->value_type=value_type;
-        context *next_context;
-        if (value_type==ctype_void) c->value.v=copy_string();
-        if (value_type==ctype_string) c->value.v=copy_string();
-        if (value_type==ctype_real) c->value.s=read_float();
-        if (value_type==ctype_integer) c->value.o=read_ordinal();
+        context *next_context=new_context(c,name,value_type);
+	#Dinfo: "Loading context %s type=%d starting at (%x) level=%d" name value_type c level
+        if (value_type==ctype_void) next_context->value.v=copy_string();
+        if (value_type==ctype_string) {
+	    next_context->value.v=copy_string();
+	    #Dinfo: "   string value: %s" next_context->value.v
+	}    
+        if (value_type==ctype_real) next_context->value.s=read_float();
+        if (value_type==ctype_integer) next_context->value.o=read_ordinal();
         if (value_type==ctype_PAT) {
-            PAT *p=read_pointer_PAT();
-            next_context=new_context(c,name,p,ctype_PAT);
+            next_context->value.v=read_pointer_PAT();
         }    
         if (value_type==ctype_POLY) {
-            POLY *p=read_pointer_POLY();
-            next_context=new_context(c,name,p,ctype_POLY);
+             next_context->value.v=read_pointer_POLY();
         }    
         if (value_type==ctype_LUT) {
             LUT *a=(LUT *)malloc(sizeof(LUT));
-            copy_string(a->name);
+            a->name=copy_string();
             a->dim=read_ordinal();
+	    #Dinfo: "Loaded LUT %s dim=%d" a->name a->dim
             #For: {set dim 1} {$dim<$::MAXDIM} {incr dim} {
                 if (a->dim==$dim) {
                     a->interpolate=lut_interpolation_$dim;
@@ -1372,16 +1373,14 @@ void context_load(context *c) {
                 for (i=0;i<L->volume*(a->dim+1);i++) L->content[i]=read_float();
                 #Info: "Done loading attached LIT[%ld]" L->volume*(a->dim+1)
             }
-            next_context=new_context(c,name,a,ctype_LUT);
-        } else {
-            next_context=new_context(c,name,c->value.v,value_type);
+            next_context->value.v=a;
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
          #Dinfo: "num_of_children=%ld" num_of_children
         int i;
-        for (i=0;i<num_of_children;i++) context_load(next_context);
-	if (c->parent) break;
+        for (i=0;i<num_of_children;i++) context_load(next_context,level+1);
+	if (level!=0) break;
     }    
 }
 static int
@@ -2222,13 +2221,13 @@ node *new_node(node *i_parent,int i_index) {
     new_node->remote=NULL;
     return(new_node);
 }
-context *new_context(context *i_parent, char *i_name,void *i_value,CTYPE i_type) {
+
+context *new_context(context *i_parent, char *i_name,CTYPE i_type) {
     // First, make sure the context is really new.
     if ((i_parent)&&(i_name)) {
         int i;
         for (i=0;i<i_parent->num_of_children;i++) {
             if (strcmp(i_parent->children[i]->name,i_name)==0) {
-                if (i_value) i_parent->children[i]->value.v=i_value;
                 if (i_type) i_parent->children[i]->value_type=i_type;
                 return i_parent->children[i];
             }
@@ -2245,7 +2244,6 @@ context *new_context(context *i_parent, char *i_name,void *i_value,CTYPE i_type)
     if (i_parent) new_context->sibling_order=add_sub_context(i_parent,new_context);
     new_context->name=NULL;
     if (i_name) new_context->name=strdup(i_name);
-    new_context->value.v=i_value;
     new_context->value_type=i_type;
     return new_context;
 }
@@ -2395,7 +2393,7 @@ context *create_context(char *i_key) {
                     break;
                 }
             }
-            if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_PAT);
+            if (!next_context) next_context=new_context(temp_context,context_name_buffer,ctype_PAT);
             temp_context=next_context;
             PAT *p=new_PAT();
             temp_context->value.v=p;
@@ -2436,7 +2434,7 @@ context *create_context(char *i_key) {
                     break;
                 }
             }
-            if (!next_context) next_context=new_context(temp_context,context_name_buffer,NULL,ctype_LUT);
+            if (!next_context) next_context=new_context(temp_context,context_name_buffer,ctype_LUT);
             temp_context=next_context;
             LUT *a=(LUT *)malloc(sizeof(LUT));
             a->name=strdup(context_name_buffer);
@@ -2504,7 +2502,8 @@ context *create_context(char *i_key) {
                 v=new_POLY();
                 #Dinfo: "New POLY at %s (%x %x)"  i_key temp_context v
             }	
-            next_context=new_context(temp_context,context_name_buffer,v,c_type);
+            next_context=new_context(temp_context,context_name_buffer,c_type);
+	    next_context->value.v=v;
         }    
         temp_context=next_context;
     }
@@ -3553,7 +3552,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             return TCL_ERROR;
         }
         open_to_read(argv[3]);
-        context_load(c);
+        context_load(c,0);
         done_reading();
         return TCL_OK;
     }
@@ -4736,7 +4735,7 @@ ordinal merge_hit_leaves(hit_node **hit) {
 }
 int register_tcl_functions(Tcl_Interp *interp) {
     ctree=new_node(NULL,0);
-    Ctree=new_context(NULL,NULL,NULL,0);
+    Ctree=new_context(NULL,NULL,0);
     Context=Ctree;
     ctree->ctype=ctype_string;
     //context=ctree;

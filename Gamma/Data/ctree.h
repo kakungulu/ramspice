@@ -211,7 +211,7 @@ PAT *get_PAT_quiet(char *i_context);
 POLY *get_POLY(char *i_context);
 POLY *get_POLY_quiet(char *i_context);
 node *new_node();
-context *new_context(context *i_parent, char *i_name,void *i_value,CTYPE i_type);
+context *new_context(context *i_parent, char *i_name,CTYPE i_type);
 int resolve_string_char(char i_char,node **i_node);
 int resolve_string_token(char *i_token,node **i_node);
 int resolve_key(char *i_key,node **i_node,float **array_entry);
