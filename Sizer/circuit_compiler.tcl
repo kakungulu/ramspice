@@ -1,0 +1,209 @@
+# \
+exec $RAMSPICE/ramspice $0 $argv
+source $::env(RAMSPICE)/Gamma/GammaCC.tcl
+get_opts
+default ::opt(interpolation) LUT
+default ::opt(process) ss
+default ::opt(device) nch
+default ::opt(tech) tsmc040
+default ::opt(topv) 1.1
+default ::opt(l) 360e-9
+default ::opt(w) 360e-9
+default ::opt(vgs) 1.0
+default ::opt(vbs) 0.0
+default ::opt(r) 50
+default ::opt(ref) 100e-6
+default ::opt(op_limit) 2
+default ::opt(step_limit) 1000
+default ::opt(step_count) 10
+default ::opt(np) 1
+default ::opt(mode) dc
+set ::opt(mode) [string tolower $::opt(mode)]
+default EPS0 8.85418e-12
+default ::opt(epsrox) 3.9
+default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
+source $::env(RAMSPICE)/Sizer/matrices.tcl
+source $::env(RAMSPICE)/Sizer/derivatives.tcl
+source $::env(RAMSPICE)/Sizer/polynomials.tcl
+
+
+set ::all_transistors {}
+set ::all_nodes {}
+#array set ::vdc {0 0}
+
+proc add_idc {name m p value} {
+    set ::idc($m,$p) $value
+    add_node $m $p
+}
+set ::dependent_nodes(0) 1
+proc add_vdc {name m p value} {
+    set init_value $value
+    if {[@ $value ?]} {
+        set init_value [@ $value]
+    }
+    if {[catch {expr $value}]} {
+        set ::vdc($m,$p) @$value
+    } else {
+        set ::vdc($m,$p) $value
+    }
+    add_node $m $p
+    if {[info exists ::dependent_nodes($m)]} {
+        Dinfo: $p depends on $m ($value)
+        set ::dependent_nodes($p) {}
+        $p:Next=>$m+$value
+        $p:V=>$p:Next
+        @ $p:Next = [expr [@ $m:Next]+$init_value]
+        @ $p:V = [expr [@ $m:Next]+$init_value]
+    } elseif {[info exists ::dependent_nodes($p)]} {
+        Dinfo: $m depends on $p ($value)
+        set ::dependent_nodes($m) {}
+        $m:Next=>$p+$value
+        $m:V=>$m:Next
+        @ $m:Next = [expr [@ $p:Next]-$init_value]
+        @ $m:V = [expr [@ $p:Next]-$init_value]
+    }
+}
+array set ::all_resistors {}
+set ::all_nodes {}
+proc add_resistor {name m p value} {
+    add_node $m $p
+    foreach node [list $m $p] {
+        if {![info exists ::mna_equations($node)]} {
+            set ::mna_equations($node) ""
+        }
+    }
+    if {![info exists ::all_resistors($m,$p)]} {
+        set ::all_resistors($m,$p) $value
+    } else {
+        set ::all_resistors($m,$p) [expr $value*$::all_resistors($m,$p)/($value+$::all_resistors($m,$p))]
+    }
+}
+array set ::mna_mapping {}
+proc mna_map {node} {
+    if {[info exists ::mna_mapping($node)]} {
+        return [mna_map $::mna_mapping($node)]
+    }
+    return $node	
+}
+default ::opt(eps) 1e-4
+set ::epsilon $::opt(eps)
+proc Vdiff {v1 v2} {
+    if {$v2==0} {
+        return $v1
+    }
+    if {$v2=="0:V"} {
+        return @$v1
+    }
+    if {$v2=="\{0:V\}"} {
+        return @$v1
+    }
+    if {$v1==0} {
+        return "(-@$v2)"
+    }
+    if {$v1=="0:V"} {
+        return "(-@$v2)"
+    }
+    if {$v1=="\{0:V\}"} {
+        return "(-@$v2)"
+    }
+    if {$v1==$v2} {
+        return 0
+    }	
+    return "(@$v1-@$v2)"
+}
+proc add_mna {i j element} {
+    if {$i=="0"} return
+    if {$j=="0"} return
+    set i [lsearch $::independent_nodes $i]
+    set j [lsearch $::independent_nodes $j]
+    default ::MNA($i,$j)
+    append ::MNA($i,$j) $element
+    regsub {^\++} $::MNA($i,$j)  {} ::MNA($i,$j)
+    regsub {^\+\-} $::MNA($i,$j)  {-} ::MNA($i,$j)
+    regsub {^\-\+} $::MNA($i,$j)  {-} ::MNA($i,$j)
+}
+proc tmp_sort {t1 t2} {
+    regsub tmp $t1 {} i1
+    regsub tmp $t2 {} i2
+    if {int($i1)>int($i2)} {
+        return 1
+    }	
+    return 0
+}
+proc add_node {args} {
+    foreach m $args {
+        ladd ::all_nodes $m
+        if {![@ $m:V ?]} {
+            @ $m:V = 0
+        }
+    }
+}
+set ::circuit_components {}
+proc add_transistor {name d g s b type args} {
+    lappend ::all_transistors $name
+    add_node $d $g $s $b
+    set ::transistors($name,connectivity) trivial
+    if {$d==$g} {
+        set ::transistors($name,connectivity) diode
+    }
+    foreach field {d g s b type} {
+        set ::transistors($name,$field) [set $field]
+    }
+    foreach param $args {
+        lassign [split $param =] field value
+        set ::transistors($name,$field) $value
+    }
+    set class [lindex [split $name _] 0]
+    foreach field {L W} {
+        if {![info exists ::transistors($name,$field)]} {
+            set ::transistors($name,$field) size:$field$class
+            @ size:$field$class = 3.6e-8
+        } elseif {[regexp {^\((.*)\)$} $::transistors($name,$field) -> guide]} {
+            set ::transistors($name,$field) size:$field$class
+            @ size:$field$class = $guide
+        } else {
+            
+        }
+    }
+}
+default ::opt(iref) 50e-6
+source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
+.compile_circuit
+# Prepare some defaults in the skeleton db file
+set pareto_properties {}
+set pareto_sizes {}
+@ size foreach_child s {
+    lappend pareto_sizes $s
+}
+foreach {p unit formula step_factor} {
+    Adc    dB 20*log10(abs(@)) 1e-16
+    CMRR    dB 20*log10(abs(@)) 1e-13
+    PSRR    dB 20*log10(abs(@)) -1e-11
+    Zout    Ohm @ -1e-19
+    BW    Hz @ 7e-23
+    ts    sec @ -1e-6
+    Nt    V^2/Hz @ -1e-9
+    Nf    V^2/Hz @ -1e-14
+    fc     Hz @ -1e-17
+} {
+    @ /property/$p = 0
+    @ /property/$p/unit = string $unit
+    @ /property/$p/formula = string $formula
+    @ /property/$p/step_factor = $step_factor
+    if {$step_factor<0} {
+        lappend pareto_properties -$p
+    } else {
+        lappend pareto_properties $p
+    }
+    @ /size foreach_child s {
+        @ /property/$p/$s = 0
+    }
+}
+@ p1 = 0
+@ p2 = 0
+@ op_iterations = 10
+
+@ /pareto(([join $pareto_sizes ,]|[join $pareto_properties ,])) !
+@ / save $::env(RAMSPICE)/Etc/Templates/Op_$::opt(topology)/$::opt(topology).db
+exit
+
