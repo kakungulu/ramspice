@@ -398,6 +398,7 @@ proc .compile_circuit {args} {
     if {[ginfo target]=="debug"} {
         set ::debug_mode 1
     }
+    set ::debug_mode 1
     foreach possible_ports {out outp outn inn inp in vdd} {
 	skip {$opt($possible_ports)!={}}
 	if {[@ param:$possible_ports ?]} {
@@ -465,6 +466,9 @@ proc .compile_circuit {args} {
     @ op_iterations = $::opt(op_limit)
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
+    *c "printf(\"==================================================\\n\");"
+    *c "printf(\"======%d Operating Point Iterations. (%x)======\\n\",@op_iterations,&@op_iterations);"
+    *c "printf(\"==================================================\\n\");"
     *c "for (op_it=0;op_it<@op_iterations;op_it++) \{"
     if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
     foreach transistor $::all_transistors {

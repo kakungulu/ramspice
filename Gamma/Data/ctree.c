@@ -2488,8 +2488,10 @@ context *create_context(char *i_key) {
             continue;
         }
         context *next_context=NULL;
+	#Dinfo: "Searching for sub-context %s of %s" context_name_buffer temp_context->name
         for (k=0;k<temp_context->num_of_children;k++) {
             if (strcmp(context_name_buffer,temp_context->children[k])==0) {
+	        #Dinfo: "Sub-context %s already exists as child of %s" context_name_buffer temp_context->name
                 next_context=temp_context->children[k];
                 break;
             }
@@ -3188,7 +3190,12 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             tcl_append_float(interp,*array_entry);
             return TCL_OK;
         }
-        #Error: "(ctree) ccontext has unrecognized value_type."
+        if (c->value_type==ctype_PAT) {
+	    PAT *p=(PAT *)c->value.v;
+            tcl_append_int(interp,p->content->num_of);
+            return TCL_OK;
+        }
+        #Error: "(ctree) ccontext has unrecognized value_type. (%d)" c->value_type
         return TCL_ERROR;
     }
     if (strcmp(argv[2],"type")==0) {
