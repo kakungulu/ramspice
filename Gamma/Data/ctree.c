@@ -2361,6 +2361,7 @@ POLY *new_POLY() {
     return(p);
 }
 context *create_context(char *i_key) {
+    #Dinfo: "Trying context %s" i_key
     context *temp_context=Context;
     if ((i_key[0]=='/')||(i_key[0]==':')) temp_context=Ctree;
     char context_name_buffer[1024];
@@ -2490,7 +2491,8 @@ context *create_context(char *i_key) {
         context *next_context=NULL;
 	#Dinfo: "Searching for sub-context %s of %s" context_name_buffer temp_context->name
         for (k=0;k<temp_context->num_of_children;k++) {
-            if (strcmp(context_name_buffer,temp_context->children[k])==0) {
+	    #Dinfo: "    Child %d=%s" k temp_context->children[k]->name
+            if (strcmp(context_name_buffer,temp_context->children[k]->name)==0) {
 	        #Dinfo: "Sub-context %s already exists as child of %s" context_name_buffer temp_context->name
                 next_context=temp_context->children[k];
                 break;
@@ -2509,7 +2511,7 @@ context *create_context(char *i_key) {
         }    
         temp_context=next_context;
     }
-    #Dinfo: "Context %s created at %x, find scalar at (%x)" i_key temp_context (&temp_context->value.s)
+    #Dinfo: "Context %s created at %x, find scalar at (%x=%g)" i_key temp_context (&temp_context->value.s) temp_context->value.s
     return(temp_context);
 }
 int resolve_string_char(char i_char,node **i_node) {
@@ -3449,6 +3451,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 return TCL_OK;
             }
             c->value.s=atof(argv[3]);
+	    #Dinfo: "ASSIGNMENT %x=%s %g" &(c->value.s) argv[3] c->value.s
             //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
             return TCL_OK;
