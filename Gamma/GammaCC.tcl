@@ -57,7 +57,7 @@ proc .property {name args} {
         Error: property requires a -expression switch
         exit
     }
-    #    set opt(expression) [flat_expression $opt(expression)]
+    # set opt(expression) [flat_expression $opt(expression)]
     foreach field [array names opt] {
         set ::properties($name,$field) $opt($field)
     }
@@ -166,6 +166,9 @@ proc .spec {name op value} {
 }
 proc .prep_mna {mode} {
     array unset ::MNA
+    set idc_orig [array get ::idc]
+    set vdc_orig [array get ::vdc]
+    set ::MNAy {}
     @ s = 0
     set ::independent_nodes {}
     foreach node [lsort $::all_nodes] {
@@ -312,7 +315,6 @@ proc .prep_mna {mode} {
         }    
         incr i
     }
-    set ::MNAy {}
     for {set i 0} {$i<$dim} {incr i} {
         if {![info exists ::MNA($i)]} {
             lappend ::MNAy 0
@@ -388,6 +390,10 @@ proc .prep_mna {mode} {
         puts $::HTML </body></html>
         close $::HTML
     }
+    array unset ::vdc
+    array set ::vdc $vdc_orig
+    array unset ::idc
+    array set ::idc $idc_orig
 }
 #proc .circuit {name} {
 #    set ::opt(topology) $name
@@ -398,7 +404,7 @@ proc .compile_circuit {args} {
     if {[ginfo target]=="debug"} {
         set ::debug_mode 1
     }
-    set ::debug_mode 1
+    set ::debug_mode 0
     foreach possible_ports {out outp outn inn inp in vdd} {
 	skip {$opt($possible_ports)!={}}
 	if {[@ param:$possible_ports ?]} {
@@ -409,7 +415,6 @@ proc .compile_circuit {args} {
             set opt($possible_ports) @$possible_ports:V
 	}
     }
-    Info: opt=[array get opt]
     if {$opt(name)=={}} {
         set opt(name) $::opt(topology)
     }
@@ -444,7 +449,7 @@ proc .compile_circuit {args} {
             }
         } elseif {$opt(in)!={}} {
             if {![@ property/Adc ?]} {
-                .property Adc -expression derive($::output_net,$opt(in))) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+                .property Adc -expression derive($::output_net,$opt(in)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
             }
         }
         if {$opt(inp)!={} && $opt(inn)!={}} {
@@ -466,9 +471,9 @@ proc .compile_circuit {args} {
     @ op_iterations = $::opt(op_limit)
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
-    *c "printf(\"==================================================\\n\");"
-    *c "printf(\"======%d Operating Point Iterations. (%x)======\\n\",@op_iterations,&@op_iterations);"
-    *c "printf(\"==================================================\\n\");"
+    if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
+    if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@op_iterations);"}
+    if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
     *c "for (op_it=0;op_it<@op_iterations;op_it++) \{"
     if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
     foreach transistor $::all_transistors {
@@ -550,6 +555,7 @@ proc .compile_circuit {args} {
         foreach admittance {gm go} {
             set dpoly(Det,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression(Det)]
             *c "@Det:${transistor}:${admittance}=$dpoly(Det,$transistor,$admittance);"
+            *c "@Ted:${transistor}:${admittance}=-@Det:${transistor}:${admittance}/(@Det*@Det);"
         }
     }
     @ size foreach_child c {
@@ -565,7 +571,7 @@ proc .compile_circuit {args} {
         foreach transistor $::all_transistors {
             foreach admittance {gm go} {
                 set dpoly($p,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression($p)]
-                *c "@property:${p}:${transistor}:${admittance}=@Ted_${transistor}_${admittance}*@$p+$dpoly($p,$transistor,$admittance);"
+                *c "@property:${p}:${transistor}:${admittance}=@Ted:${transistor}:${admittance}*@$p+$dpoly($p,$transistor,$admittance);"
             }
         }
         @ size foreach_child c {
@@ -712,7 +718,8 @@ proc .compile_circuit {args} {
         *c "@property:fc:$c=@property:Nf:$c/@property:Nt-@property:Nf/(@property:Nt*@property:Nt)*@property:Nt:$c;"
     }	
     # Define Data Dependencies
-    gcc Op_$opt(name)
+#    gcc Op_$opt(name)
+    gcc $opt(name)
 }
 
 ################################################
@@ -731,23 +738,32 @@ namespace eval C {
         #include "look_up_table.h"
         // Some global pointers to keep reference of the contexts this object manipulates
         GLOBAL_POINTERS_GO_HERE
+        GLOBAL_VARIABLES_GO_HERE
         // The compiled function
-        static int tcl_@name_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-            Tcl_ResetResult(interp);
+        static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
             LOCAL_BUFFER_INIT_GOES_HERE
-            USER_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
             LOCAL_BUFFER_RETURN_GOES_HERE
             return TCL_OK;
         }
-        // Initializing cTree references and registering the tcl_@name_cmd command as ::C::@name
-        int @name_Init(Tcl_Interp *interp) {
+        static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            Tcl_ResetResult(interp);
+            USER_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        // Initializing cTree references and registering the tcl_gamma_op_cmd command as ::C::@name
+        int Gamma_Init(Tcl_Interp *interp) {
             if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
                 return TCL_ERROR;
             }
             float *array_entry;
             context *c;
             GLOBAL_POINTER_INIT_GO_HERE
-            Tcl_CreateObjCommand(interp, "::C::@name", tcl_@name_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::op", tcl_gamma_op_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::import", tcl_gamma_import_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::export", tcl_gamma_export_cmd, NULL, NULL);
             return TCL_OK;
         }
     }
@@ -857,11 +873,8 @@ proc gcc {name {code {}}} {
         set code $::C::code
         set ::C::code {}
     }
-    if {![string equal $name [string totitle $name]]} {
-        Error: Naming convention of dynamically compiled code is Title. $name should be [string totitle $name]
-        exit
-    }
     set global_pointers {}
+    set global_variables {}
     set global_pointer_init {}
     set local_buffer_init_goes_here {}
     set local_buffer_return_goes_here {}
@@ -897,6 +910,7 @@ proc gcc {name {code {}}} {
         }
         lappend used_pointer_names $pointer_name
         append global_pointers "float *$pointer_name;\n"
+        append global_variables "float $var_name;\n"
         if {[regexp {(.*):LUT} $context_string -> base]} {
             append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
             regsub "&@+$context_string" $code $pointer_name code
@@ -904,7 +918,7 @@ proc gcc {name {code {}}} {
             #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
             append global_pointer_init "c=create_context(\"$context_string\");\n"
             append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
-            append local_buffer_init_goes_here "float $var_name=*$pointer_name;\n"
+            append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
             append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
             regsub "&@+$context_string" $code $pointer_name code
             regsub "@+$context_string" $code $var_name code
@@ -917,12 +931,13 @@ proc gcc {name {code {}}} {
     regsub -all @name $::C::code_template $name body
     regsub USER_CODE_GOES_HERE $body $code body
     regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
+    regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
     regsub GLOBAL_POINTER_INIT_GO_HERE $body $global_pointer_init body
     regsub LOCAL_BUFFER_INIT_GOES_HERE $body $local_buffer_init_goes_here body
     regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
     regsub -all `_ $body {P_} body
     regsub -all ` $body {\&} body
-    set ::C::O [open /tmp/$name.c w]
+    set ::C::O [open /tmp/gamma_source.c w]
     ::C::tcl_preprocessor $body
     close $::C::O
     
@@ -938,19 +953,19 @@ proc gcc {name {code {}}} {
     set build_path /tmp/${::binary}_build/preprocessed-${::target}
     Info: Launching GCC
     
-    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/${name}.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/lib${name}.so"
-    if {[file exists /tmp/lib${name}.so]} {
-        Info: Shared Object was created for $name on [clock format [file mtime /tmp/lib${name}.so]]
+    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/gamma_source.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/libGamma.so"
+    if {[file exists /tmp/libGamma.so]} {
+        Info: Shared Object was created for Gamma on [clock format [file mtime /tmp/libGamma.so]]
         if {![file exists $::env(RAMSPICE)/Etc/Templates]} {
             file mkdir $::env(RAMSPICE)/Etc/Templates
         }
         if {![file exists $::env(RAMSPICE)/Etc/Templates/$name]} {
             file mkdir $::env(RAMSPICE)/Etc/Templates/$name
         }
-        file copy -force /tmp/lib${name}.so $::env(RAMSPICE)/Etc/Templates/$name
-        file copy -force /tmp/${name}.c $::env(RAMSPICE)/Etc/Templates/$name/${name}.source_code
+        file copy -force /tmp/libGamma.so $::env(RAMSPICE)/Etc/Templates/$name
+        file copy -force /tmp/gamma_source.c $::env(RAMSPICE)/Etc/Templates/$name/
     }
-    #    load /tmp/lib${name}.so"
+    load $::env(RAMSPICE)/Etc/Templates/$name/libGamma.so
 }
 proc *c {args} {
     Dinfo: CCC $args

@@ -17,29 +17,30 @@ default ::opt(step_limit) 1000
 default ::opt(step_count) 10
 default ::opt(np) 1
 default ::opt(mode) dc
+default ::opt(topology) diffpair_nmos
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
 default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
 
-@ / load Etc/Templates/Op_diffpair_nmos/diffpair_nmos.db
+@ / load Etc/Templates/$::opt(topology)/ctree.db
 
-foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
-    set toxp [expr $toxe-$dtox]
-    @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
-    @ /look_up_tables/$dev !
-    foreach param {ids gm ro} {
-     @ /look_up_tables/$dev load $::opt(source)/$::opt(tech)_${dev}_${param}.db
-    }
-    @ /look_up_tables/$dev/thermal_noise/ !
-    @ /look_up_tables/$dev/flicker_noise/ !
-    @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
-    @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
-}
+### foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
+###     set toxp [expr $toxe-$dtox]
+###     @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
+###     @ /look_up_tables/$dev !
+###     foreach param {ids gm ro} {
+###      @ /look_up_tables/$dev load $::opt(source)/$::opt(tech)_${dev}_${param}.db
+###     }
+###     @ /look_up_tables/$dev/thermal_noise/ !
+###     @ /look_up_tables/$dev/flicker_noise/ !
+###     @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
+###     @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
+### }
 proc list_ctree {{c /}} {
     Info: $c = [@ $c]
     @ $c foreach_child d {
-        list_ctree $c/$d
+	list_ctree $c/$d
     }
 }
 list_ctree
@@ -63,133 +64,61 @@ list_ctree
         ###         }
     ###     }
 ### }
-@ p1 = 0
-@ p2 = 0
-
-@ op_iterations = 10
-@ param:rload = 1e7
-@ param:pos = 0.55
-@ param:neg = 0.55
-@ param:iref = 20e-6
-@ param:vdd = 1.1
-@ tail:V = 0.55
-@ outp:V = 0.55
-@ outm:V = 0.55
-@ vbias:V = 0.55
-@ size:Wp = 1e-6
-@ size:Lp = 1e-6
-@ size:Wn = 1e-6
-@ size:Ln = 1e-6
-@ size:Ws = 1e-6
-@ size:Ls = 1e-6
-@ inn:V = 0.55
-@ inp:V = 0.55
-@ vdd:V = 1.1
+### @ p1 = 0
+### @ p2 = 0
+### 
+### @ op_iterations = 10
+### @ param:rload = 1e7
+### @ param:pos = 0.55
+### @ param:neg = 0.55
+default ::opt(param) {}
+foreach param_pair $::opt(param) {
+    lassign [split $param_pair =] param value
+    @ param:$param = $value
+}
+### @ param:vdd = 1.1
+### @ tail:V = 0.55
+### @ outp:V = 0.55
+### @ outm:V = 0.55
+### @ vbias:V = 0.55
+### @ size:Wp = 1e-6
+### @ size:Lp = 1e-6
+### @ size:Wn = 1e-6
+### @ size:Ln = 1e-6
+### @ size:Ws = 1e-6
+### @ size:Ls = 1e-6
+### @ inn:V = 0.55
+### @ inp:V = 0.55
+### @ vdd:V = 1.1
 Derror: ignore above errors
-load $::env(RAMSPICE)/Etc/Templates/Op_diffpair_nmos/libOp_diffpair_nmos.so
-::C::Op_diffpair_nmos
-@ / foreach_child c {
-    skip {![@ $c:V ?]}
-    skip {$c=="0"}
-    Info: $c=[@ $c:V]
-}
-Info: p1=[eng [@ p1] rad/sec] p2=[eng [@ p2] rad/sec]
+load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
+::C::import
+::C::op
+::C::export
 @ property foreach_child p {
-    Info: $p=[eng [expr [regsub -all @ [@ property:$p/formula] [@ property:$p]]] [@ property:$p/unit]]
+    set before($p) [@ property:$p]
 }
-### public function approximateArea($length, $size, $multiplier)
-###        {
-    ###                $width = $size*$length;
-    ###                $processParams = $this->deviceparams;
-    ###
-    ###                $space = $processParams['gate_space'];
-    ###                $end = $processParams['end'];
-    ###                $topAndBottom = $processParams['topAndBottom'];
-    ###
-    ###                return (($multiplier*($length + $space) + $space + 2*$end)*($width/$multiplier + 2*$topAndBottom));
-###        }
-###
-###        public function areaMultiplier($length, $width)
-###        {
-    ###                $processParams = $this->deviceparams;
-    ###
-    ###                $multiplier =((-$processParams['ends'] +pow((pow($processParams['ends'],2)+4*($length+$processParams['gate_space'])*$width),.5))/(2*($length+$processParams['gate_space'])));
-    ###                if($multiplier < 1 && $multiplier > 0)
-    ###                        return 1;
-    ###                //$multiplier = round($multiplier/2)*2;
-    ###                $multiplier = round($multiplier); //round multiplier to nearest integer
-    ###                return $multiplier;
-###        }
-
-set list [@ property/$p]
-@ property foreach_child p {
-    foreach sizer {p n s} {
-        foreach dim {L W} {
-            skip {![@ property/$p/$dim$sizer ?]}
-            Info: d$p/d$dim$sizer=[eng [@ property:$p:$dim$sizer] [@ property:$p/unit]/m]
-        }    
-    }
-}
-proc add_to_pareto {} {
-    set properties {}
+set eps 0.5e-6
+@ size foreach_child s {
+    set direct($p,$s) [@ property/$p/$s]
+    @ size:$s = [expr [@ size:$s]+$eps]
+    ::C::import
+    ::C::op
+    ::C::export
     @ property foreach_child p {
-        lappend properties [@ property/$p]
+#    set after($p)=[eng [expr [regsub -all @ [@ property:$p/formula] [@ property:$p]]] [@ property:$p/unit]]
+        set brute($p,$s) [expr ([@ property:$p]-$before($p))/$eps]
     }
-    set sizes {}
-    @ size foreach_child s {
-        lappend sizes [@ size/$s]
-    }
-    @ pareto <<< $sizes $properties
-}
-
-set eps 1e-7
+    @ size:$s = [expr [@ size:$s]-$eps]
+} 
+::C::import
+::C::op
+::C::export
+Info: Brute-force derivatives
 @ property foreach_child p {
-    Info: Improving $p
-    for {set j 0} {$j<10} {incr j} {
-        Info: SFSG0 $j
-        set base [@ property/$p]
-        @ size foreach_child s {
-            @ size/$s = [expr [@ size/$s]+$eps]
-            ::C::Op_diffpair_nmos
-            @ size/$s = [expr [@ size/$s]-$eps]
-            set grad($s) [expr ([@ property/$p]-$base)/$eps]
-	    Info: [@ property/$p]-$base
-        }
-        Info: SFSG1 $j
-	set margin 100
-        @ size foreach_child s {
-	   set loacl_margin [expr ([@ size/$s]-40e-9)/10]
-	   if {$margin<$loacl_margin} {
-	       set margin $loacl_margin
-	   }
-        }
-        Info: SFSG2 $j
-	set longest 0
-        @ size foreach_child s {
-            Info: SFSG2 $j $s $margin/$longest $grad($s)
-	    if {$longest<abs($grad($s))} {
-	        set longest [expr abs($grad($s))]
-	    }
-	}    
-	set factor [expr $margin/$longest]
-	Info: $factor
-        @ size foreach_child s {
-	    if {[@ property:$p/step_factor]>0} {
-                @ size/$s = [expr [@ size/$s]+$grad($s)*$factor]
-	    } else {
-                @ size/$s = [expr [@ size/$s]-$grad($s)*$factor]
-	    }
-        }
-        set sizes {}
-        @ size foreach_child s {
-            lappend sizes "$s=[eng [@ size/$s] m]"
-        }
-        Info: Sizes: $sizes $p=[eng [expr [regsub -all @ [@ property:$p/formula] [@ property:$p]]] [@ property:$p/unit]]
+    Info: $p=$before($p)
+    @ size foreach_child s {
+        Info: d$p/d$s mine: [@ property/$p/$s] brute: $brute($p,$s)
     }
 }
-exit
-for {set i 0 } {$i < [@ pareto PAT size]} {incr i} {
-    Info: $i=[@ pareto PAT index $i]
-}
-@ / save Etc/Templates/Op_diffpair_nmos/diffpair_nmos_post.db
 exit

@@ -134,6 +134,42 @@ proc DET {M_var {i -1} {y {}}} {
     regsub -all {@+} $line @ line
     return $line
 }
+proc is_one {x} {
+    if {[catch {set retval [expr $x==1]}]} {
+        return 0
+    }
+    return $retval
+}
+proc is_minus_one {x} {
+    if {[catch {set retval [expr $x==-1]}]} {
+        return 0
+    }
+    return $retval
+}
+proc neg_expression {e} {
+    if {![catch {set retval [expr 0-($e)]}]} {
+        return $retval
+    }
+    if {[regexp {^\-(.*)$} $e -> minus_e]} {
+         return $minus_e
+    }
+    return "-$e"
+}
+proc peel {varname} {
+    upvar $varname e
+    set cont 1
+    while {$cont} {
+        set cont 0
+	if {[regexp {^(.*)\(\(([^\)]+)\)\)(.*)$} $e -> pre in post]} {
+	    set cont 1
+	    regsub -all {\-\-} "${pre}($in)$post" {} e
+	} 
+	if {[regexp {^(.*)\(\-\(([^\)]+)\)\)(.*)$} $e -> pre in post]} {
+	    set cont 1
+	    regsub -all {\-\-} [neg_expression "${pre}($in)$post"] {} e
+	} 
+    }
+}
 proc det {
     M_var 
     {row 0} 
@@ -151,7 +187,7 @@ proc det {
     set next_row $row
     incr next_row
     if {$row==$dim} {
-        return 1.0
+        return 1
     }
     for {set i 0} {$i<$dim} {incr i} {
         skip {[lsearch $ignore_columes $i]!=-1}
@@ -180,27 +216,27 @@ proc det {
 	    set entry "($entry)"
 	}
 	set this "$retval$sign$entry"
-	if {$this==1.0} {
-	    if {$next_det==1.0} {
+	if {[is_one $this]} {
+	    if {[is_one $next_det]} {
 	        set retval 1
-	    } elseif {$next_det==-1.0} {
+	    } elseif {[is_minus_one $next_det]} {
 	        set retval -1
 	    } else {
 	        set retval $next_det
 	    }
-	} elseif {$this==-1.0} {
-	    if {$next_det==1.0} {
+	} elseif {[is_minus_one $this]} {
+	    if {[is_one $next_det]} {
 	        set retval -1
-	    } elseif {$next_det==-1.0} {
+	    } elseif {[is_minus_one $next_det]} {
 	        set retval 1
 	    } else {
-	        set retval -$next_det
+	        set retval [neg_expression $next_det]
 	    }
 	} else {
-	    if {$next_det==1.0} {
+	    if {[is_one $next_det]} {
 	        set retval "$retval$sign$entry"
-	    } elseif {$next_det==-1.0} {
-	        set retval "-$retval$sign$entry"
+	    } elseif {[is_minus_one $next_det]} {
+	        set retval [neg_expression $retval$sign$entry]
 	    } else {
 	        set retval "$retval$sign$entry*$next_det"
 	    }
@@ -210,6 +246,7 @@ proc det {
         set retval 0
     }
     evaluate retval
+    peel retval
     return $retval
 }
 proc detij {

@@ -96,7 +96,8 @@ proc expr* {X Y} {
 proc expr- {X {Y {}}} {
     set retval "$X-$Y"
     if {$Y=={}} {
-        set retval "-$X"
+        set X "(-$X)"
+	set Y 0
     }
     evaluate X Y retval
     if {$X==$Y} {
@@ -335,17 +336,22 @@ proc derive_expr {var expression} {
         set expression [lindex $expression 0]
     }
     if {$expression=={}} {
+        Dinfo: $expression is empty
         return {}
     } 
     Dinfo: derived $var in $expression
     if {[llength $expression]==1} {
+        Dinfo: $expression is atomic 
         regsub -all {^@+} $expression @ expression
         if {$expression==$var} {
+            Dinfo: $expression is the var
             return 1
         } 
         if {$expression=="@$var"} {
+            Dinfo: $expression is the var
             return 1
         } 
+	Dinfo: SFSG1
         default ::DERMODE first
         if {[array names ::sensitivity $expression,*]!={}} {
             if {[info exists ::sensitivity($expression,$var)]} {
@@ -356,15 +362,30 @@ proc derive_expr {var expression} {
                 Dinfo: $expression has predefined derivative
                 return $::DER($expression,*,$::DERMODE)
             }
+            Dinfo: $expression is sensitive, but reached deadend
             return 0
         }
+	Dinfo: SFSG2
         if {[info exists ::DEF($expression)]} {
+            Dinfo: $expression is dependent on $::DEF($expression)
             return [derive_expr $var [analyse_expr $::DEF($expression)]]
         }
+	Dinfo: SFSG3
         if {[info exists ::DEF(@$expression)]} {
             Dinfo: $expression is dependent on $::DEF(@$expression)
             return [derive_expr $var [analyse_expr $::DEF(@$expression)]]
         }
+	Dinfo: SFSG4
+        if {[info exists ::DEF(@$expression:V)]} {
+            Dinfo: $expression is dependent on $::DEF(@$expression:V)
+            return [derive_expr $var [analyse_expr $::DEF(@$expression:V)]]
+        }
+	Dinfo: SFSG5
+        if {[info exists ::DEF($expression:V)]} {
+            Dinfo: $expression is dependent on $::DEF($expression:V)
+            return [derive_expr $var [analyse_expr $::DEF($expression:V)]]
+        }
+        Dinfo: $expression is dead-end
         return 0
     }	
     set op [lindex $expression 0] 

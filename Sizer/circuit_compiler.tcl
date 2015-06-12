@@ -25,6 +25,18 @@ default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
+foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
+    set toxp [expr $toxe-$dtox]
+    @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
+    @ /look_up_tables/$dev !
+    foreach param {ids gm ro} {
+     @ /look_up_tables/$dev load $::opt(source)/$::opt(tech)_${dev}_${param}.db
+    }
+    @ /look_up_tables/$dev/thermal_noise/ !
+    @ /look_up_tables/$dev/flicker_noise/ !
+    @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
+    @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
+}
 
 
 set ::all_transistors {}
@@ -173,8 +185,23 @@ source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
 set pareto_properties {}
 set pareto_sizes {}
 @ size foreach_child s {
+    @ size/$s = 1e-6
     lappend pareto_sizes $s
 }
+@ param foreach_child p {
+    if {[regexp {^i[^n]} $p] } {
+        @ param/$p = 10e-6
+    } elseif {[string match r* $p]} {
+        @ param/$p = 1e9
+    } else {
+        @ param/$p = [expr $::opt(topv)/2]
+    }
+}
+foreach node $::all_nodes {
+    @ $node/V = [expr $::opt(topv)/2]
+}
+@ vdd:V = $::opt(topv)
+@ param/vdd = $::opt(topv)
 foreach {p unit formula step_factor} {
     Adc    dB 20*log10(abs(@)) 1e-16
     CMRR    dB 20*log10(abs(@)) 1e-13
@@ -204,6 +231,6 @@ foreach {p unit formula step_factor} {
 @ op_iterations = 10
 
 @ /pareto(([join $pareto_sizes ,]|[join $pareto_properties ,])) !
-@ / save $::env(RAMSPICE)/Etc/Templates/Op_$::opt(topology)/$::opt(topology).db
+@ / save $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/ctree.db
 exit
 
