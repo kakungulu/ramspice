@@ -19,7 +19,7 @@ proc .param {name = value {min {}} {max {}}} {
         @ param/$name/max = $max
     }
 }
-proc .size {name = value {min {}} {max {}}} {
+proc .size {name = value {min {}} {max {}} {step {}} } {
     if {[catch {set evaluated_value [expr $value]}]} {
         @ size/$name = $value
     } else {
@@ -30,6 +30,9 @@ proc .size {name = value {min {}} {max {}}} {
     }
     if {$max!={}} {
         @ size/$name/max = $max
+    }
+    if {$step!={}} {
+        @ size/$name/step = $step
     }
 }
 proc .property {name args} {
@@ -331,64 +334,66 @@ proc .prep_mna {mode} {
     }
     set dim [llength $::MNAy]
     set ::MNA(dim) $dim	
-    if {$mode=="dc"} {
-        set ::HTML [open /tmp/MNA.html w]
-        puts $::HTML <html>
-        puts $::HTML <head>
-        puts $::HTML {<style type="text/css">
-            .matrix {
-                position: relative;
+    if {$::C::target=="OP"} {
+        if {$mode=="dc"} {
+            set ::HTML [open /tmp/MNA.html w]
+            puts $::HTML <html>
+            puts $::HTML <head>
+            puts $::HTML {<style type="text/css">
+                .matrix {
+                    position: relative;
+                }
+                .matrix:before, .matrix:after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    border: 1px solid #000;
+                    width: 6px;
+                    height: 100%;
+                }
+                .matrix:before {
+                    left: -6px;
+                    border-right: 0;
+                }
+                .matrix:after {
+                    right: -6px;
+                    border-left: 0;
+                } 
             }
-            .matrix:before, .matrix:after {
-                content: "";
-                position: absolute;
-                top: 0;
-                border: 1px solid #000;
-                width: 6px;
-                height: 100%;
-            }
-            .matrix:before {
-                left: -6px;
-                border-right: 0;
-            }
-            .matrix:after {
-                right: -6px;
-                border-left: 0;
-            } 
+            puts $::HTML </style>
+            puts $::HTML </head>
+            puts $::HTML <body>
         }
-        puts $::HTML </style>
-        puts $::HTML </head>
-        puts $::HTML <body>
-    }
-    puts $::HTML "<table class=\"matrix\" border=\"1\">"
-    for {set i 0} {$i<$dim} {incr i} {
-        puts $::HTML <tr>
-        puts $::HTML <td>
-        puts $::HTML <b>
-        puts $::HTML [lindex $::independent_nodes $i]
-        puts $::HTML </b>
-        puts $::HTML </td>
-        for {set j 0} {$j<$dim} {incr j} {
+        puts $::HTML "<table class=\"matrix\" border=\"1\">"
+        for {set i 0} {$i<$dim} {incr i} {
+            puts $::HTML <tr>
             puts $::HTML <td>
-            if {[info exists ::MNA($i,$j)]} {
-                puts $::HTML $::MNA($i,$j)
-            } else {
-                puts $::HTML 0
-            }
+            puts $::HTML <b>
+            puts $::HTML [lindex $::independent_nodes $i]
+            puts $::HTML </b>
             puts $::HTML </td>
+            for {set j 0} {$j<$dim} {incr j} {
+                puts $::HTML <td>
+                if {[info exists ::MNA($i,$j)]} {
+                    puts $::HTML $::MNA($i,$j)
+                } else {
+                    puts $::HTML 0
+                }
+                puts $::HTML </td>
+            }
+            puts $::HTML <td>
+            puts $::HTML [lindex $::MNAy $i]
+            puts $::HTML </td>
+            puts $::HTML </tr>
         }
-        puts $::HTML <td>
-        puts $::HTML [lindex $::MNAy $i]
-        puts $::HTML </td>
-        puts $::HTML </tr>
-    }
-    puts $::HTML </table>
-    puts $::HTML <h2>
-    puts $::HTML "DET=[DET ::MNA]"
-    puts $::HTML </h2>
-    if {$mode=="ac"} {
-        puts $::HTML </body></html>
-        close $::HTML
+        puts $::HTML </table>
+        puts $::HTML <h2>
+        puts $::HTML "DET=[DET ::MNA]"
+        puts $::HTML </h2>
+        if {$mode=="ac"} {
+            puts $::HTML </body></html>
+            close $::HTML
+        }
     }
     array unset ::vdc
     array set ::vdc $vdc_orig
@@ -396,7 +401,7 @@ proc .prep_mna {mode} {
     array set ::idc $idc_orig
 }
 #proc .circuit {name} {
-#    set ::opt(topology) $name
+    #    set ::opt(topology) $name
 #}
 proc .compile_circuit {args} {
     get_opts outp {} out {} outn {} in {} inn {} inp {} vdd {} name {}
@@ -406,14 +411,14 @@ proc .compile_circuit {args} {
     }
     set ::debug_mode 0
     foreach possible_ports {out outp outn inn inp in vdd} {
-	skip {$opt($possible_ports)!={}}
-	if {[@ param:$possible_ports ?]} {
+        skip {$opt($possible_ports)!={}}
+        if {[@ param:$possible_ports ?]} {
             set opt($possible_ports) @param:$possible_ports
-	}
-	skip {$opt($possible_ports)!={}}
-	if {[@ $possible_ports:V ?]} {
+        }
+        skip {$opt($possible_ports)!={}}
+        if {[@ $possible_ports:V ?]} {
             set opt($possible_ports) @$possible_ports:V
-	}
+        }
     }
     if {$opt(name)=={}} {
         set opt(name) $::opt(topology)
@@ -437,8 +442,8 @@ proc .compile_circuit {args} {
         } else {
             set ::output_net $opt(out)
         }
-	regsub {@} $::output_net {} ::output_net
-	regsub {:.*} $::output_net {} ::output_net
+        regsub {@} $::output_net {} ::output_net
+        regsub {:.*} $::output_net {} ::output_net
         if {$opt(inp)!={} && $opt(inn)!={} && $opt(in)!={}} {
             Error: Conflicting definitions of input net.
             exit
@@ -465,10 +470,14 @@ proc .compile_circuit {args} {
             .property PSRR -expression derive($::output_net,$opt(vdd)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         }
     }
+    foreach p {Adc CMRR PSRR Zout BW ts Nt Nf fc Area Power} {
+        @ property/$p = 0
+    }
     regsub {:V} $::output_net {} output_expr
     .prep_mna dc
     set dim $::MNA(dim)
     @ op_iterations = $::opt(op_limit)
+    code_target OP
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
@@ -538,6 +547,139 @@ proc .compile_circuit {args} {
         *c "@property:$p=$expression($p);"
         if {$::debug_mode} {*c "printf(\"$p=%g\\n\",@property:$p);"}
     }	
+    @ 0:V = 0
+    .prep_mna zout
+    set expression(Zout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
+    *c "@property:Zout=($expression(Zout))*@Ted;"
+    .prep_mna ac
+    set expression(Det_ac) [DET ::MNA]
+    set expression(dDet_ac) [derive_expression @s $expression(Det_ac)]
+    foreach transistor $::all_transistors {
+        foreach cap {cgs cgd} {
+            skip {![@ $transistor:$cap ?]}
+            *c "@$transistor:$cap=$::cap_equations($transistor,$cap);"
+            if {$::debug_mode} {*c "printf(\"$transistor:$cap=%g\\n\",@$transistor:$cap);"}
+        }
+    }	    
+    *c "@s=-1;"
+    *c "int BW_it;"
+    if {$::debug_mode} {*c "printf(\"num=$expression(Det_ac)\\n\");"}
+    if {$::debug_mode} {*c "printf(\"denom=$expression(dDet_ac)\\n\");"}
+    *c "for (BW_it=0;BW_it<5;BW_it++) \{"
+    *c "    @s-=($expression(Det_ac))/($expression(dDet_ac));"
+    #    *c "    @s-=(($expression(Det_ac))*@s)/(($expression(dDet_ac))*@s-($expression(Det_ac)));"
+    *c "\}"
+    *c "@property:BW:s=$expression(dDet_ac);"
+    *c "@p1=-@s;"
+    *c "@property:BW=@p1/(2*3.141592656);"
+    if {$::debug_mode} {*c "printf(\"BW=%g\\n\",@property:BW);"}
+    # Move away from the found root 
+    *c "@s-=1e3;"
+    # Find next root (=pole)
+    *c "for (BW_it=0;BW_it<20;BW_it++) \{"
+    *c "    @s-=(($expression(Det_ac))*(@s+@p1-5e2))/(($expression(dDet_ac))*(@s+@p1-5e2)-($expression(Det_ac)));"
+    *c "\}"
+    *c "@p2=-@s;"
+    if {$::debug_mode} {*c "printf(\"Poles: %g    %g\\n\",@p1,@p2);"}
+    *c "float A1=-@p2/(-@p1+@p2);"
+    *c "float A2=-@p1/(-@p1+@p2);"
+    *c "@property:ts=0;"
+    *c "for (BW_it=0;BW_it<10;BW_it++) \{"
+    *c "    @property:ts-=(0.02+A1*exp(-@p1*@property:ts)+A2*exp(-@p2*@property:ts))/(-@p1*A1*exp(-@p1*@property:ts)-@p2*A2*exp(-@p2*@property:ts));"
+    *c "\}"
+    if {$::debug_mode} {*c "printf(\"Settling time=%g\\n\",@property:ts);"}
+    foreach transistor $::all_transistors {
+        set dpoly(noise_trans_$transistor) [derive_expression @$transistor:Ideq $expression($output_expr)]
+        *c "@$transistor:noise_trans=@Ted*($dpoly(noise_trans_$transistor))/@property:Adc;"
+    } 
+    foreach noise_type {t f} {   
+        set chain {}
+        foreach transistor $::all_transistors {
+            lappend chain @$transistor:noise_trans*@$transistor:noise_trans*@$transistor:N$noise_type
+        }
+        if {$chain=={}} {
+            set chain 0
+        }
+        *c "@property:N$noise_type=[join $chain +];"
+        @ size foreach_child c {
+            set chain {}
+            foreach transistor $::all_transistors {
+                lappend chain  2*@$transistor:noise_trans*@$transistor:noise_trans:$c*@$transistor:N$noise_type
+                lappend chain @$transistor:noise_trans*@$transistor:noise_trans*@$transistor:N$noise_type:$c
+            }
+            *c "@property:N$noise_type:$c=[join $chain +];"
+        }	    
+    }
+    foreach transistor $::all_transistors {
+        if {$::debug_mode} {*c "printf(\"$transistor:  Nt=%g (%g%%)  Nf=%g (%g%%)\\n\",@$transistor:Nt,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nt/@property:Nt,@$transistor:Nf,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nf/@property:Nf);"}
+    }
+    *c "@property:fc=@property:Nf/@property:Nt;"
+    if {$::debug_mode} {*c "printf(\"Corner=%g\\n\",@property:fc);"}
+    
+    code_target GRAD
+    *c "// Calculating circuit operating point:"
+    *c "int op_it=0;"
+    foreach transistor $::all_transistors {
+        set L $::transistors($transistor,L)
+        set W $::transistors($transistor,W)
+        if {[info exists ::gm_equations($transistor)]} {
+            *c "@$transistor:gm=$::gm_equations($transistor);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
+            *c "@$transistor:go=$::go_equations($transistor);"
+            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
+        } else {
+            *c "@$transistor:g=$::g_equations($transistor);"
+        }
+        *c "@$transistor:Ideq=$::Ids_equations($transistor);"
+        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
+    }
+    foreach name [array names ::G_equations] {
+        *c "@Gds_$name=$::G_equations($name);"
+        .default Gds_$name 1e+0
+    }
+    set expression(Det) [DET ::MNA]
+    foreach transistor $::all_transistors {
+        if {[info exists ::gm_equations($transistor)]} {
+            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
+            *c "if (@$transistor:gm==0) @$transistor:gm=1e-6;"
+            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
+            *c "if (@$transistor:go==0) @$transistor:go=1e-6;"
+        }    
+        
+        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
+    }
+    *c "@Det=$expression(Det);"
+    *c "@Ted=1/@Det;"
+    *c "// Updating node voltages"
+    if {$::debug_mode} {*c "printf(\"Det=$expression(Det)\\n\");"}
+    if {$::debug_mode} {*c "printf(\"Det=%g Ted=%g\\n\",@Det,@Ted);"}
+    set i 0
+    foreach node $::independent_nodes {
+        set expression($node) [DET ::MNA $i $::MNAy]
+        $node=>($expression($node))*@Ted
+        #       if {![info exists ::vdc(0,$node)]} 
+        if {1} {
+            *c "@$node:V=($expression($node))*@Ted;"
+            *c "if (@$node:V<0) @$node:V=0;"
+            *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
+            if {$::debug_mode} {*c "printf(\"$node=%g\\n\",@$node:V);"}
+        }
+        incr i
+    }
+    foreach transistor $::all_transistors {
+        set L $::transistors($transistor,L)
+        set W $::transistors($transistor,W)
+        *c "@$transistor:Nt_unit=$::Nt_equations($transistor);"
+        *c "@$transistor:Nt=@$transistor:Nt_unit*sqrt(@$transistor:gm);"
+        *c "@$transistor:Nf_unit=$::Nf_equations($transistor);"
+        *c "@$transistor:Nf=@$transistor:Nf_unit*@$transistor:gm*@$transistor:gm/(@$W*@$L);"
+    }
+    *c "// Calculating circuit properties:"
+    @ property foreach_child p {
+        set expression($p) [flat_expression  $::properties($p,expression)]
+        *c "@property:$p=$expression($p);"
+        if {$::debug_mode} {*c "printf(\"$p=%g\\n\",@property:$p);"}
+    }	
     *c "// Calculating circuit properties' gradients:"
     foreach transistor $::all_transistors {
         if {$::debug_mode} {*c "printf(\"d$transistor:dgm_dl=%g $transistor:gm=%g\\n\",@$transistor:dgm_dl,@$transistor:gm);"}
@@ -564,8 +706,14 @@ proc .compile_circuit {args} {
             lassign [split $influence :] transistor admittance
             lappend chain @Det:${transistor}:${admittance}*@$transistor:$admittance:size:$c
         }
-        *c "@Det:$c=[join $chain +];"
-        *c "@Ted:$c=-@Det:$c/(@Det*@Det);"
+        set chain [join $chain +]
+        if {$chain=={}} {
+            *c "@Det:$c=0;"
+            *c "@Ted:$c=0;"
+        } else {
+            *c "@Det:$c=$chain;"
+            *c "@Ted:$c=-@Det:$c/(@Det*@Det);"
+        }
     }	    
     @ property foreach_child p {
         foreach transistor $::all_transistors {
@@ -580,7 +728,12 @@ proc .compile_circuit {args} {
                 lassign [split $influence :] transistor admittance
                 lappend chain "@$transistor:$admittance:size:$c*@property:${p}:${transistor}:${admittance}"
             }
-            *c "@property:${p}:${c}=[join $chain +];"
+            set chain [join $chain +]
+            if {$chain=={}} {
+                *c "@property:${p}:${c}=0;"
+            } else {
+                *c "@property:${p}:${c}=$chain;"
+            }
             if {$::debug_mode} {*c "printf(\"d${p}/d${c}=%g\\n\",@property:${p}:${c});"}
         }
         
@@ -590,19 +743,24 @@ proc .compile_circuit {args} {
     set expression(Zout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
     *c "@property:Zout=($expression(Zout))*@Ted;"
     foreach transistor $::all_transistors {
-    	foreach admittance {gm go} {
-    	    set dpoly(Zout,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression(Zout)]
-    	    *c "@property:Zout:${transistor}:${admittance}=@Ted_${transistor}_${admittance}*@Zout+$dpoly(Zout,$transistor,$admittance);"
-    	}
+        foreach admittance {gm go} {
+            set dpoly(Zout,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression(Zout)]
+            *c "@property:Zout:${transistor}:${admittance}=@Ted_${transistor}_${admittance}*@Zout+$dpoly(Zout,$transistor,$admittance);"
+        }
     }
     @ size foreach_child c {
-    	set chain {}
-    	foreach influence [array names ::DEF *:*:size:$c] {
-    	    lassign [split $influence :] transistor admittance
-    	    lappend chain "@$transistor:$admittance:size:$c*@property:Zout:${transistor}:${admittance}"
-    	}
-    	*c "@property:Zout:${c}=[join $chain +];"
-    	if {$::debug_mode} {*c "printf(\"dZout/d${c}=%g\\n\",@property:Zout:${c});"}
+        set chain {}
+        foreach influence [array names ::DEF *:*:size:$c] {
+            lassign [split $influence :] transistor admittance
+            lappend chain "@$transistor:$admittance:size:$c*@property:Zout:${transistor}:${admittance}"
+        }
+        set chain [join $chain +]
+        if {$chain=={}} {
+            *c "@property:Zout:${c}=0;"
+        } else {
+            *c "@property:Zout:${c}=$chain;"
+        }
+        if {$::debug_mode} {*c "printf(\"dZout/d${c}=%g\\n\",@property:Zout:${c});"}
     }
     .prep_mna ac
     set expression(Det_ac) [DET ::MNA]
@@ -654,8 +812,12 @@ proc .compile_circuit {args} {
             lassign [split $influence :] transistor admittance
             lappend chain "@$transistor:$admittance:size:$c*@Det_ac:${transistor}:${admittance}"
         }
-        *c "@property:BW:${c}=-([join $chain +])/@property:BW:s;"
-        *c "@property:ts:${c}=-([join $chain +])/@property:ts:s;"
+        set chain [join $chain +]
+        if {$chain=={}} {
+            set chain 0
+        }    
+        *c "@property:BW:${c}=-($chain)/@property:BW:s;"
+        *c "@property:ts:${c}=-($chain)/@property:ts:s;"
     }
     @ size foreach_child c {
         foreach influence [array names ::DEF *:*:size:$c] {
@@ -688,7 +850,11 @@ proc .compile_circuit {args} {
             if {$chain=={}} {
                 set chain 0
             }
-            *c "@$transistor:noise_trans:$c=[join $chain +];"
+            set chain [join $chain +]
+            if {$chain=={}} {
+                set chain 0
+            }
+            *c "@$transistor:noise_trans:$c=$chain;"
         }   
     } 
     foreach noise_type {t f} {   
@@ -717,8 +883,260 @@ proc .compile_circuit {args} {
     @ size foreach_child c {
         *c "@property:fc:$c=@property:Nf:$c/@property:Nt-@property:Nf/(@property:Nt*@property:Nt)*@property:Nt:$c;"
     }	
-    # Define Data Dependencies
-#    gcc Op_$opt(name)
+    
+    code_target RANDOM
+    *c "ClientData CD;"
+    #    *c "int i;"
+    #    *c "for (i=0;i<@pat_size_target;i++) \{"
+    *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
+    *c "while (p->content->num_of<@pat_size_target) \{"
+    @ size foreach_child s {
+        *c "@size:$s=@size:$s:min+random()*(@size:$s:max-@size:$s:min)/RAND_MAX;"
+    }	
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {[@ param:$n ?]} {
+            *c "@$n:V=@param:$n;"
+        } else {
+            *c "@$n:V=@vdd:V/2;"
+        }
+    }	 
+    *c "@vdd:V=$::opt(topv);"
+    *c "@0:V=0;"
+    *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {[@ param:$n ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {$::debug_mode} {*c "printf(\"$n=%g\\n\",@$n:V);"}
+        *c "if (!isfinite(@$n:V)) continue;"
+        *c "if (@$n:V==0) continue;"
+    }     
+    @ property foreach_child p {
+        if {$::debug_mode} {*c "printf(\"$p=%g\\n\",@property:$p);"}
+        *c "if (!isfinite(@property:$p)) continue;"
+    }
+    *c "if (@property:ts<0) continue;"
+    *c "if (@property:Adc<1) continue;"
+    *c "vector_float *sizes=new_vector_float();"
+    @ size foreach_child s {
+        *c "add_entry_vector_float(sizes,@size:$s);"
+    }	
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        skip {[@ param:$n ?]}
+        *c "add_entry_vector_float(sizes,@$n:V);"
+    }
+    *c "vector_float *properties=new_vector_float();"
+    @ property foreach_child p {
+        *c "add_entry_vector_float(properties,@property:$p);"
+    }	
+    set chain {}
+    @ size foreach_child w {
+        skip {![regexp {^W} $w]}
+        regsub {^W} $w L l
+        lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
+    }
+    *c "@property:Area=[join $chain +];"	
+    *c "@property:Power=@size:iref*@vdd:V;"
+    *c "add_entry_vector_float(properties,@property:Area);"
+    *c "add_entry_vector_float(properties,@property:Power);"
+    *c "add_pat_entry(p,sizes,properties);"
+    *c "free(sizes);"
+    *c "free(properties);"
+    *c "\}"
+    
+    
+    code_target BREED
+    *c "ClientData CD;"
+    *c "int i,viable;"
+    *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
+    *c "int more_to_breed=1;"
+    *c "while (more_to_breed&&(p->content->num_of<@pat_size_target)) \{"
+    *c "more_to_breed=0;"
+    *c "int sweep_size=p->content->num_of;"
+    *c "for (i=0;i<sweep_size;i++) \{"
+    *c "if (p->content->content[i]->flags) continue;"
+    *c "p->content->content[i]->flags=1;"
+    *c "more_to_breed++;"
+    if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
+    set j 0
+    @ size foreach_child s {
+        *c "@size:$s=p->content->content[i]->sizes->content[$j];"
+        incr j;
+    }
+    @ size foreach_child s {
+        foreach step_dir {+ -2*} {
+            *c "@size:$s=@size:$s$step_dir@size:$s:step;"
+            *c "viable=1;"
+            *c "if (@size:$s<@size:$s:min) viable=0;"
+            *c "if (@size:$s>@size:$s:max) viable=0;"
+            *c "if (viable) \{"
+            @ / foreach_child n {
+                skip {![@ $n:V ?]}
+                skip {$n=="vdd"}
+                skip {$n=="0"}
+                if {[@ param:$n ?]} {
+                    *c "@$n:V=@param:$n;"
+                } else {
+                    *c "@$n:V=@vdd:V/2;"
+                }
+            }	 
+            *c "@vdd:V=$::opt(topv);"
+            *c "@0:V=0;"
+            *c ""
+            *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
+            if {$::debug_mode} {*c "printf(\"Viable=%d\\n\",viable);"}
+            @ / foreach_child n {
+                skip {![@ $n:V ?]}
+                skip {[@ param:$n ?]}
+                skip {$n=="vdd"}
+                skip {$n=="0"}
+                if {$::debug_mode} {*c "printf(\"$n=%g Viable=%d\\n\",@$n:V,viable);"}
+                *c "if (!isfinite(@$n:V)) viable=0;"
+                *c "if (@$n:V==0) viable=0;"
+            }     
+            @ property foreach_child p {
+                if {$::debug_mode} {*c "printf(\"$p=%g Viable=%d\\n\",@property:$p,viable);"}
+                *c "if (!isfinite(@property:$p)) viable=0;"
+            }
+            *c "if (@property:ts<0) viable=0;"
+            *c "if (@property:Adc<1) viable=0;"
+            if {$::debug_mode} {*c "printf(\"Viable=%d\\n\",viable);"}
+            *c "if (viable) \{"
+            *c "vector_float *sizes=new_vector_float();"
+            @ size foreach_child s {
+                *c "add_entry_vector_float(sizes,@size:$s);"
+            }	
+            @ / foreach_child n {
+                skip {![@ $n:V ?]}
+                skip {$n=="vdd"}
+                skip {$n=="0"}
+                skip {[@ param:$n ?]}
+                *c "add_entry_vector_float(sizes,@$n:V);"
+            }
+            *c "vector_float *properties=new_vector_float();"
+            @ property foreach_child p {
+                *c "add_entry_vector_float(properties,@property:$p);"
+            }	
+            set chain {}
+            @ size foreach_child w {
+                skip {![regexp {^W} $w]}
+                regsub {^W} $w L l
+                lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
+            }
+            *c "@property:Area=[join $chain +];"	
+            *c "@property:Power=@size:iref*@vdd:V;"
+            *c "add_entry_vector_float(properties,@property:Area);"
+            *c "add_entry_vector_float(properties,@property:Power);"
+            *c "add_pat_entry(p,sizes,properties);"
+            *c "free(sizes);"
+            *c "free(properties);"
+            *c "\}"
+            *c "\}"
+        }
+        *c "@size:$s=@size:$s+@size:$s:step;"
+        
+    }
+    *c "if (p->content->num_of%100==0) {printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target); fflush(stdout);}"
+    *c "\}"
+    *c "printf(\"   Done %ld/%g=%g%% (%ld visited)\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target,more_to_breed);"
+    *c "\}"
+    
+    code_target RANDOM_BREED
+    *c "ClientData CD;"
+    *c "int i;"
+    *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
+    *c "int more_to_breed=0;"
+    *c "long int r;"
+    *c "while (p->content->num_of<@pat_size_target) \{"
+    *c "int sweep_size=p->content->num_of;"
+    *c "for (i=0;i<sweep_size;i++) \{"
+    *c "more_to_breed++;"
+    if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
+    set j 0
+    @ size foreach_child s {
+        *c "@size:$s=p->content->content[i]->sizes->content[$j];"
+        incr j;
+    }
+    @ size foreach_child s {
+#        *c "@size:$s+=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
+        *c "r=random();"
+        *c "if (r<RAND_MAX/3) \{"
+        *c "@size:$s-=@size:$s:step;"
+        *c "\}"
+	*c "if (r>RAND_MAX/3) \{"
+        *c "@size:$s+=@size:$s:step;"
+        *c "\}"
+        *c "if (@size:$s<@size:$s:min) continue;"
+        *c "if (@size:$s>@size:$s:max) continue;"
+    }
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {[@ param:$n ?]} {
+            *c "@$n:V=@param:$n;"
+        } else {
+            *c "@$n:V=@vdd:V/2;"
+        }
+    }	 
+    *c "@vdd:V=$::opt(topv);"
+    *c "@0:V=0;"
+    *c ""
+    *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {[@ param:$n ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {$::debug_mode} {*c "printf(\"$n=%g Viable=%d\\n\",@$n:V,viable);"}
+        *c "if (!isfinite(@$n:V)) continue;"
+        *c "if (@$n:V==0) continue;"
+    }     
+    @ property foreach_child p {
+        if {$::debug_mode} {*c "printf(\"$p=%g Viable=%d\\n\",@property:$p,viable);"}
+        *c "if (!isfinite(@property:$p)) continue;"
+    }
+    *c "if (@property:ts<0) continue;"
+    *c "if (@property:Adc<1) continue;"
+    if {$::debug_mode} {*c "printf(\"Viable=%d\\n\",viable);"}
+    *c "vector_float *sizes=new_vector_float();"
+    @ size foreach_child s {
+        *c "add_entry_vector_float(sizes,@size:$s);"
+    }	
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        skip {[@ param:$n ?]}
+        *c "add_entry_vector_float(sizes,@$n:V);"
+    }
+    *c "vector_float *properties=new_vector_float();"
+    @ property foreach_child p {
+        *c "add_entry_vector_float(properties,@property:$p);"
+    }	
+    set chain {}
+    @ size foreach_child w {
+        skip {![regexp {^W} $w]}
+        regsub {^W} $w L l
+        lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
+    }
+    *c "@property:Area=[join $chain +];"	
+    *c "@property:Power=@size:iref*@vdd:V;"
+    *c "add_entry_vector_float(properties,@property:Area);"
+    *c "add_entry_vector_float(properties,@property:Power);"
+    *c "add_pat_entry(p,sizes,properties);"
+    *c "free(sizes);"
+    *c "free(properties);"
+    *c "if (p->content->num_of%1000==0) {printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target); fflush(stdout);}"
+    *c "\}"
+    *c "\}"
     gcc $opt(name)
 }
 
@@ -730,10 +1148,12 @@ proc .compile_circuit {args} {
 
 namespace eval C {
     variable O stdout
-    variable code {}
+    array set code {}
+    variable target OP
     variable code_template {
         #include <tcl.h>
         #include <stdio.h>
+        #include <stdlib.h>
         #include "ctree.h"
         #include "look_up_table.h"
         // Some global pointers to keep reference of the contexts this object manipulates
@@ -749,8 +1169,25 @@ namespace eval C {
             return TCL_OK;
         }
         static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-            Tcl_ResetResult(interp);
-            USER_CODE_GOES_HERE
+            //            Tcl_ResetResult(interp);
+            OP_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        static int tcl_gamma_grad_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            //            Tcl_ResetResult(interp);
+            GRAD_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        static int tcl_gamma_random_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            RANDOM_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        static int tcl_gamma_breed_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            BREED_CODE_GOES_HERE
+            return TCL_OK;
+        }
+        static int tcl_gamma_random_breed_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            RANDOM_BREED_CODE_GOES_HERE
             return TCL_OK;
         }
         // Initializing cTree references and registering the tcl_gamma_op_cmd command as ::C::@name
@@ -761,6 +1198,10 @@ namespace eval C {
             float *array_entry;
             context *c;
             GLOBAL_POINTER_INIT_GO_HERE
+            Tcl_CreateObjCommand(interp, "::C::random", tcl_gamma_random_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::random_breed", tcl_gamma_random_breed_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::breed", tcl_gamma_breed_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::grad", tcl_gamma_grad_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::op", tcl_gamma_op_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::import", tcl_gamma_import_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::export", tcl_gamma_export_cmd, NULL, NULL);
@@ -868,11 +1309,8 @@ proc ::C::tcl_preprocessor {c_code} {
 }
 
 
-proc gcc {name {code {}}} {
-    if {$code=={}} {
-        set code $::C::code
-        set ::C::code {}
-    }
+proc gcc {name} {
+    regsub -all @name $::C::code_template $name body
     set global_pointers {}
     set global_variables {}
     set global_pointer_init {}
@@ -880,56 +1318,61 @@ proc gcc {name {code {}}} {
     set local_buffer_return_goes_here {}
     set used_var_names {}
     set used_pointer_names {}
-    while {[regexp {@+([A-Za-z0-9_:]+)} $code -> context_string]} {
-        if {[info exists pointer_names($context_string)]} {
-            #            regsub "&&@+$context_string" $code `$var_names($context_string) code
-            regsub "&@+$context_string" $code $pointer_names($context_string) code
-            regsub "@+$context_string" $code $var_names($context_string) code
-            continue
-        }
-        if {[regexp {^[0-9]} $context_string]} {
-            regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
-        } else {
-            regsub -all {[^a-zA-Z_0-9]} $context_string _ var_name
-        }
-        regsub -all {[^a-zA-Z_0-9]} P$context_string _ pointer_name
-        if {[lsearch $used_var_names $var_name]!=-1} {
-            set i 0
-            while {[lsearch $used_var_names $var_name$i]!=-1} {
-                incr i
+    foreach target [array names ::C::code] {
+        set code $::C::code($target)
+        while {[regexp {@+([A-Za-z0-9_:]+)} $code -> context_string]} {
+            if {[info exists pointer_names($context_string)]} {
+                #            regsub "&&@+$context_string" $code `$var_names($context_string) code
+                regsub "&@+$context_string" $code $pointer_names($context_string) code
+                regsub "@+$context_string" $code $var_names($context_string) code
+                continue
             }
-            set var_name $var_name$i
-        }
-        lappend used_var_names $var_name
-        if {[lsearch $used_pointer_names $pointer_name]!=-1} {
-            set i 0
-            while {[lsearch $used_pointer_names $pointer_name$i]!=-1} {
-                incr i
+            if {[regexp {^[0-9]} $context_string]} {
+                regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
+            } else {
+                regsub -all {[^a-zA-Z_0-9]} $context_string _ var_name
             }
-            set pointer_name $pointer_name$i
+            regsub -all {[^a-zA-Z_0-9]} P$context_string _ pointer_name
+            if {[lsearch $used_var_names $var_name]!=-1} {
+                set i 0
+                while {[lsearch $used_var_names $var_name$i]!=-1} {
+                    incr i
+                }
+                set var_name $var_name$i
+            }
+            lappend used_var_names $var_name
+            if {[lsearch $used_pointer_names $pointer_name]!=-1} {
+                set i 0
+                while {[lsearch $used_pointer_names $pointer_name$i]!=-1} {
+                    incr i
+                }
+                set pointer_name $pointer_name$i
+            }
+            lappend used_pointer_names $pointer_name
+            append global_pointers "float *$pointer_name;\n"
+            append global_variables "float $var_name;\n"
+            if {[regexp {(.*):PAT} $context_string -> base]} {
+                append global_pointer_init "$pointer_name=(float *)get_PAT(\"$base\");\n"
+                regsub "&@+$context_string" $code $pointer_name code
+            } elseif {[regexp {(.*):LUT} $context_string -> base]} {
+                append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
+                regsub "&@+$context_string" $code $pointer_name code
+            } else {
+                #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
+                append global_pointer_init "c=create_context(\"$context_string\");\n"
+                append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
+                append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
+                append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
+                regsub "&@+$context_string" $code $pointer_name code
+                regsub "@+$context_string" $code $var_name code
+            }
+            set pointer_names($context_string) $pointer_name
+            set var_names($context_string) $var_name
+            incr i
         }
-        lappend used_pointer_names $pointer_name
-        append global_pointers "float *$pointer_name;\n"
-        append global_variables "float $var_name;\n"
-        if {[regexp {(.*):LUT} $context_string -> base]} {
-            append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
-            regsub "&@+$context_string" $code $pointer_name code
-        } else {
-            #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
-            append global_pointer_init "c=create_context(\"$context_string\");\n"
-            append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
-            append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
-            append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
-            regsub "&@+$context_string" $code $pointer_name code
-            regsub "@+$context_string" $code $var_name code
-        }
-        set pointer_names($context_string) $pointer_name
-        set var_names($context_string) $var_name
-        incr i
+        regsub -all \& $code ` code
+        regsub ${target}_CODE_GOES_HERE $body $code body
     }
-    regsub -all \& $code ` code
-    regsub -all @name $::C::code_template $name body
-    regsub USER_CODE_GOES_HERE $body $code body
     regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
     regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
     regsub GLOBAL_POINTER_INIT_GO_HERE $body $global_pointer_init body
@@ -937,7 +1380,7 @@ proc gcc {name {code {}}} {
     regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
     regsub -all `_ $body {P_} body
     regsub -all ` $body {\&} body
-    set ::C::O [open /tmp/gamma_source.c w]
+    set ::C::O [open /tmp/gamma_source.ignore.c w]
     ::C::tcl_preprocessor $body
     close $::C::O
     
@@ -953,7 +1396,7 @@ proc gcc {name {code {}}} {
     set build_path /tmp/${::binary}_build/preprocessed-${::target}
     Info: Launching GCC
     
-    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/gamma_source.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/libGamma.so"
+    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/gamma_source.ignore.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/libGamma.so"
     if {[file exists /tmp/libGamma.so]} {
         Info: Shared Object was created for Gamma on [clock format [file mtime /tmp/libGamma.so]]
         if {![file exists $::env(RAMSPICE)/Etc/Templates]} {
@@ -963,38 +1406,21 @@ proc gcc {name {code {}}} {
             file mkdir $::env(RAMSPICE)/Etc/Templates/$name
         }
         file copy -force /tmp/libGamma.so $::env(RAMSPICE)/Etc/Templates/$name
-        file copy -force /tmp/gamma_source.c $::env(RAMSPICE)/Etc/Templates/$name/
+        file copy -force /tmp/gamma_source.ignore.c $::env(RAMSPICE)/Etc/Templates/$name/
     }
-    load $::env(RAMSPICE)/Etc/Templates/$name/libGamma.so
+    #    load $::env(RAMSPICE)/Etc/Templates/$name/libGamma.so
+}
+proc code_target {name} {
+    set ::C::target $name
 }
 proc *c {args} {
     Dinfo: CCC $args
     set body $args
     if {[llength $body]!=1} {
-        append ::C::code "$body;\n"
+        append ::C::code($::C::target) "$body;\n"
     } else {
-        append ::C::code [lindex $body 0]
-        append ::C::code "\n"
+        append ::C::code($::C::target) [lindex $body 0]
+        append ::C::code($::C::target) "\n"
     }
 }
 return
-# Example: 
-
-# cTree contexts do not have to be created before code or even compilation. They must be ready before the command is called.
-@ r/a = 5
-@ r/b = 3
-@ c = 0
-
-*c int i=0;
-
-*c {
-    @c=@r/a*@r/b;
-    for (i=0;i<@r/a;i++) @c=@c*2;
-}
-gcc Test
-
-::C::Test
-Info: c=[@ c]
-exit
-
-

@@ -1117,14 +1117,14 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
         write_ordinal(O,d->v_length);
         if (factor_mode) {
             for (i=0;i<d->v_length;i++) {
-                		#Dinfo: "%s   %g/((%g-%g)-(%g-%g))=%g" d->v_name factor d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
+                #Dinfo: "%s   %g/((%g-%g)-(%g-%g))=%g" d->v_name factor d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
                 write_float(O,factor/((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i])));
                 previous_offset[i]=d->v_realdata[i];
                 baseline_previous_offset[i]=b->v_realdata[i];
             }
         } else {
             for (i=0;i<d->v_length;i++) {
-                		#Dinfo: "%s   ((%g-%g)-(%g-%g))*%g=%g" d->v_name d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor factor*((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
+                #Dinfo: "%s   ((%g-%g)-(%g-%g))*%g=%g" d->v_name d->v_realdata[i] previous_offset[i] b->v_realdata[i] baseline_previous_offset[i] factor factor*((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))
                 write_float(O,((d->v_realdata[i]-previous_offset[i])-(b->v_realdata[i]-baseline_previous_offset[i]))*factor);
                 previous_offset[i]=d->v_realdata[i];
                 baseline_previous_offset[i]=b->v_realdata[i];
@@ -1155,7 +1155,7 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         ordinal length=read_ordinal();
         for (i=0;i<length; i++) {
             get_float(&(a->content[offset+i]));
-               #Dinfo: "%ld+%ld  =  %g" offset i a->content[offset+i]
+            #Dinfo: "%ld+%ld  =  %g" offset i a->content[offset+i]
         }    
     }
     done_reading();
@@ -1251,7 +1251,7 @@ void context_save(context *c,FILE *O) {
         if (c->value_type==ctype_PAT) write_pointer_PAT(O,(PAT *)c->value.v);
         if (c->value_type==ctype_LUT) {
             LUT *a=(LUT *)c->value.v;
-	    #Dinfo: "Saving LUT %s (%x) name=%s dim=%d" c->name c->value.v a->name a->dim
+            #Dinfo: "Saving LUT %s (%x) name=%s dim=%d" c->name c->value.v a->name a->dim
             write_string(O,a->name);
             write_ordinal(O,a->dim);
             ordinal i,j;
@@ -1279,25 +1279,25 @@ void context_load(context *c,int level) {
         read_string(name);
         CTYPE value_type=read_ordinal();
         context *next_context=new_context(c,name,value_type);
-	#Dinfo: "Loading context %s type=%d starting at (%x) level=%d" name value_type c level
+        #Dinfo: "Loading context %s type=%d starting at (%x) level=%d" name value_type c level
         if (value_type==ctype_void) next_context->value.v=copy_string();
         if (value_type==ctype_string) {
-	    next_context->value.v=copy_string();
-	    #Dinfo: "   string value: %s" next_context->value.v
-	}    
+            next_context->value.v=copy_string();
+            #Dinfo: "   string value: %s" next_context->value.v
+        }    
         if (value_type==ctype_real) next_context->value.s=read_float();
         if (value_type==ctype_integer) next_context->value.o=read_ordinal();
         if (value_type==ctype_PAT) {
             next_context->value.v=read_pointer_PAT();
         }    
         if (value_type==ctype_POLY) {
-             next_context->value.v=read_pointer_POLY();
+            next_context->value.v=read_pointer_POLY();
         }    
         if (value_type==ctype_LUT) {
             LUT *a=(LUT *)malloc(sizeof(LUT));
             a->name=copy_string();
             a->dim=read_ordinal();
-	    #Dinfo: "Loaded LUT %s dim=%d" a->name a->dim
+            #Dinfo: "Loaded LUT %s dim=%d" a->name a->dim
             #For: {set dim 1} {$dim<$::MAXDIM} {incr dim} {
                 if (a->dim==$dim) {
                     a->interpolate=lut_interpolation_$dim;
@@ -1377,10 +1377,10 @@ void context_load(context *c,int level) {
         }
         //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
-         #Dinfo: "num_of_children=%ld" num_of_children
+        #Dinfo: "num_of_children=%ld" num_of_children
         int i;
         for (i=0;i<num_of_children;i++) context_load(next_context,level+1);
-	if (level!=0) break;
+        if (level!=0) break;
     }    
 }
 static int
@@ -2341,7 +2341,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         }
         temp_context=next_context;
     }
-     #Dinfo: "Resolved context %s -> %x (%x,%g)" i_key temp_context &(temp_context->value.s) temp_context->value.s
+    #Dinfo: "Resolved context %s -> %x (%x,%g)" i_key temp_context &(temp_context->value.s) temp_context->value.s
     *i_context=temp_context;
     return 1;
 }
@@ -2489,11 +2489,11 @@ context *create_context(char *i_key) {
             continue;
         }
         context *next_context=NULL;
-	#Dinfo: "Searching for sub-context %s of %s" context_name_buffer temp_context->name
+        #Dinfo: "Searching for sub-context %s of %s" context_name_buffer temp_context->name
         for (k=0;k<temp_context->num_of_children;k++) {
-	    #Dinfo: "    Child %d=%s" k temp_context->children[k]->name
+            #Dinfo: "    Child %d=%s" k temp_context->children[k]->name
             if (strcmp(context_name_buffer,temp_context->children[k]->name)==0) {
-	        #Dinfo: "Sub-context %s already exists as child of %s" context_name_buffer temp_context->name
+                #Dinfo: "Sub-context %s already exists as child of %s" context_name_buffer temp_context->name
                 next_context=temp_context->children[k];
                 break;
             }
@@ -2507,7 +2507,7 @@ context *create_context(char *i_key) {
                 #Dinfo: "New POLY at %s (%x %x)"  i_key temp_context v
             }	
             next_context=new_context(temp_context,context_name_buffer,c_type);
-	    next_context->value.v=v;
+            next_context->value.v=v;
         }    
         temp_context=next_context;
     }
@@ -2922,57 +2922,96 @@ void delete_array(LUT *a) {
     if (a->LIT) free(a->LIT);
     free(a);
 }
-vector_int *pat_front(PAT *p,vector_float *sizes,vector_float *properties) {
-    vector_int *front=new_vector_int();
+void pat_front(PAT *p,vector_float *properties) {
     ordinal i,ii,j;
-    for (i=0;i<p->content->num_of;i++) add_entry_vector_int(front,i);
-    if (sizes->num_of!=p->sizes->num_of) {
-        #Error: "Tried to match front to PAT with incompatible number of sizes."
-        return(front);
-    }
     if (properties->num_of!=p->properties->num_of) {
         #Error: "Tried to match front to PAT with incompatible number of properties."
-        return(front);
+        exit(1);
     }
-    // Negate all properties that are "less is better"
+    /// Initial filtration gets rid of all but the top 1000 matching circuits
+    //Asses how many points meet the spec
+    int num_of_th=0;
+    for (i=0;i<p->properties->num_of;i++) if (isfinite(properties->content[i])) num_of_th++;
     for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
+    int histogram[128];
+    for (j=0;j<128;j++) histogram[j]=0;
     for (i=0;i<p->content->num_of;i++) {
-        if (front->content[i]==-1) continue;
-        for (ii=i+1;ii<p->content->num_of;ii++) {
-            if (front->content[ii]==-1) continue;
+        int num_of_th_met=0;
+        for (j=0;j<p->properties->num_of;j++) if (isfinite(properties->content[j])) if (p->content->content[i]->properties->content[j]>properties->content[j]) num_of_th_met++;
+        histogram[num_of_th_met]++;
+    }	
+    // Determine how many thresholds should be met to make it to the Specific Pareto Analysis
+    int collection=0;
+    int criterion=num_of_th;
+    for (;(criterion>=0)&&(collection<1000);criterion--) collection+=histogram[criterion];
+    for (i=0;i<p->content->num_of;i++) {
+        int num_of_th_met=0;
+        for (j=0;j<p->properties->num_of;j++) if (isfinite(properties->content[j])) if (p->content->content[i]->properties->content[j]>properties->content[j]) num_of_th_met++;
+        if (num_of_th_met<=criterion) p->content->content[i]->flags|=1;
+    }	
+    #Dinfo: "Performing Specific Pareto Analysis on %ld circuits. To qualify, a circuit must meet %d spec criteria" collection criterion
+    // Negate all properties that are "less is better"
+    ordinal volume=collection;
+    for (i=0;i<p->content->num_of;i++) {
+        if (p->content->content[i]->flags) continue;
+        for (ii=0;ii<p->content->num_of;ii++) {
+            if (i==ii) continue;
+            if (p->content->content[ii]->flags) continue;
             int dominates=1;
             int significantly_better=0;
             int dominated=1;
             int significantly_worse=0;
             for (j=0;j<p->properties->num_of;j++) {
-                if (isnan(p->content->content[ii]->properties->content[j]))  {
+                float TH=properties->content[j];
+                float P=p->content->content[i]->properties->content[j];
+                float Q=p->content->content[ii]->properties->content[j];
+                // Don't check properties that are "don't cared" in the spec
+                if (isnan(TH)) continue;
+                
+                //Partial property record - should be rare
+                if (isnan(Q))  {
                     // This entry can't dominate ones that have properties that are missing from it.
-                    if (!(isnan(p->content->content[i]->properties->content[j]))) dominates=0;
+                    if (!(isnan(P))) dominates=0;
                     continue;
                 }
-                if (isnan(p->content->content[i]->properties->content[j])) continue;
-                if (isnan(p->content->content[i]->properties->content[j])) {
+                if (isnan(P)) continue;
+                if (isnan(P)) {
                     // This entry can't be dominated by ones that are missing properties it has.
-                    if (!(isnan(p->content->content[ii]->properties->content[j]))) dominated=0;
+                    if (!(isnan(Q))) dominated=0;
                     continue;
                 } 
+                // end of partial record
+                
                 // Here's where the spec matters:
-                //   If both entries excede the figure in the spec, 
-                //   Then this property cannot justify the higher entry and can't be used to turn off one of the domination flags
-                if (!isnan(properties->content[j])) if ((p->content->content[ii]->properties->content[j]>properties->content[j])&&(p->content->content[i]->properties->content[j]>properties->content[j])) continue;
-                if (p->content->content[ii]->properties->content[j]>p->content->content[i]->properties->content[j]) dominated=0;
-                if (p->content->content[ii]->properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
+                //   If both entries excede the threshold in the spec, 
+                //   then this property cannot justify the higher entry and can't be used to turn off one of the domination flags
+                if (isinf(TH)==0) {
+                    #Dinfo: "%d,%d: TH %d: %g %g %g" i ii j TH P Q
+                    if (Q>TH) Q=TH;
+                    if (P>TH) P=TH;
+                }    
+                #Dinfo: "%d,%d: Comparing %d: %g %g" i ii j P Q
+                if (Q>P) dominated=0;
+                if (Q<P) dominates=0;	    
+		if (!(dominated||dominates)) break;
+
             }
             if (dominated) {
-                front->content[ii]=-1;
-                break;
+                if (!(p->content->content[ii]->flags)) {
+                    volume--;
+                    #Dinfo: "%d Dominated %ld left" ii volume
+                }
+                p->content->content[ii]->flags|=1;
             }    
             if (dominates) {
-                front->content[i]=-1;
+                if (!(p->content->content[i]->flags)) {
+                    volume--;
+                    #Dinfo: "%d Dominated %ld left" i volume
+                }
+                p->content->content[i]->flags|=1;
             }    
         }
     }
-    return(front); 
 }
 ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     ordinal i,j;
@@ -2981,7 +3020,8 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
         return(-2);
     }
     if (properties->num_of!=p->properties->num_of) {
-        #Error: "Tried to add an entry to PAT with incompatible number of properties."
+        #Error: "Tried to add an entry to PAT with incompatible number of properties: PAT has %d property, but the entry has %d" p->properties->num_of properties->num_of
+	exit(1);
         return(-2);
     }
     // Negate all properties that are "less is better"
@@ -3006,6 +3046,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
             if (properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
             if (properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
             if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
+	    if (!(dominated||dominates)) break;
         }
         if (dominated) {
             return(-1);
@@ -3018,6 +3059,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     }
     
     PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
+    pe->flags=0;
     pe->sizes=new_vector_float();
     for (i=0;i<sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes->content[i]);
     pe->properties=new_vector_float();
@@ -3193,7 +3235,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             return TCL_OK;
         }
         if (c->value_type==ctype_PAT) {
-	    PAT *p=(PAT *)c->value.v;
+            PAT *p=(PAT *)c->value.v;
             tcl_append_int(interp,p->content->num_of);
             return TCL_OK;
         }
@@ -3381,24 +3423,29 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
             return TCL_ERROR;
         }
-        if (argc!=5) {
-            #Error: "(ctree) The >>> operator requires a list of sizes and a list of properties."
+        if (argc!=4) {
+            #Error: "(ctree) The >>> operator requires a list of properties."
             return TCL_ERROR;
         }
+        ordinal i;
+	PAT *p=(PAT *)c->value.v;
+	if (strcmp(argv[3],"reset")==0) {
+            for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags=0;
+            return TCL_OK;
+	}
+	if (strcmp(argv[3],"back")==0) {
+            for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
+            return TCL_OK;
+	}
         int ARGC;
         char **ARGV;
         Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
-        vector_float *sizes=new_vector_float();
-        ordinal i;
-        for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
-        free(ARGV);
-        Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
         vector_float *properties=new_vector_float();
         for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
         free(ARGV);
-        vector_int *front=pat_front((PAT *)c->value.v,sizes,properties);
-        for (i=0;i<front->num_of;i++) if (front->content[i]!=-1) tcl_append_int(interp,front->content[i]);
-        free(front);
+	for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags<<=1;
+        pat_front(p,properties);
+        for (i=0;i<p->content->num_of;i++) if (!(p->content->content[i]->flags)) tcl_append_int(interp,i);
         return TCL_OK;
     }
     if (strcmp(argv[2],"<<<")==0) {
@@ -3451,7 +3498,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 return TCL_OK;
             }
             c->value.s=atof(argv[3]);
-	    #Dinfo: "ASSIGNMENT %x=%s %g" &(c->value.s) argv[3] c->value.s
+            #Dinfo: "ASSIGNMENT %x=%s %g" &(c->value.s) argv[3] c->value.s
             //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
             c->value_type=ctype_real;
             return TCL_OK;
@@ -4452,7 +4499,7 @@ void map_slice_separation(LUT *a,ordinal **separation) {
     for (i=0;i<a->dim;i++) for (j=1;j<a->size[i]-1;j++) {
         if (total[i][j]==0) continue;
         separation[i][j]/=total[i][j];
-             #Dinfo: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
+        #Dinfo: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
     }
     for (i=0;i<a->dim;i++) {
         free(total[i]);
@@ -4627,7 +4674,7 @@ hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
         }
     }
     if (seperation_dim>=0) {
-                #Dinfo: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
+        #Dinfo: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
         hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*5);
         hit[HIT_TYPE].o=HIT_DIVIDER;
         hit[HIT_DIM].o=seperation_dim;
@@ -4642,7 +4689,7 @@ hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
         array2hit_partial_legend_top[seperation_dim]=orig_top;
         return(hit);
     }
-        #Dinfo: "%s Cell" indent
+    #Dinfo: "%s Cell" indent
     ordinal num_of_corners;
     num_of_corners=1<<a->dim;
     ordinal index=0;
@@ -4687,8 +4734,8 @@ ordinal merge_hit_leaves(hit_node **hit) {
     for (i=0;i<num_of_corners;i++) if (isnan(hit_t[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
     for (i=0;i<num_of_corners;i++) if (isnan(hit_b[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
     if (boundary_cell) return(retval);
-    	#Dinfo: "   Cells!" 
-    	#Dinfo: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
+    #Dinfo: "   Cells!" 
+    #Dinfo: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
     float max_error=0;
     ordinal split_dim=(*hit)[HIT_DIM].o;
     float b=1/(hit_t[HIT_VALUES+2*split_dim+1].s);
@@ -4697,7 +4744,7 @@ ordinal merge_hit_leaves(hit_node **hit) {
     float weight_bottom=b/(a+b);
     int mask=1<<split_dim;
     float failed_M,failed_I;
-        #Dinfo: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
+    #Dinfo: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
     for (i=0;i<num_of_corners;i++) {
         if (!(i&mask)) continue;
         int j=i-mask;
@@ -4709,11 +4756,11 @@ ordinal merge_hit_leaves(hit_node **hit) {
             #Error: "Mismatched hypercubes: %g!=%g" M hit_t[HIT_VALUES+2*merge_dim+j].s
         }
         float error=fabs(I/M-1)*100;
-        	#Dinfo: "T=%g B=%g M=%g I=%g E=%g" T B M I error
+        #Dinfo: "T=%g B=%g M=%g I=%g E=%g" T B M I error
         //if (fabs(I-M)<1e-9) error=0;
         if (error>max_error) max_error=error;
     }
-        #Dinfo: "max_error=%g" max_error
+    #Dinfo: "max_error=%g" max_error
     if (max_error>1) return retval;
     free(*hit);
     *hit=(hit_node *)malloc(sizeof(hit_node)*(2+2*merge_dim+num_of_corners));
@@ -4734,10 +4781,10 @@ ordinal merge_hit_leaves(hit_node **hit) {
             (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_b[HIT_VALUES+2*merge_dim+i].s;
         }
     }
-        #Dinfo: "MERGED!"
-        for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
-                #Dinfo: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
-        }
+    #Dinfo: "MERGED!"
+    for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
+        #Dinfo: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
+    }
     free(hit_t);
     free(hit_b);
     retval++;

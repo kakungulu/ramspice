@@ -219,6 +219,7 @@ foreach binary $::opt(bins) {
             if {$binary=="gamma" && [string match *spice* $path]} continue
             foreach file [glob -nocomplain $path/*.h $path/*.c $path/*.cpp] {
                 if {$binary=="ramspice" && [string match *Gamma/main.c $file]} continue
+		if {[string match *.ignore.c $file]} continue
                 set filename [file tail $file]
                 set fileext [file extension $file]
                 set fileroot [file rootname $filename]

@@ -25,6 +25,7 @@ default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
+
 foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     set toxp [expr $toxe-$dtox]
     @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
@@ -37,7 +38,6 @@ foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
     @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
 }
-
 
 set ::all_transistors {}
 set ::all_nodes {}
