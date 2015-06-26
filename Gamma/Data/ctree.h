@@ -159,8 +159,14 @@ typedef struct {
     vector_pointer_PAT_entry *content;
     vector_pointer_char *sizes;
     vector_pointer_char *properties;
+    vector_int *factors;
     vector_float *margins;
 } PAT;
+typedef struct {
+    float x;
+    float y;
+} PAT_graph_pixel;    
+int compare_pat_graph_pixels(const void *i, const void *j);
 typedef struct POLY POLY;
 struct POLY {
     char *expression;
@@ -172,6 +178,7 @@ PAT *get_PAT(char *i_context);
 POLY *get_POLY(char *i_context);
 void write_pointer_PAT(FILE *O,PAT *p);
 PAT *read_pointer_PAT();
+void pat_graph(FILE *O,PAT *p,int x,int y);
 POLY *new_POLY();
 void link_POLY(POLY *p);
 float calc_polynomial(vector_float *p);

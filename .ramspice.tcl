@@ -7,6 +7,49 @@ proc args {args_var} {
     foreach arg $args {
     }
 }
+proc html {cmd args} {
+    switch $cmd {
+        open {
+	    if {[llength $args]!=1} {
+	        Error: html start requires only file name
+		exit
+	    }
+	    if {[info exists ::HTML]} {
+	        Error: html file still open when attempting to redirect to $args
+		exit
+	    }
+	    set ::HTML [open [lindex $args 0] w]
+	    set ::web_output 1
+	    return
+	}
+	continue {
+	    if {[llength $args]!=1} {
+	        Error: html continue requires only file name
+		exit
+	    }
+	    if {[info exists ::HTML]} {
+	        Error: html file still open when attempting to redirect to $args
+		exit
+	    }
+	    set ::HTML [open [lindex $args 0] a]
+	    set ::web_output 1
+	    return
+	}
+	close {
+	    if {[llength $args]!=0} {
+	        Error: html stop requires no arguments
+		exit
+	    }
+	    if {![info exists ::HTML]} {
+	        Error: html file wasn't open when attempting to stop
+		exit
+	    }
+	    close $::HTML
+	    unset ::HTML
+	    unset ::web_output
+	}
+    }
+}
 proc foreach_fork {args} {
     set ::main_process 1
     set body {

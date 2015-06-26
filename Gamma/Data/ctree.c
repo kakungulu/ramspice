@@ -154,11 +154,13 @@ IFfrontEnd nutmeginfo = {
     }
 }
 void write_pointer_PAT_entry(FILE *O,PAT_entry *p) {
+    write_ordinal(O,p->flags);
     write_vector_float(O,p->sizes);
     write_vector_float(O,p->properties);
 }
 PAT_entry *read_pointer_PAT_entry() {
     PAT_entry *p=(PAT_entry *)malloc(sizeof(PAT_entry));
+    p->flags=read_ordinal();
     p->sizes=read_vector_float();
     p->properties=read_vector_float();
     return(p);
@@ -168,6 +170,7 @@ void write_pointer_PAT(FILE *O,PAT *p) {
     write_vector_pointer_char(O,p->sizes);
     write_vector_pointer_char(O,p->properties);
     write_vector_float(O,p->margins);
+    write_vector_int(O,p->factors);
 }
 void write_pointer_POLY(FILE *O,POLY *p) {
     write_string(O,p->expression);
@@ -178,6 +181,7 @@ PAT *read_pointer_PAT() {
     p->sizes=read_vector_pointer_char();
     p->properties=read_vector_pointer_char();
     p->margins=read_vector_float();
+    p->factors=read_vector_int();
     return(p);
 }
 void link_POLY(POLY *p) {
@@ -2351,6 +2355,7 @@ PAT *new_PAT() {
     p->sizes=new_vector_pointer_char();
     p->properties=new_vector_pointer_char();
     p->margins=new_vector_float();
+    p->factors=new_vector_int();
     return(p);
 }
 POLY *new_POLY() {
@@ -2385,6 +2390,7 @@ context *create_context(char *i_key) {
         while ((context_name_buffer[k])&&(context_name_buffer[k]!='(')) k++;
         // New PAT
         if ((context_name_buffer[k]=='(')&&(context_name_buffer[k+1]=='(')) {
+            #Dinfo: "PAT declaration" 
             context_name_buffer[k]=0;
             int l;
             context *next_context=NULL;
@@ -2404,24 +2410,35 @@ context *create_context(char *i_key) {
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l++]=0;
+	    add_entry_vector_int(p->factors,1);
             add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l]));
             for (;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') {
+		add_entry_vector_int(p->factors,1);
                 add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l+1]));
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l]=0;
             for (l=0;l<p->sizes->num_of;l++) p->sizes->content[l]=strdup(p->sizes->content[l]);
             for (l=0;l<p->properties->num_of;l++) {
+	        #Dinfo: "p%d %x" l p->properties->content[l]
                 int colon=0;
                 float margin=0;
-                while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) colon++;
+                while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) {
+		    #Dinfo: "SFSG %c" p->properties->content[l][colon]
+		    colon++; 
+		    #Dinfo: "SFSG %c" p->properties->content[l][colon]
+		}    
                 if (p->properties->content[l][colon]=='?') {
                     margin=atof(&(p->properties->content[l][colon+1]));
-                    //    if (p->properties->content[l][0]=='-') margin=-margin;
                     p->properties->content[l][colon]=0;
                 }
                 add_entry_vector_float(p->margins,margin);
-                p->properties->content[l]=strdup(p->properties->content[l]);
+		if (p->properties->content[l][0]=='-') {
+                    p->properties->content[l]=strdup(&(p->properties->content[l][1]));
+		    p->factors->content[l]=-1;
+		} else {
+                    p->properties->content[l]=strdup(p->properties->content[l]);
+		}
             }
             #Dinfo: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
             continue;
@@ -2932,7 +2949,7 @@ void pat_front(PAT *p,vector_float *properties) {
     //Asses how many points meet the spec
     int num_of_th=0;
     for (i=0;i<p->properties->num_of;i++) if (isfinite(properties->content[i])) num_of_th++;
-    for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
+    for (i=0;i<p->properties->num_of;i++) properties->content[i]=p->factors->content[i]*properties->content[i];
     int histogram[128];
     for (j=0;j<128;j++) histogram[j]=0;
     for (i=0;i<p->content->num_of;i++) {
@@ -3025,7 +3042,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
         return(-2);
     }
     // Negate all properties that are "less is better"
-    for (i=0;i<p->properties->num_of;i++) if (p->properties->content[i][0]=='-') properties->content[i]=-properties->content[i];
+    for (i=0;i<p->properties->num_of;i++) properties->content[i]=p->factors->content[i]*properties->content[i];
     for (i=0;i<p->content->num_of;i++) {
         int dominates=1;
         int significantly_better=0;
@@ -3175,6 +3192,41 @@ float imp_derive_POLY(POLY *p,void *by_var,void *root_var,float init) {
     float retval=-nom/denom;
     return(retval);
 }
+int compare_pat_graph_pixels(const void *i, const void *j) {
+    PAT_graph_pixel *I=(PAT_graph_pixel *)i;
+    PAT_graph_pixel *J=(PAT_graph_pixel *)j;
+    if (I->x<J->x) return -1;
+    if (I->x==J->x) return 0;
+    return 1;
+}
+#define PAT_GRAPH_WIDTH 512
+#define PAT_GRAPH_HEIGHT 512
+void pat_graph(FILE *O,PAT *p,int x,int y) {
+    int i;
+    vector_float *properties=new_vector_float();
+    for (i=0;i<p->properties->num_of;i++) if ((i==x)||(i==y)) add_entry_vector_float(properties,INFINITY); else add_entry_vector_float(properties,NAN);
+    for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags<<=1;
+    pat_front(p,properties);
+    free(properties);
+    int size=0;
+    for (i=0;i<p->content->num_of;i++) {
+        if (p->content->content[i]->flags) continue;
+	size++;
+    }
+    PAT_graph_pixel *g=(PAT_graph_pixel *)malloc(sizeof(PAT_graph_pixel)*size);
+    int j=0;
+    for (i=0;i<p->content->num_of;i++) {
+        if (p->content->content[i]->flags) continue;
+	g[j].x=p->factors->content[x]*p->content->content[i]->properties->content[x];
+	g[j].y=p->factors->content[y]*p->content->content[i]->properties->content[y];
+        j++;
+    }
+    qsort(g,size,sizeof(PAT_graph_pixel),compare_pat_graph_pixels);
+    for (i=0;i<size;i++) fprintf(O,"%g,%g\n",g[i].x,g[i].y);
+    // Undo
+    for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
+}
+
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {
@@ -3399,10 +3451,31 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             j=atoi(argv[4]);
             for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
             for (i=0;i<p->properties->num_of;i++) {
-                float value=p->content->content[j]->properties->content[i];
-                if (p->properties->content[i][0]=='-') value=-value;
+                float value=p->factors->content[i]*p->content->content[j]->properties->content[i];
                 tcl_append_float(interp,value);
             }	
+            return TCL_OK;
+        }
+        if (strcmp(argv[3],"graph")==0) {
+            if (argc!=7) {
+                #Error: "(ctree) The PAT graph sub-command requires an output file, x and y axes"
+                return TCL_ERROR;
+            }
+	    int i,x=-1,y=-1;
+	    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[5])==0) x=i;
+	    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[6])==0) y=i;
+	    if (x==-1) {
+	        #Error: "No such property %s in PAT %s" argv[5] c->name;
+		return TCL_ERROR;
+	    }
+	    if (y==-1) {
+	        #Error: "No such property %s in PAT %s" argv[6] c->name;
+		return TCL_ERROR;
+	    }
+	    FILE *O=fopen(argv[4],"w");
+	    fprintf(O,"%s,%s\n",argv[5],argv[6]);
+	    pat_graph(O,p,x,y);
+	    fclose(O);
             return TCL_OK;
         }
         if (strcmp(argv[3],"delete")==0) {
@@ -3433,7 +3506,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags=0;
             return TCL_OK;
 	}
-	if (strcmp(argv[3],"back")==0) {
+	if (strcmp(argv[3],"undo")==0) {
             for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
             return TCL_OK;
 	}
