@@ -1,20 +1,5 @@
 # \
 exec $RAMSPICE/ramspice $0 $argv
-get_opts
-default ::opt(size) 1000
-
-for {set j 1} {$j<4} {incr j} {
-@ p${j}((a,b,c|-A,-B,C)) !
-for {set i 0} {$i<$::opt(size)/$j} {incr i} {
-    set a [expr rand()]
-    set b [expr rand()]
-    set c [expr rand()]
-    set A [expr rand()]
-    set B [expr rand()]
-    set C [expr rand()]
-    @ p$j <<< [list $a $b $c] [list $A $B $C] 
-}
-}
 proc gen_pat_graph {P1 P2 args} {
     set script1 {
         <script src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
@@ -111,6 +96,22 @@ proc gen_pat_graph {P1 P2 args} {
     }
     </script>
 }
+return
+get_opts
+default ::opt(size) 1000
+
+for {set j 0} {$j<3} {incr j} {
+@ p${j}((a,b,c|-A,-B,C)) !
+for {set i 0} {$i<$::opt(size)/($j*10+1)} {incr i} {
+    set a [expr rand()]
+    set b [expr rand()]
+    set c [expr rand()]
+    set A [expr rand()]
+    set B [expr rand()]
+    set C [expr rand()]
+    @ p$j <<< [list $a $b $c] [list $A $B $C] 
+}
+}
 html open /tmp/t.html
 <!DOCTYPE html>
 <html>
@@ -146,7 +147,7 @@ puts $::HTML {
 </style>
 
 <body>
-gen_pat_graph A B p1 p2 p3
+gen_pat_graph A B p0 p1 p2 
 </body></html>
 html close
 
