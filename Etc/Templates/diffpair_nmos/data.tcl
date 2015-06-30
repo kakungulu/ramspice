@@ -1,6 +1,7 @@
 set title "Differential Pair"
 set input_type NMOS
-foreach {name html unit min max step} {
+
+define_properties {
     Adc A<sub>DC</sub> dB 0 1000 1
     CMRR CMRR dB 0 1000 1
     PSRR PSRR dB 0 1000 1
@@ -10,10 +11,8 @@ foreach {name html unit min max step} {
     ts t<sub>S</sub> sec 0 1 1e-9
     Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 1e-17
     fc f<sub>corner</sub> Hz 0 1e9 1
-} {
-    foreach field {html unit min max step} {
-        set ::properties($name,$field) [set $field]
-    }
+    Area Area (&#956\;m)<sup>2</sup> 0 1e9 1
+    Power Power W 0 1000 1
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies($name,schematic) {

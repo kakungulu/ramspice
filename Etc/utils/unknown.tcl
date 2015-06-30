@@ -5,7 +5,7 @@ proc unknown {args} {
     if {[regexp {^<} $args] && [info exists ::web_output]} {
         default ::HTML stdout
         regsub -all {\\\"} $args "\"" html_line
-	puts $html_line
+#	puts $html_line
 	if {$::web_output==1} {
 	    puts $::HTML $html_line
 	} else {
