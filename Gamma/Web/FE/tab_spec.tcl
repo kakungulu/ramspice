@@ -17,14 +17,19 @@
       set topology_js_list {}
       set topology_list {}
       set ::spec_js_code {}
+      set ::analyze_js_code {}
       set ::ajax_send_code {}
       foreach topology_path [glob $::env(RAMSPICE)/Etc/Templates/*] {
           skip {![file exists $topology_path/data.tcl]}
           set topology [file tail $topology_path]
-	  append topology_js_list "\"$topology\""
 	  lappend topology_list $topology
+      }
+      set  topology_list [lsort $topology_list]
+      foreach topology $topology_list {
+ 	  append topology_js_list "\"$topology\""
 	  array unset ::properties
-	  source $topology_path/data.tcl
+	  source $::env(RAMSPICE)/Etc/Templates/$topology/data.tcl
+	  Info: properties=[array names ::properties *,html]
 	  set ::topologies($topology,properties) {}
 	  foreach key [array names ::properties *,html] {
 	      lappend ::topologies($topology,properties) [lindex [split $key ,] 0]
@@ -32,31 +37,39 @@
 	  foreach key [array names ::properties] {
 	      set ::topologies($topology,$key) $::properties($key)
 	  }
-	  append ::spec_js_code "if (selected_topology==\"$topology\") \{\n"
-	  append ::ajax_send_code "if (selected_topology==\"$topology\") \{\n    url = \"?ajax=1&selected_tech=\" + escape(selected_tech) + \"&selected_topology=\" + escape(selected_topology)"
+	  Info: properties=$::property_list
+	  append ::spec_js_code "\nif (selected_topology==\"$topology\") \{\n"
+	  append ::analyze_js_code "\nif (selected_topology==\"$topology\") \{\n"
+	  append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax=1&selected_tech=\" + escape(selected_tech) + \"&selected_topology=\" + escape(selected_topology)"
 	  append ::spec_js_code "   document.getElementById(\"SpecForm\").innerHTML='"
+	  append ::analyze_js_code "   document.getElementById(\"AnalysisSchematic\").innerHTML='"
 	  append ::spec_js_code {<form action="#" id="SpecForm" onChange = "SendSpecToServer();">}
 	  append ::spec_js_code "<table><tr><td colspan=\"3\"><b>Specifications:</b></td><td rowspan=\"[expr [llength $::topologies($topology,properties)]+1]\">"
 	  set ::web_output ::spec_js_code
 	  draw_schematic $topology
+	  set ::web_output ::analyze_js_code
+	  draw_schematic $topology
 	  set ::web_output 1
-	  append ::spec_js_code "</td></tr>"
-	  set LaunchDisabled true
 	  foreach property $::property_list {
 	      set value {}
 	      if {[info exists ::SESSION($property)]} {
 	          set value "value=\"$::SESSION($property)\""
-		  set LaunchDisabled false
 	      }
+	      if {$property=="Name"} {
+	      append ::spec_js_code "<tr><td><b>$::topologies($topology,$property,html)</b></td><td><input size=\"8\" type=\"string\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td><td><b>$::topologies($topology,$property,unit)</b></td></tr>"
+	      } else {
 	      append ::spec_js_code "<tr><td><b>$::topologies($topology,$property,html)</b></td><td><input size=\"8\" type=\"number\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td><td><b>$::topologies($topology,$property,unit)</b></td></tr>"
+	      }
 	      append ::ajax_send_code "+ \"&$property=\" + escape(document.getElementById(\"$property\").value)"
 	  }
+	  set ::button_icon {}
 	  set ::web_output ::button_icon
 	  draw_schematic $topology 32
 	  set ::web_output 1
-	  append ::spec_js_code "<tr><td colspan=\"3\" align=\"center\"><button type=\"button\" formid=\"SpecForm\" id=\"SubmitSpec\" disabled=\"$LaunchDisabled\" onclick=\"LaunchJob()\;\">$::button_icon Get Circuits</button></td></tr>"
+	  append ::spec_js_code "<tr><td colspan=\"3\" align=\"center\"><button type=\"button\" formid=\"SpecForm\" id=\"SubmitSpec\" onclick=\"LaunchJob()\;\">$::button_icon Get Circuits</button></td></tr>"
 	  append ::spec_js_code "</table>"
 	  append ::spec_js_code "</form>'\;\n\}"
+	  append ::analyze_js_code "'\;\n\}"
 	  append ::ajax_send_code "\;\n\}"
       }
       regsub -all {""} $tech_list {","} tech_list
@@ -72,9 +85,12 @@
     //      xhr.onreadystatechange = updatePage; 
          // Send the request 
           xhr.send(null); 
+	  setTimeout(function(){
+              document.getElementById("JobManager").contentWindow.location.reload();
+              document.getElementById("AnalysisJobWindow").contentWindow.location.reload();
+          }, 3000);
     } 
        function SendSpecToServer() { 
-	    document.getElementById("SubmitSpec").disabled=false\;
            // Build the URL to connect to 
           var url = ""
 	  $::ajax_send_code
@@ -99,6 +115,7 @@
 	    selected_topology = topology_array\[document.getElementById("TopologySelectForm").selectedIndex\]\;
 	    document.getElementById("TopologyRequest").innerHTML="<b>Topology:</b>"\;
 	    $::spec_js_code
+	    $::analyze_js_code
 	}
       }
       
@@ -113,7 +130,7 @@
           append ::restore_session_code "i=[lsearch $topology_list $::SESSION(selected_topology)]\;\n"
           append ::restore_session_code "selected_topology=\"$::SESSION(selected_topology)\"\;"
           append ::restore_session_code "document.getElementById(\"TopologySelectForm\").selectedIndex\=i\;"
-          append ::restore_session_code "document.getElementById(\"TopologyRequest\").innerHTML=\"<b>Topology:</b>\"\;\n$::spec_js_code"
+          append ::restore_session_code "document.getElementById(\"TopologyRequest\").innerHTML=\"<b>Topology:</b>\"\;\n$::spec_js_code\n$::analyze_js_code"
       }
       function initForm() {
               var i=-1;
@@ -121,6 +138,8 @@
 	      document.getElementById("TechSelectForm").onchange = UpdateTech\;
 	      document.getElementById("TopologySelectForm").selectedIndex = -1\;
 	      document.getElementById("TopologySelectForm").onchange = UpdateTopology\;
+	      document.getElementById("AnalysisSelectForm").onchange = UpdateAnalysis\;
+	      UpdateAnalysis();
 	      $::restore_session_code
       }
   </script>
@@ -149,7 +168,7 @@
   <td>
   <select id="TopologySelectForm">
       set i 0
-      foreach topology $topology_list {
+      foreach topology [lsort $topology_list] {
           source $::env(RAMSPICE)/Etc/Templates/$topology/data.tcl
           puts $::HTML "<option value=\"$i\">$input_type $title</option>"
           incr i
@@ -159,4 +178,5 @@
   </tr>
   <tr><td id="SpecForm" colspan="2">
   </td></tr>
+  <tr><td><iframe id="JobManager" seamless src="http://www.engr.colostate.edu/usr-bin/cgiwrap/ystatter/gamma_jobs?win=spec&user=$::SESSION(user)"></iframe></td></tr>
   </table>

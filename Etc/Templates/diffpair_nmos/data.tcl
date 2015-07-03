@@ -2,6 +2,7 @@ set title "Differential Pair"
 set input_type NMOS
 
 define_properties {
+    Name Name (optional) {} {} {}
     Adc A<sub>DC</sub> dB 0 1000 1
     CMRR CMRR dB 0 1000 1
     PSRR PSRR dB 0 1000 1

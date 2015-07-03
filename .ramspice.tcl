@@ -50,6 +50,43 @@ proc html {cmd args} {
 	}
     }
 }
+proc netbatch_header {code} {
+     Info: HEADER! $code
+    if {![info exists ::netbatch_signal_file]} {
+        return
+    }
+    set O [open $::netbatch_signal_file w]
+    puts $O [list array set ::header $code]
+    close $O
+    unset ::netbatch_signal_file
+    return -code return
+}
+proc netbatch {code args} {
+    set process_path $::env(RAMSPICE)/Gamma/Web/FE/gamma_process
+    regsub {.*\.} [expr rand()] {} rand_name
+    set O [open $process_path/$rand_name w]
+    puts $O [list netbatch_header $args]
+    puts $O $code
+    close $O
+    set active_machines {}
+    set start_time [clock seconds]
+    foreach ping_file [glob -nocomplain $process_path/ping_*] {
+        skip {$start_time-[file mtime $ping_file]>5}
+	lappend active_machines [regsub {.*ping_} $ping_file {}]
+    }
+    if {[llength $active_machines]==0} {
+        Error: No active machine found in path $process_path. Code in $rand_name did not execute.
+	return
+    }
+    set machine [lindex $active_machines [expr int(rand()*[llength $active_machines])]]
+    Info: machine=$machine
+    set i 0
+    while {[file exists $process_path/gamma_${machine}_$i.tcl]} {
+        incr i
+    }
+    exec mv $process_path/$rand_name $process_path/gamma_${machine}_$i.tcl
+}
+
 proc foreach_fork {args} {
     set ::main_process 1
     set body {

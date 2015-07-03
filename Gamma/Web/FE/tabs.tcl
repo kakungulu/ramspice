@@ -4,6 +4,10 @@ exec $RAMSPICE/ramspice $0 $argv
 ######### Read input
 ##########################################################################
 set fe_path $::env(RAMSPICE)/Gamma/Web/FE
+set ::process_path $fe_path/gamma_process
+if {![file exists $::process_path]} {
+    file mkdir $::process_path
+}
 set authenticate 1
 set ::HTML [open /tmp/out.html w]
 set ::web_output 1
@@ -20,9 +24,9 @@ if {$method=="post"} {
     }
 }
 set ::session $::env(HTTP_X_FORWARDED_FOR)
-set sessions_path $fe_path/gamma_sessions
-if {![file exists $sessions_path]} {
-    file mkdir $sessions_path
+set ::sessions_path $fe_path/gamma_sessions
+if {![file exists $::sessions_path]} {
+    file mkdir $::sessions_path
 }
 if {[info exists ::opt(authentication_user)]} {
     Info: authentication request from $::opt(authentication_user)
@@ -36,13 +40,13 @@ if {[info exists ::opt(authentication_user)]} {
     }
 }
 if {$authenticate} {
-    foreach session_file [glob -nocomplain $sessions_path/*.tcl] {
+    foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
         skip {[file mtime $session_file]-[clock seconds]>15*60}
         array unset ::SESSION
         source $session_file
         if {$::SESSION(ip)==$::session} {
             set authenticate 0
-	    set ::existing_session $session_file
+	    set ::active_session [file tail $session_file]
             break
         }	
     }
@@ -69,12 +73,14 @@ array set ::config {
 if {[file exists $fe_path/$::SESSION(user).tcl]} {
     source $fe_path/$::SESSION(user).tcl
 }
-if {![info exists ::existing_session]} {
-    for {set i 0} {[file exists $sessions_path/$i.tcl]} {incr i} {}
-    set ::existing_session $sessions_path/$i.tcl
+if {![info exists ::active_session]} {
+    for {set i 0} {[file exists $::sessions_path/$i.tcl]} {incr i} {}
+    set ::active_session $i.tcl
+    
 }
+set ::active_analysis [file rootname $::active_session].html
 proc save_session {} {
-    set S [open $::existing_session w]
+    set S [open $::sessions_path/$::active_session w]
     puts $S [list array set ::SESSION [array get ::SESSION]]
     close $S
 }
@@ -102,6 +108,7 @@ foreach tech_dir [glob $::env(RAMSPICE)/Etc/Tech_DB/*] {
   <meta charset="utf-8">
   <title>Gamma Circuit Size Mapper</title>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="http://www.engr.colostate.edu/~ystatter/cgi-bin/ramspice/Gamma/Web/FE/gamma_style.css">
   <script src="//code.jquery.com/jquery-1.10.2.js"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 #  <link rel="stylesheet" href="/resources/demos/style.css">
