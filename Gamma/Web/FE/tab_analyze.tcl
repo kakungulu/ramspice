@@ -33,7 +33,7 @@ function UpdateAnalysis() {
 </form>
 <p id="AnalysisTitle"></p>
 <table><tr><td>
-<iframe src="http://www.engr.colostate.edu/~ystatter/analyses/$::active_analysis" seamless="true" height="512" width="512"></iframe>
+
 </td><td id="AnalysisSchematic" ></td></tr><tr><td><iframe id="AnalysisJobWindow" seamless src="http://www.engr.colostate.edu/usr-bin/cgiwrap/ystatter/gamma_jobs?win=analysis&user=$::SESSION(user)"></iframe></td></tr></table>
 if {![file exists ~ystatter/public_html/analyses/$::active_analysis]} {
     set O [open ~ystatter/public_html/analyses/$::active_analysis w]

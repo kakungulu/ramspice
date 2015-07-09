@@ -1,7 +1,11 @@
+<?xml version="1.0">
+<choices xml:lang="EN">
 foreach key [array names ::opt] {
     skip {$key=="launch"}
     set ::SESSION($key) $::opt($key)
+    <property><name>$key</name><value>$::opt($key)</value></property>
 }
+</choices>
 save_session
 if {![info exists ::opt(launch)]} {
     return
