@@ -1,1 +1,1 @@
-<h3>Place holder for Report Generator</h3>
+<h3>A Report Generator based on a WYSIWYG document editor</h3>

@@ -3,7 +3,15 @@ namespace eval SVG {
     variable O stdout
 }
 
-proc SVG::out {filename} {
+proc SVG::out {{filename {}}} {
+    if {$filename=={}} {
+        if {[info exists ::HTML]} {
+	    set SVG::O $::HTML
+	    return
+	}
+	Error: No ::HTML outlet yet.
+	exit
+    }
     if {[catch {set SVG::O [open $filename w]} msg]} {
         Error: $msg
 	return
@@ -200,6 +208,7 @@ proc SVG::graph_markers {args} {
 	}
 	SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
     }
+    set id 0
     foreach $order $opt(data) {
         default m 0
 	set marker [split [lindex $opt(markers) $m] :]
@@ -207,7 +216,11 @@ proc SVG::graph_markers {args} {
 	set color [lindex $marker 1]
         set x_coord [expr $opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x)]
         set y_coord [expr $opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y)]
-        SVG::circle cx $x_coord cy $y_coord r $radius stroke $color stroke-width 1 fill $color
+        SVG::circle cx $x_coord cy $y_coord r $radius stroke $color stroke-width 1 fill $color id marker$id
+        <text id="thepopup" x="[expr 1.05*$x_coord]" y="[expr 0.95*$y_coord]" font-size="20" fill="$color" visibility="hidden"> [eng $x $opt(x_unit)] [eng $y $opt(y_unit)] 
+	    <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.mouseover" end="marker$id.mouseout"/> 
+	</text>
+	incr id
     }
     if {$opt(connect)=="all"} {
         set opt(connect) {}
