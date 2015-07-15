@@ -7,6 +7,24 @@ proc args {args_var} {
     foreach arg $args {
     }
 }
+proc define_properties {table} {
+    set ::property_list {}
+    foreach {name html unit min max step} $table {
+	lappend ::property_list $name
+        foreach field {html unit min max step} {
+	    set ::properties($name,$field) [set $field]
+	}
+    }
+}
+proc define_sizers {table} {
+    set ::sizer_list {}
+    foreach {name id_list min max unit} $table {
+	lappend ::sizer_list $name
+        foreach field {id_list min max unit} {
+	    set ::sizers($name,$field) [set $field]
+	}
+    }
+}
 proc html {cmd args} {
     switch $cmd {
         open {

@@ -1,1 +1,1 @@
-array set ::SESSION {ip 10.84.226.150 user ystatter}
+array set ::SESSION {ip 10.1.21.12 user ystatter}

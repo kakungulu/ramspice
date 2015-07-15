@@ -25,6 +25,13 @@ if {$method=="post"} {
 }
 set ::session $::env(HTTP_X_FORWARDED_FOR)
 set ::sessions_path $fe_path/gamma_sessions
+array set ::colors {
+    gray #F2F2F3
+    green #1FDA9A
+    red #EE4B3E
+    orange #E9BC1B
+    yellow #F5EACD 
+}
 if {![file exists $::sessions_path]} {
     file mkdir $::sessions_path
 }
@@ -86,15 +93,6 @@ proc save_session {} {
 }
 save_session
 set ::USER default
-proc define_properties {table} {
-    set ::property_list {}
-    foreach {name html unit min max step} $table {
-	lappend ::property_list $name
-        foreach field {html unit min max step} {
-	    set ::properties($name,$field) [set $field]
-	}
-    }
-}
 if {[info exists ::opt(ajax)]} {
     source $fe_path/ajax.tcl
     close $::HTML
@@ -168,8 +166,8 @@ table {
       }  
   </style>
   </head>
-  <body>
   }
+  <body bgcolor=$::colors(green)>
  
 <div id="tabs">
   <ul>

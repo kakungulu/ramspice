@@ -32,24 +32,28 @@
 	  append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax=1&selected_tech=\" + escape(selected_tech) + \"&selected_axes=\" + escape(selected) + \"&selected_g=\" + escape(selected_g) + \"&selected_topology=\" + escape(selected_topology)"
 	  append ::spec_js_code "   document.getElementById(\"SpecForm\").innerHTML='"
 	  append ::spec_js_code {<form action="#" id="SpecForm" onChange = "SendSpecToServer();">}
-	  append ::spec_js_code "<table ><tr><td>&nbsp\;</td></tr><tr><td colspan=\"4\"><b>Select<br>Axes/Goals:</b></td><td></td><td><b>Type in<br>Thresholds:</b></td><td></td><td id=\"AnalysisWindox\" rowspan=\"[expr [llength $::topologies($topology,properties)]+1]\">"
+	  append ::spec_js_code "<table><tr><td>&nbsp\;</td></tr><tr><td bgcolor=$::colors(red)>X</td><td bgcolor=$::colors(orange)>Y</td><td bgcolor=$::colors(red)>Z</td><td bgcolor=$::colors(orange)>Goals</td><td colspan=\"3\" bgcolor=$::colors(red)><b>Thresholds:</b></td><td id=\"AnalysisWindox\" rowspan=\"[expr [llength $::topologies($topology,properties)]+1]\">"
 	  set ::web_output ::spec_js_code
 	  draw_schematic $topology
 	  set ::web_output 1
 	  append ::spec_js_code "</td></tr>"
+	  set i 0
 	  foreach property $::property_list {
+	      set color [lindex {yellow orange} [expr $i%2]] 
+	      incr i
 	      set value {}
 	      if {[info exists ::SESSION($property)]} {
 	          set value "value=\"$::SESSION($property)\""
 	      }
 	      if {$property=="Name"} {
-	          append ::spec_js_code "<tr><td></td><td></td><td></td><td></td><td><b>$::topologies($topology,$property,html)</b></td><td><input style=\"width:98px\" type=\"string\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td><td><b>$::topologies($topology,$property,unit)</b></td></tr>"
+	          append ::spec_js_code "<tr bgcolor=$::colors($color)><td></td><td></td><td></td><td></td><td><b>$::topologies($topology,$property,html)</b></td><td><input style=\"width:69px\" type=\"string\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td><td><b>$::topologies($topology,$property,unit)</b></td></tr>"
 	      } else {
-	          append ::spec_js_code "<tr><td id=\"X_${topology}_$property\" onclick=\"toggle_axis(0,\\\'${topology}_$property\\\')\;\"><font color=\"#f0f0f0\">X</font></td>"
+	          append ::spec_js_code "<tr bgcolor=$::colors($color)><td id=\"X_${topology}_$property\" onclick=\"toggle_axis(0,\\\'${topology}_$property\\\')\;\"><font color=\"#f0f0f0\">X</font></td>"
 		  append ::spec_js_code "<td id=\"Y_${topology}_$property\" onclick=\"toggle_axis(1,\\\'${topology}_$property\\\')\;\"><font color=\"#f0f0f0\">Y</font></td>"
 		  append ::spec_js_code "<td id=\"Z_${topology}_$property\" onclick=\"toggle_axis(2,\\\'${topology}_$property\\\')\;\"><font color=\"#f0f0f0\">Z</font></td>"
 		  append ::spec_js_code "<td id=\"G_${topology}_$property\" onclick=\"toggle_g(\\\'${topology}_$property\\\')\;\">$::goal_icon_gray</td>"
-		  append ::spec_js_code "<td><b>$::topologies($topology,$property,html)</b></td><td><input style=\"width:100px\"  type=\"number\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td><td><b>$::topologies($topology,$property,unit)</b></td></tr>"
+		  append ::spec_js_code "<td><b>$::topologies($topology,$property,html)</b></td><td><input style=\"width:70px\"  type=\"number\" id=\"$property\"  $value onChange=\"SendSpecToServer()\;\"></td>"
+		  append ::spec_js_code "<td width=\"69px\"><b>$::topologies($topology,$property,unit)</b></td></tr>"
 	      }
 	      append ::ajax_send_code "+ \"&$property=\" + escape(document.getElementById(\"$property\").value)"
 	  }

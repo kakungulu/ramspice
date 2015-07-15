@@ -1,1 +1,1 @@
-array set ::SESSION {selected_x none Vos {} selected_y none ip 10.1.21.12 selected_z none Rout 9 Nt {} ajax 1 selected_tech tsmc180 PSRR 95 ts 1 Adc 10 BW 9001000 fc {} Area {} Name Two selected_axes diffpair_output_nmos_CMRR%2Cdiffpair_output_nmos_BW%2Cdiffpair_output_nmos_Rout CMRR -4 selected_topology diffpair_output_nmos Power {} user ystatter selected_g {}}
+array set ::SESSION {ip 98.245.154.205 user ystatter}

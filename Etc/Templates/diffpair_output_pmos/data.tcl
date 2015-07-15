@@ -2,7 +2,6 @@ set title "Differential Pair with Output Stage"
 set input_type PMOS
 
 define_properties {
-    Name Name (optional) {} {} {}
     Adc A<sub>DC</sub> dB 0 1000 1
     CMRR CMRR dB 0 1000 1
     PSRR PSRR dB 0 1000 1
@@ -14,6 +13,17 @@ define_properties {
     fc f<sub>corner</sub> Hz 0 1e9 1
     Area Area (&#956\;m)<sup>2</sup> 0 1e9 1
     Power Power W 0 1000 1
+}
+define_sizers {
+    Lp {p_1 p_2} 40e-9 10e6 m
+    Wp {p_1 p_2} 40e-9 10e6 m
+    Ln {n_1 n_2} 40e-9 10e6 m
+    Wn {n_1 n_2} 40e-9 10e6 m
+    Ls {p_ref p_tail p_out} 40e-9 10e6 m
+    Ws {p_ref p_tail p_out} 40e-9 10e6 m
+    Lo n_out 40e-9 10e6 m
+    Wo n_out 40e-9 10e6 m
+    iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies($name,schematic) {
@@ -47,7 +57,7 @@ set ::topologies($name,schematic) {
     line 0 0 outp
     nl 0 0 {}
     
-    csrc 0 180 vbias
+    csrc 0 180 cbias
     terminal 0 270 inn
     pmos 0 270 pin_1
     blank 0 0 {}

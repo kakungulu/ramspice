@@ -1,8 +1,8 @@
 set title "Common Source"
 set input_type NMOS
 
+#    Name Name (optional) {} {} {}
 define_properties {
-    Name Name (optional) {} {} {}
     Adc A<sub>DC</sub> dB 0 1000 1
     PSRR PSRR dB 0 1000 1
     Vos V<sub>OS</sub> V 0 1 0.001
@@ -13,6 +13,11 @@ define_properties {
     fc f<sub>corner</sub> Hz 0 1e9 1
     Area Area (&#956\;m)<sup>2</sup> 0 1e9 1
     Power Power W 0 1000 1
+}
+define_sizers {
+    L n 40e-9 10e6 m
+    W n 40e-9 10e6 m
+    iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies($name,schematic) {
