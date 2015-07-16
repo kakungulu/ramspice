@@ -1058,6 +1058,7 @@ proc .compile_circuit {args} {
     *c "int sweep_size=p->content->num_of;"
     *c "for (i=0;i<sweep_size;i++) \{"
     *c "more_to_breed++;"
+    *c "float max_Adc=0;"
     if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
     set j 0
     @ size foreach_child s {
@@ -1087,6 +1088,7 @@ proc .compile_circuit {args} {
     *c "@0:V=0;"
     *c ""
     *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
+    *c "if (@property:Adc>max_Adc) max_Adc=@property:Adc;"
     @ / foreach_child n {
         skip {![@ $n:V ?]}
         skip {[@ param:$n ?]}
