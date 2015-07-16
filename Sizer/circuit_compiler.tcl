@@ -21,10 +21,11 @@ default ::opt(mode) dc
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
-default ::opt(source) Etc/Tech_DB/tsmc040/4d/5:5:3:6/
+default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/4d/5:5:3:6/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
+source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
 
 foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     set toxp [expr $toxe-$dtox]
@@ -180,6 +181,7 @@ proc add_transistor {name d g s b type args} {
 }
 default ::opt(iref) 50e-6
 source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
+@ param/unique = 0
 .compile_circuit
 # Prepare some defaults in the skeleton db file
 set pareto_properties {}
@@ -206,12 +208,15 @@ foreach {p unit formula step_factor} {
     Adc    dB 20*log10(abs(@)) 1e-16
     CMRR    dB 20*log10(abs(@)) 1e-13
     PSRR    dB 20*log10(abs(@)) -1e-11
-    Zout    Ohm @ -1e-19
+    Rout    Ohm @ -1e-19
     BW    Hz @ 7e-23
     ts    sec @ -1e-6
     Nt    V^2/Hz @ -1e-9
     Nf    V^2/Hz @ -1e-14
     fc     Hz @ -1e-17
+    Vos   V @ -1e-6
+    Area m^2 -1e-12
+    Power W -1e-7
 } {
     @ /property/$p = 0
     @ /property/$p/unit = string $unit

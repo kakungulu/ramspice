@@ -470,7 +470,7 @@ proc .compile_circuit {args} {
             .property PSRR -expression derive($::output_net,$opt(vdd)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         }
     }
-    foreach p {Adc CMRR PSRR Zout BW ts Nt Nf fc Area Power} {
+    foreach p {Adc CMRR PSRR Rout BW ts Nt Nf fc Vos Area Power} {
         @ property/$p = 0
     }
     regsub {:V} $::output_net {} output_expr
@@ -549,8 +549,8 @@ proc .compile_circuit {args} {
     }	
     @ 0:V = 0
     .prep_mna zout
-    set expression(Zout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
-    *c "@property:Zout=($expression(Zout))*@Ted;"
+    set expression(Rout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
+    *c "@property:Rout=($expression(Rout))*@Ted;"
     .prep_mna ac
     set expression(Det_ac) [DET ::MNA]
     set expression(dDet_ac) [derive_expression @s $expression(Det_ac)]
@@ -740,27 +740,27 @@ proc .compile_circuit {args} {
     }
     @ 0:V = 0
     .prep_mna zout
-    set expression(Zout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
-    *c "@property:Zout=($expression(Zout))*@Ted;"
+    set expression(Rout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
+    *c "@property:Rout=($expression(Rout))*@Ted;"
     foreach transistor $::all_transistors {
         foreach admittance {gm go} {
-            set dpoly(Zout,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression(Zout)]
-            *c "@property:Zout:${transistor}:${admittance}=@Ted_${transistor}_${admittance}*@Zout+$dpoly(Zout,$transistor,$admittance);"
+            set dpoly(Rout,$transistor,$admittance) [derive_expression @$transistor:$admittance $expression(Rout)]
+            *c "@property:Rout:${transistor}:${admittance}=@Ted_${transistor}_${admittance}*@Rout+$dpoly(Rout,$transistor,$admittance);"
         }
     }
     @ size foreach_child c {
         set chain {}
         foreach influence [array names ::DEF *:*:size:$c] {
             lassign [split $influence :] transistor admittance
-            lappend chain "@$transistor:$admittance:size:$c*@property:Zout:${transistor}:${admittance}"
+            lappend chain "@$transistor:$admittance:size:$c*@property:Rout:${transistor}:${admittance}"
         }
         set chain [join $chain +]
         if {$chain=={}} {
-            *c "@property:Zout:${c}=0;"
+            *c "@property:Rout:${c}=0;"
         } else {
-            *c "@property:Zout:${c}=$chain;"
+            *c "@property:Rout:${c}=$chain;"
         }
-        if {$::debug_mode} {*c "printf(\"dZout/d${c}=%g\\n\",@property:Zout:${c});"}
+        if {$::debug_mode} {*c "printf(\"dRout/d${c}=%g\\n\",@property:Rout:${c});"}
     }
     .prep_mna ac
     set expression(Det_ac) [DET ::MNA]
@@ -891,6 +891,13 @@ proc .compile_circuit {args} {
     *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
     *c "while (p->content->num_of<@pat_size_target) \{"
     @ size foreach_child s {
+        skip {![regexp {^L(.*)$} $s -> x]}
+        *c "@size:$s=@size:$s:min+random()*(@size:$s:max-@size:$s:min)/RAND_MAX;"
+        *c "@size:W$x=@size:$s+random()*(@size:W$x:max-@size:$s)/RAND_MAX;"
+    }	
+    @ size foreach_child s {
+        skip {[regexp {^L(.*)$} $s -> x]}
+        skip {[regexp {^W(.*)$} $s -> x]}
         *c "@size:$s=@size:$s:min+random()*(@size:$s:max-@size:$s:min)/RAND_MAX;"
     }	
     @ / foreach_child n {
@@ -933,19 +940,17 @@ proc .compile_circuit {args} {
         *c "add_entry_vector_float(sizes,@$n:V);"
     }
     *c "vector_float *properties=new_vector_float();"
-    @ property foreach_child p {
-        *c "add_entry_vector_float(properties,@property:$p);"
-    }	
     set chain {}
     @ size foreach_child w {
         skip {![regexp {^W} $w]}
         regsub {^W} $w L l
-        lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
+        lappend chain "@size:$w*(@size:$l+@param:area_spacing)"
     }
     *c "@property:Area=[join $chain +];"	
     *c "@property:Power=@size:iref*@vdd:V;"
-    *c "add_entry_vector_float(properties,@property:Area);"
-    *c "add_entry_vector_float(properties,@property:Power);"
+    @ property foreach_child p {
+        *c "add_entry_vector_float(properties,@property:$p);"
+    }	
     *c "add_pat_entry(p,sizes,properties);"
     *c "free(sizes);"
     *c "free(properties);"
@@ -1021,9 +1026,6 @@ proc .compile_circuit {args} {
                 *c "add_entry_vector_float(sizes,@$n:V);"
             }
             *c "vector_float *properties=new_vector_float();"
-            @ property foreach_child p {
-                *c "add_entry_vector_float(properties,@property:$p);"
-            }	
             set chain {}
             @ size foreach_child w {
                 skip {![regexp {^W} $w]}
@@ -1032,8 +1034,9 @@ proc .compile_circuit {args} {
             }
             *c "@property:Area=[join $chain +];"	
             *c "@property:Power=@size:iref*@vdd:V;"
-            *c "add_entry_vector_float(properties,@property:Area);"
-            *c "add_entry_vector_float(properties,@property:Power);"
+            @ property foreach_child p {
+                *c "add_entry_vector_float(properties,@property:$p);"
+            }	
             *c "add_pat_entry(p,sizes,properties);"
             *c "free(sizes);"
             *c "free(properties);"
@@ -1043,7 +1046,13 @@ proc .compile_circuit {args} {
         *c "@size:$s=@size:$s+@size:$s:step;"
         
     }
-    *c "if (p->content->num_of%100==0) {printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target); fflush(stdout);}"
+    *c "if (p->content->num_of%100==0) \{"
+    *c "    printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target);"
+    *c "    fflush(stdout);"
+    *c "    if (@param:unique>0) \{"
+    *c "        pat_unique(p,@param:unique);"
+    *c "\}"
+    *c "\}"
     *c "\}"
     *c "printf(\"   Done %ld/%g=%g%% (%ld visited)\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target,more_to_breed);"
     *c "\}"
@@ -1054,11 +1063,12 @@ proc .compile_circuit {args} {
     *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
     *c "int more_to_breed=0;"
     *c "long int r;"
-    *c "while (p->content->num_of<@pat_size_target) \{"
+    *c "float step;"
+    *c "float max_Adc=0;"
+    *c "while (1) \{"
     *c "int sweep_size=p->content->num_of;"
     *c "for (i=0;i<sweep_size;i++) \{"
     *c "more_to_breed++;"
-    *c "float max_Adc=0;"
     if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
     set j 0
     @ size foreach_child s {
@@ -1067,7 +1077,7 @@ proc .compile_circuit {args} {
     }
     @ size foreach_child s {
         *c "while (1) \{"
-        *c "float step=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
+        *c "step=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
         *c "if (@size:$s+step<@size:$s:min) continue;"
         *c "if (@size:$s+step>@size:$s:max) continue;"
         *c "break;"
@@ -1088,7 +1098,6 @@ proc .compile_circuit {args} {
     *c "@0:V=0;"
     *c ""
     *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
-    *c "if (@property:Adc>max_Adc) max_Adc=@property:Adc;"
     @ / foreach_child n {
         skip {![@ $n:V ?]}
         skip {[@ param:$n ?]}
@@ -1117,9 +1126,6 @@ proc .compile_circuit {args} {
         *c "add_entry_vector_float(sizes,@$n:V);"
     }
     *c "vector_float *properties=new_vector_float();"
-    @ property foreach_child p {
-        *c "add_entry_vector_float(properties,@property:$p);"
-    }	
     set chain {}
     @ size foreach_child w {
         skip {![regexp {^W} $w]}
@@ -1128,12 +1134,24 @@ proc .compile_circuit {args} {
     }
     *c "@property:Area=[join $chain +];"	
     *c "@property:Power=@size:iref*@vdd:V;"
-    *c "add_entry_vector_float(properties,@property:Area);"
-    *c "add_entry_vector_float(properties,@property:Power);"
+    @ property foreach_child p {
+        *c "add_entry_vector_float(properties,@property:$p);"
+    }	
+    *c "if (@property:Adc>max_Adc) max_Adc=@property:Adc;"
     *c "add_pat_entry(p,sizes,properties);"
     *c "free(sizes);"
     *c "free(properties);"
-    *c "if (p->content->num_of%1000==0) {printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target); fflush(stdout);}"
+    *c "if (p->content->num_of%1000==0) \{"
+    *c "    printf(\"               %ld/%g=%g%% max gain=%g\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target,max_Adc);"
+    *c "    printf(\"               %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target);"
+    *c "    fflush(stdout);"
+    *c "    if (@param:unique>0) \{"
+    *c "        pat_unique(p,@param:unique);"
+    *c "    printf(\"               post unique: %ld/%g=%g%%\\n\",p->content->num_of,@pat_size_target,100*p->content->num_of/@pat_size_target);"
+    *c "    if (p->content->num_of>0.92*@pat_size_target) break;"
+    *c "\}"
+    *c "\}"
+    *c "    if (max_Adc>20) break;"
     *c "\}"
     *c "\}"
     gcc $opt(name)
