@@ -179,7 +179,7 @@ tcl_monte_carlo_${bsim_version} (ClientData clientData,Tcl_Interp *interp,int ar
      	        char value[256];
                 #Foreach: field [set ::bsim${bsim_version}_structure_fields] {
 		    sprintf(value,"%e",found_inst->BSIM${bsim_version}$field);
-		    if (Tcl_SetVar(interp,"BSIM_$field",value,TCL_GLOBAL_ONLY)==TCL_ERROR) {
+		    if (Tcl_SetVar(interp,"BSIM_$field",value,TCL_GLOBAL_ONLY)==NULL) {
 			return TCL_ERROR;
 		    }
 	        }
@@ -307,7 +307,7 @@ tcl_monte_carlo_${bsim_version} (ClientData clientData,Tcl_Interp *interp,int ar
     return TCL_OK;  
 }
 }
-#Foreach: command $::dot_commands {
+#Foreach: command {} {
     //    static int dot_$command(char *line, CKTcircuit *ckt, INPtables *tab, card *current,TSKtask *task, CKTnode *gnode, JOB *foo);
     static int
     tcl_dot_$command (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
@@ -541,7 +541,7 @@ int register_tcl_input_functions(Tcl_Interp *interp) {
     }
     Tcl_CreateCommand(interp, "add_instance", tcl_fe_add_instance, NULL, NULL);
     Tcl_CreateCommand(interp, "sweep", tcl_sweep, NULL, NULL);
-    #Foreach: command $::dot_commands {
+    #Foreach: command {} {
         Tcl_CreateCommand(interp, "dot_$command", tcl_dot_$command, NULL, NULL);
     }
 }

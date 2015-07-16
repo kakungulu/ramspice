@@ -87,10 +87,13 @@ typedef union {
 
 
 
+
+#endif
+#ifndef GLOBAL_GEN_VARS
+#define GLOBAL_GEN_VARS
 #Foreach: var $::global_c_variables {
     extern float $var;
 }
-
 #endif
 
 
