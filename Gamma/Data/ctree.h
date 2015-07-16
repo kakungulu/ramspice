@@ -178,6 +178,7 @@ struct POLY {
 PAT *new_PAT();
 PAT *get_PAT(char *i_context);
 POLY *get_POLY(char *i_context);
+void pat_unique(PAT *p,float f);
 void write_pointer_PAT(FILE *O,PAT *p);
 PAT *read_pointer_PAT();
 void pat_graph(FILE *O,PAT *p,int x,int y);

@@ -3232,6 +3232,33 @@ void pat_graph(FILE *O,PAT *p,int x,int y) {
     // Undo
     for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
 }
+void pat_unique(PAT *p,float f) {
+    ordinal i,j,k;
+    vector_float *min=new_vector_float();
+    vector_float *max=new_vector_float();
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(min,p->content->content[0]->properties->content[0]);
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(max,p->content->content[0]->properties->content[0]);
+    for (i=0;i<p->content->num_of;i++) for (j=0;j<p->properties->num_of;j++) {
+    	if (p->content->content[i]->properties->content[j]>max->content[j]) max->content[j]=p->content->content[i]->properties->content[j];
+    	if (p->content->content[i]->properties->content[j]<min->content[j]) min->content[j]=p->content->content[i]->properties->content[j];
+    }
+    vector_float *interval=new_vector_float();
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(interval,(max->content[i]-min->content[i])/f);
+    free(min);
+    free(max);
+    for (i=0;i<p->content->num_of;i++) for (j=i;j<p->content->num_of;j++) {
+        int same=1;
+	for (k=0;k<p->properties->num_of;k++) {
+	    if (abs(p->content->content[i]->properties->content[k]-p->content->content[j]->properties->content[k])>interval->content[k]) {
+	        same=0;
+		break;
+	    }
+	    if (same) delete_entry_vector_pointer_PAT_entry(p->content,j--);
+	}
+    }
+    free(interval);
+}
+
 
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -3460,6 +3487,14 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 float value=p->factors->content[i]*p->content->content[j]->properties->content[i];
                 tcl_append_float(interp,value);
             }	
+            return TCL_OK;
+        }
+       if (strcmp(argv[3],"unique")==0) {
+            if (argc!=5) {
+                #Error: "(ctree) The PAT unique sub-command requires a factor"
+                return TCL_ERROR;
+            }
+	    pat_unique(p,atof(argv[4]));
             return TCL_OK;
         }
         if (strcmp(argv[3],"id")==0) {
