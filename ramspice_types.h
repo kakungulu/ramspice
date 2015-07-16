@@ -87,7 +87,6 @@ typedef union {
 
 
 
-#else
 #Foreach: var $::global_c_variables {
     extern float $var;
 }

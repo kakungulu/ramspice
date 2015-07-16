@@ -135,6 +135,7 @@ typedef struct {
     vector_$type *read_vector_$type();
 }
 typedef struct {
+    ordinal id;
     ordinal flags;
     vector_float *sizes;
     vector_float *properties;
@@ -156,6 +157,7 @@ PAT_entry *read_pointer_PAT_entry();
     vector_pointer_$type *read_vector_pointer_$type();
 }
 typedef struct {
+    ordinal id_counter;
     vector_pointer_PAT_entry *content;
     vector_pointer_char *sizes;
     vector_pointer_char *properties;

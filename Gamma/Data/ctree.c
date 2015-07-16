@@ -154,12 +154,14 @@ IFfrontEnd nutmeginfo = {
     }
 }
 void write_pointer_PAT_entry(FILE *O,PAT_entry *p) {
+    write_ordinal(O,p->id);
     write_ordinal(O,p->flags);
     write_vector_float(O,p->sizes);
     write_vector_float(O,p->properties);
 }
 PAT_entry *read_pointer_PAT_entry() {
     PAT_entry *p=(PAT_entry *)malloc(sizeof(PAT_entry));
+    p->id=read_ordinal();
     p->flags=read_ordinal();
     p->sizes=read_vector_float();
     p->properties=read_vector_float();
@@ -171,6 +173,7 @@ void write_pointer_PAT(FILE *O,PAT *p) {
     write_vector_pointer_char(O,p->properties);
     write_vector_float(O,p->margins);
     write_vector_int(O,p->factors);
+    write_ordinal(O,p->id_counter);
 }
 void write_pointer_POLY(FILE *O,POLY *p) {
     write_string(O,p->expression);
@@ -182,6 +185,7 @@ PAT *read_pointer_PAT() {
     p->properties=read_vector_pointer_char();
     p->margins=read_vector_float();
     p->factors=read_vector_int();
+    p->id_counter=read_ordinal();
     return(p);
 }
 void link_POLY(POLY *p) {
@@ -2356,6 +2360,7 @@ PAT *new_PAT() {
     p->properties=new_vector_pointer_char();
     p->margins=new_vector_float();
     p->factors=new_vector_int();
+    p->id_counter=0;
     return(p);
 }
 POLY *new_POLY() {
@@ -3076,6 +3081,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     }
     
     PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
+    pe->id=p->id_counter++;
     pe->flags=0;
     pe->sizes=new_vector_float();
     for (i=0;i<sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes->content[i]);
@@ -3454,6 +3460,14 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
                 float value=p->factors->content[i]*p->content->content[j]->properties->content[i];
                 tcl_append_float(interp,value);
             }	
+            return TCL_OK;
+        }
+        if (strcmp(argv[3],"id")==0) {
+            if (argc!=5) {
+                #Error: "(ctree) The PAT id sub-command requires an index"
+                return TCL_ERROR;
+            }
+	    tcl_append_int(interp,p->content->content[atoi(argv[4])]->id);
             return TCL_OK;
         }
         if (strcmp(argv[3],"graph")==0) {

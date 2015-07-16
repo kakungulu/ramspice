@@ -93,9 +93,16 @@ proc SVG::graph_markers {args} {
 	title {}
 	connect_pattern 2,5
 	connect_width 1
+	script {}
     }
     foreach {param value} $args {
         set opt($param) $value
+    }
+    if {$opt(script)!={}} {
+        puts $::SVG::O "<script type=\"text/javascript\"><!\[CDATA\["
+        puts $::SVG::O $opt(script)
+        puts $::SVG::O "\]\]>"
+        puts $::SVG::O </script>
     }
     if {[llength $opt(markers)]==1} {
         set order {x y}
@@ -216,7 +223,7 @@ proc SVG::graph_markers {args} {
 	set color [lindex $marker 1]
         set x_coord [expr $opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x)]
         set y_coord [expr $opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y)]
-        SVG::circle cx $x_coord cy $y_coord r $radius stroke $color stroke-width 1 fill $color id marker$id
+        SVG::circle cx $x_coord cy $y_coord r $radius stroke $color stroke-width 1 fill $color id marker$id onclick "updateSelectedSpec($id)"
         <text id="thepopup" x="[expr 1.05*$x_coord]" y="[expr 0.95*$y_coord]" font-size="20" fill="$color" visibility="hidden"> [eng $x $opt(x_unit)] [eng $y $opt(y_unit)] 
 	    <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.mouseover" end="marker$id.mouseout"/> 
 	</text>
