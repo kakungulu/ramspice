@@ -1065,16 +1065,13 @@ proc .compile_circuit {args} {
         incr j;
     }
     @ size foreach_child s {
-#        *c "@size:$s+=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
-        *c "r=random();"
-        *c "if (r<RAND_MAX/3) \{"
-        *c "@size:$s-=@size:$s:step;"
+        *c "while (1) \{"
+        *c "float step=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
+        *c "if (@size:$s+step<@size:$s:min) continue;"
+        *c "if (@size:$s+step>@size:$s:max) continue;"
+        *c "break;"
         *c "\}"
-	*c "if (r>RAND_MAX/3) \{"
-        *c "@size:$s+=@size:$s:step;"
-        *c "\}"
-        *c "if (@size:$s<@size:$s:min) continue;"
-        *c "if (@size:$s>@size:$s:max) continue;"
+        *c "@size:$s+=step;"
     }
     @ / foreach_child n {
         skip {![@ $n:V ?]}
