@@ -215,8 +215,8 @@ foreach {p unit formula step_factor} {
     Nf    V^2/Hz @ -1e-14
     fc     Hz @ -1e-17
     Vos   V @ -1e-6
-    Area m^2 -1e-12
-    Power W -1e-7
+    Area m^2 @ -1e-12
+    Power W @ -1e-7
 } {
     @ /property/$p = 0
     @ /property/$p/unit = string $unit
