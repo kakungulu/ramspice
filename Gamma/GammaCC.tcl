@@ -477,6 +477,7 @@ proc .compile_circuit {args} {
     .prep_mna dc
     set dim $::MNA(dim)
     @ op_iterations = $::opt(op_limit)
+    default ::VOS_FORMULA 0
     code_target OP
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
