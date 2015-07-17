@@ -946,6 +946,7 @@ proc .compile_circuit {args} {
         regsub {^W} $w L l
         lappend chain "@size:$w*(@size:$l+@param:area_spacing)"
     }
+    *c "@property:Vos=$::VOS_FORMULA;"
     *c "@property:Area=[join $chain +];"	
     *c "@property:Power=@size:iref*@vdd:V;"
     @ property foreach_child p {
@@ -1032,6 +1033,7 @@ proc .compile_circuit {args} {
                 regsub {^W} $w L l
                 lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
             }
+            *c "@property:Vos=$::VOS_FORMULA;"
             *c "@property:Area=[join $chain +];"	
             *c "@property:Power=@size:iref*@vdd:V;"
             @ property foreach_child p {
@@ -1132,6 +1134,7 @@ proc .compile_circuit {args} {
         regsub {^W} $w L l
         lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
     }
+    *c "@property:Vos=$::VOS_FORMULA;"
     *c "@property:Area=[join $chain +];"	
     *c "@property:Power=@size:iref*@vdd:V;"
     @ property foreach_child p {
