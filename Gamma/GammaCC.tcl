@@ -1069,6 +1069,7 @@ proc .compile_circuit {args} {
     *c "float step;"
     *c "float max_Adc=0;"
     *c "while (1) \{"
+    *c "    if (max_Adc>20) break;"
     *c "int sweep_size=p->content->num_of;"
     *c "for (i=0;i<sweep_size;i++) \{"
     *c "more_to_breed++;"
