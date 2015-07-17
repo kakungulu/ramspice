@@ -63,8 +63,6 @@ set pat_properties {}
     }
     lappend pat_properties $p
 }
-lappend pat_properties -Area
-lappend pat_properties -Power
 @ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
 set i 0
