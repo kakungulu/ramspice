@@ -25,6 +25,7 @@
 #endif
 #include "Gamma/LUT/look_up_table.h"
 #include "Gamma/Data/serialize.h"
+#include "Gamma/Web/heatmap/heatmap.h"
 #ifdef SPICE_COMPILATION
 #include "Gamma/Data/ctree_spice.h"
 #include "spicelib/devices/bsim3v32/bsim3v32def.h"
@@ -4918,6 +4919,30 @@ ordinal merge_hit_leaves(hit_node **hit) {
     retval++;
     return(retval);
 }
+static int tcl_heatmap (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=4) {
+        #Error: "heatmap requires list of coordinates, list of pallete and output file name"
+        return TCL_ERROR;
+    }
+    int ARGC;
+    char **ARGV;
+    Tcl_SplitList(interp,argv[1],&ARGC,&ARGV);
+    if (ARGC%3) {
+        #Error: "heatmap list of coordinates size must divide by 3"
+        return TCL_ERROR;
+    }
+    int count=ARGC/3;
+    float *data=(float *)malloc(sizeof(float)*ARGC);
+    int i;
+    for (i=0;i<ARGC;i++) data[i]=atof(ARGV[i]);
+    free(ARGV);
+    Tcl_SplitList(interp,argv[2],&ARGC,&ARGV);
+    int *pal=(int *)malloc(sizeof(int)*ARGC);
+    create_heatmap(data,count,pal,ARGC,argv[3]);
+    free(data);
+    free(ARGV);
+    return TCL_OK;
+}
 int register_tcl_functions(Tcl_Interp *interp) {
     ctree=new_node(NULL,0);
     Ctree=new_context(NULL,NULL,0);
@@ -4980,6 +5005,7 @@ int register_tcl_functions(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "write_bin", tcl_write_bin, NULL, NULL);
     Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
     Tcl_CreateCommand(interp, "ginfo", gamma_info, NULL, NULL);
+    Tcl_CreateCommand(interp, "heatmap", tcl_heatmap, NULL, NULL);
     OpenFileForReading=NULL;
     OpenFileForWriting=NULL;
     #Foreach: type {Info Warning Error Print Nl Token Dinfo Dwarning Derror Dprint Dtoken Dnl} {

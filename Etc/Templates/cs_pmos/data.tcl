@@ -4,14 +4,14 @@ set input_type PMOS
 define_properties {
     Adc A<sub>DC</sub> dB 0 1000 1
     PSRR PSRR dB 0 1000 1
-    Vos V<sub>OS</sub> V 0 1 0.001
-    Rout R<sub>OUT</sub> &#8486\; 0 1e12 1
+    Vos V<sub>OS</sub> V 0 1 -0.001
+    Rout R<sub>OUT</sub> &#8486\; 0 1e12 -1
     BW BW Hz 0 1e12 1
-    ts t<sub>S</sub> sec 0 1 1e-9
-    Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 1e-17
-    fc f<sub>corner</sub> Hz 0 1e9 1
-    Area Area (&#956\;m)<sup>2</sup> 0 1e9 1
-    Power Power W 0 1000 1
+    ts t<sub>S</sub> sec 0 1 -1e-9
+    Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 -1e-17
+    fc f<sub>corner</sub> Hz 0 1e9 -1
+    Area Area (&#956\;m)<sup>2</sup> 0 1e9 -1
+    Power Power W 0 1000 -1
 }
 define_sizers {
     L p 40e-9 10e6 m

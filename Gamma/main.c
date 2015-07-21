@@ -1,18 +1,9 @@
 #include "ramspice_types.h"
-/* Copyright 1990
-   Regents of the University of California.
-   All rights reserved.
-
-   Author: 1985 Wayne A. Christopher
-
-   The main routine for ngspice
-*/
 #include "Gamma/Data/ctree.h"
 #include "Gamma/LUT/look_up_table.h"
 #include <setjmp.h>
 #include <signal.h>
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     interp=Tcl_CreateInterp();
     Tcl_Init(interp);
@@ -20,9 +11,7 @@ main(int argc, char **argv)
     vector_buffer=(char *)malloc(vector_buffer_allocation);
     if (Tcl_Eval(interp,"if {![info exists ::env(RAMSPICE)]} {set ::env(RAMSPICE) [pwd]}")==TCL_ERROR) {
         Tcl_Eval(interp,"puts $errorInfo");
-    };
-    if (Tcl_Eval(interp,"puts \"RAMSPICE=$::env(RAMSPICE)\"")==TCL_ERROR) {
-        Tcl_Eval(interp,"puts $errorInfo");
+	exit(1);
     };
     Tcl_Eval(interp, "namespace eval " TCLSPICE_namespace " { }");
     /*register functions*/
@@ -30,7 +19,7 @@ main(int argc, char **argv)
     char *key;
     char buf[256];
     Tcl_CmdInfo infoPtr;
-    register_tcl_functions(interp);
+    register_tcl_functions(interp);    
     init_tcl_gamma(interp);
     register_gamma_functions(interp);
     Tcl_Eval(interp,"set ::argv {}");

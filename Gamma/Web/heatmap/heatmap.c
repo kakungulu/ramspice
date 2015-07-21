@@ -1,8 +1,11 @@
+#include "ramspice_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <tcl.h>
 #include "Gamma/Web/bmp/bmp.h"
+#include "Gamma/Web/heatmap/heatmap.h"
 #define HEATMAP_RESOLUTION 512
 #define HEATMAP_Z_RESOLUTION 1000000
 #define HEATMAP_AREA HEATMAP_RESOLUTION*HEATMAP_RESOLUTION
@@ -113,6 +116,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, char *filen
     save_BMP(O,bmp);
     fclose(O);
 }//endof create_heatmap
+
 /*
 // Example for generating bitmap with a pallet
 void main() {

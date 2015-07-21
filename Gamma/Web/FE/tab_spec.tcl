@@ -149,6 +149,17 @@
          // Send the request 
           xhr.send(null); 
         }
+        function DeSelect(circuit) {
+          var url = ""
+	  $::ajax_send_code 
+	  url+="&deselect=" + escape(circuit);
+         // Open a connection to the server 
+          xhr.open ("GET", url, true); 
+          // Setup a function for the server to run when it is done 
+          xhr.onreadystatechange = PopAjaxResponse; 
+         // Send the request 
+          xhr.send(null); 
+        }
       function LaunchJob() { 
           // Build the URL to connect to 
           var url = "?ajax=1&launch=1"
