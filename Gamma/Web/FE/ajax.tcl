@@ -22,6 +22,7 @@ proc SVG::graph_pareto_front {args} {
         connect_width 1
         script {}
 	heatmap 0
+	pallet {}
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -107,13 +108,18 @@ proc SVG::graph_pareto_front {args} {
     if {$opt(heatmap)} {
         <image xlink:href="http://www.engr.colostate.edu/~ystatter/hm$opt(heatmap).bmp" x="$opt(x)" y="$opt(y)" height="$opt(height)" width="$opt(width)" />  
 	set key_index 0
-	foreach key $opt(key) color $::heatmap_pallet {
+	set key [lindex $opt(key) 0]
+	SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
+	    print [eng $key $opt(z_unit)]
+	}   
+	incr key_index
+	foreach key [lrange $opt(key) 1 end] color $::heatmap_pallet {
 	    regsub {0x} $color {#} color
+	    SVG::rect x [expr $opt(x)+$opt(width)] y [expr $opt(y)+85+15*$key_index] width 100 height 12 style "fill:$color"
+	    incr key_index
 	    SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
 	        print [eng $key $opt(z_unit)]
 	    }	
-	    incr key_index
-	    SVG::rect x [expr $opt(x)+$opt(width)] y [expr $opt(y)+85+15*$key_index] width 100 height 12 style "fill:$color"
 	    incr key_index
 	} 
     }	
