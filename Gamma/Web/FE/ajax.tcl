@@ -113,7 +113,7 @@ proc SVG::graph_pareto_front {args} {
 	    print [eng $key $opt(z_unit)]
 	}   
 	incr key_index
-	foreach key [lrange $opt(key) 1 end] color $::heatmap_pallet {
+	foreach key [lrange $opt(key) 1 end] color $opt(pallet) {
 	    regsub {0x} $color {#} color
 	    SVG::rect x [expr $opt(x)+$opt(width)] y [expr $opt(y)+85+15*$key_index] width 100 height 12 style "fill:$color"
 	    incr key_index
@@ -395,9 +395,18 @@ if {[info exists $z=="none"]} {
     if {$z=="none"} {
         ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green connect all x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
     } else {
+        set pallet $::heatmap_pallet
+        if {[info exists ::properties($z,step)]} {
+	    if {$::properties($z,step)<0} {
+	        set pallet {}
+		foreach color $::heatmap_pallet {
+		    set pallet [concat $color $pallet]
+		}
+	    }
+	}
         set hm /top/students/GRAD/ECE/ystatter/home/public_html/hm[pid].bmp
-        set key [heatmap $3d_pixels $::heatmap_pallet $hm]
-        ::SVG::graph_pareto_front heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z_unit $z_unit title $::opt(title)
+        set key [heatmap $3d_pixels $pallet $hm]
+        ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z_unit $z_unit title $::opt(title)
     }
 }
 </td>
