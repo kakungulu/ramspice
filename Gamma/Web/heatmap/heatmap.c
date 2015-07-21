@@ -38,9 +38,9 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
     float x_belt=0.05*(xmax-xmin);
     xmin-=x_belt;
     xmax-=x_belt;
-    float y_belt=0.05*(ymay-ymin);
+    float y_belt=0.05*(ymax-ymin);
     ymin-=y_belt;
-    ymay-=y_belt;
+    ymax-=y_belt;
     
     float z_map[HEATMAP_AREA];
     for (i=0;i<HEATMAP_RESOLUTION;i++){
