@@ -30,17 +30,17 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
         if (zmax<input[i+2]) zmax=input[i+2];
     }
     int input_scaled[count*3];
-    
-    // Scale input
-    for (i=0;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - xmin)/(xmax-xmin))*(HEATMAP_RESOLUTION-1));
-    for (i=1;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - ymin)/(ymax-ymin))*(HEATMAP_RESOLUTION-1));
-    for (i=2;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - zmin)/(zmax-zmin))*(HEATMAP_Z_RESOLUTION-1));
     float x_belt=0.05*(xmax-xmin);
     xmin-=x_belt;
     xmax+=x_belt;
     float y_belt=0.05*(ymax-ymin);
     ymin-=y_belt;
     ymax+=y_belt;
+    
+    // Scale input
+    for (i=0;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - xmin)/(xmax-xmin))*(HEATMAP_RESOLUTION-1));
+    for (i=1;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - ymin)/(ymax-ymin))*(HEATMAP_RESOLUTION-1));
+    for (i=2;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - zmin)/(zmax-zmin))*(HEATMAP_Z_RESOLUTION-1));
     
     float z_map[HEATMAP_AREA];
     for (i=0;i<HEATMAP_RESOLUTION;i++){
