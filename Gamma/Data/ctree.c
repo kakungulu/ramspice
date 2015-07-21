@@ -4938,9 +4938,13 @@ static int tcl_heatmap (ClientData clientData,Tcl_Interp *interp,int argc,char *
     free(ARGV);
     Tcl_SplitList(interp,argv[2],&ARGC,&ARGV);
     int *pal=(int *)malloc(sizeof(int)*ARGC);
-    create_heatmap(data,count,pal,ARGC,argv[3]);
+    float *key=(float *)malloc(sizeof(float)*ARGC);
+    for (i=0;i<ARGC;i++) pal[i]=strtol(ARGV[i],NULL,16);
+    create_heatmap(data,count,pal,ARGC,key,argv[3]);
     free(data);
     free(ARGV);
+    for (i=0;i<ARGC;i++) tcl_append_float(interp,key[i]);
+    free(key);
     return TCL_OK;
 }
 int register_tcl_functions(Tcl_Interp *interp) {

@@ -13,7 +13,7 @@
 #define HEATMAP_BLUR (HEATMAP_RESOLUTION/HEATMAP_BLUR_FACTOR)*(HEATMAP_RESOLUTION/HEATMAP_BLUR_FACTOR)
 #define HEATMAP_TEST 400
 
-void create_heatmap(float *input, int count, int *pal, int pal_size, char *filename) {
+void create_heatmap(float *input, int count, int *pal, int pal_size, float *key, char *filename) {
     float xmin=input[0];
     float xmax=input[0];
     float ymin=input[1];
@@ -86,6 +86,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, char *filen
         }//endof approximations loop
         thresholds[m]=zmid;
          printf("%d %g %d\n",m,zmid*(zmax-zmin)/HEATMAP_Z_RESOLUTION+zmin,thresholdtest-last_thresholdtest);
+	 key[m]=zmid*(zmax-zmin)/HEATMAP_Z_RESOLUTION+zmin;
 	 last_thresholdtest=thresholdtest;
     }
     BMP *bmp=new_BMP(HEATMAP_RESOLUTION,HEATMAP_RESOLUTION);

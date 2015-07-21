@@ -19,6 +19,7 @@ proc SVG::graph_pareto_front {args} {
         connect_pattern 2,5
         connect_width 1
         script {}
+	heatmap 0
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -101,6 +102,9 @@ proc SVG::graph_pareto_front {args} {
     set max_x [SVG::align $x_max]
     set min_y [SVG::align $y_min]
     set max_y [SVG::align $y_max]
+    if {$opt(heatmap)} {
+        <image xlink:href="http://www.engr.colostate.edu/~ystatter/hm$opt(heatmap).bmp" x="$opt(x)" y="$opt(y)" height="$opt(height)" width="$opt(width)" />    
+    }	
     SVG::rect x $opt(x) y $opt(y) width $opt(width) height $opt(height) fill none stroke black stroke-width 3
     set y1_coord [expr $opt(y)+$opt(height)]
     set y2_coord [expr $y1_coord+10]
@@ -324,6 +328,13 @@ foreach index $::circuit_list {
         lappend pixels [lindex $circuit $entry]
     }
 }
+set 3d_pixels {}
+foreach index $::circuit_list {
+    set circuit [@ /$::SESSION(selected_topology)/circuits PAT index $index]
+    foreach entry $entries {
+        lappend 3d_pixels [lindex $circuit $entry]
+    }
+}
 
 set x_unit {}
 if {[info exists ::properties($x,unit)]} {
@@ -359,13 +370,16 @@ if {[info exists $z=="none"]} {
 } else {
     default ::opt(title) "$z \[$z_unit\] vs $y \[$y_unit\] and $x \[$x_unit\]"
 }
+
 <table><tr bgcolor=$::colors(gray)>
 <td rowspan="$rowspan bgcolor=$::colors(gray)" class="tableFormatter" id="MapContainer">
 ::SVG::svg width $outer_frame_size height $outer_frame_size {
-    if {[info exists $z=="none"]} {
+    if {$z=="none"} {
         ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green connect all x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
     } else {
-        ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
+        set hm /top/students/GRAD/ECE/ystatter/home/public_html/hm[pid].bmp
+        heatmap $3d_pixels {0xa50026 0xd73027 0xf46d43 0xfdae61 0xfee090 0xffffbf 0xe0f3f8 0xabd9e9 0x74add1 0x4575b4 0x313695} $hm
+        ::SVG::graph_pareto_front heatmap [pid] x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
     }
 }
 </td>
