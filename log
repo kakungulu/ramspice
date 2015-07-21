@@ -1,6 +1,1383 @@
-#Tue Jul 21 12:42:12 MDT 2015
-/tmp/ramspice_build/object_files-regular/inppas2.o: In function `INPpas2':
-/tmp/ramspice_build/preprocessed-regular/ngspice/root/spicelib/parser/inppas2.c:206: undefined reference to `INP2dot'
-/tmp/ramspice_build/object_files-regular/main.o: In function `main':
-/tmp/ramspice_build/preprocessed-regular/ngspice/main.c:792: undefined reference to `register_tcl_input_functions'
-collect2: ld returned 1 exit status
+#Tue Jul 21 13:56:42 MDT 2015
+In file included from /tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1:
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:37: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:44: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:86: warning: redundant redeclaration of ‘Captured_Thermal_Noise’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:26: note: previous declaration of ‘Captured_Thermal_Noise’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:87: warning: redundant redeclaration of ‘Captured_Ssi’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:27: note: previous declaration of ‘Captured_Ssi’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:88: warning: redundant redeclaration of ‘Captured_EffFreq’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:28: note: previous declaration of ‘Captured_EffFreq’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:89: warning: redundant redeclaration of ‘Captured_Quick_Noise’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:29: note: previous declaration of ‘Captured_Quick_Noise’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:90: warning: redundant redeclaration of ‘Captured_Cgs’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:30: note: previous declaration of ‘Captured_Cgs’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:91: warning: redundant redeclaration of ‘Captured_Cgd’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:31: note: previous declaration of ‘Captured_Cgd’ was here
+In file included from /tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4:
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:120: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:125: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:131: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:136: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:142: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:147: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:153: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:158: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:166: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:172: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:177: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:183: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:188: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:208: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:213: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:215: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:222: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:249: warning: redundant redeclaration of ‘get_PAT’
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:209: note: previous declaration of ‘get_PAT’ was here
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:251: warning: redundant redeclaration of ‘get_POLY’
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:210: note: previous declaration of ‘get_POLY’ was here
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:253: warning: function declaration isn’t a prototype
+In file included from /tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:19:
+/tmp/ramspice_build/preprocessed-regular/ngspice/root/spicelib/devices/bsim3v32/bsim3v32def.h:543: warning: useless storage class specifier in empty declaration
+In file included from /tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:20:
+/tmp/ramspice_build/preprocessed-regular/ngspice/root/spicelib/devices/bsim4v5/bsim4v5def.h:973: warning: useless storage class specifier in empty declaration
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:21: warning: redundant redeclaration of ‘ft_curckt’
+/tmp/ramspice_build/preprocessed-regular/ngspice/fteext.h:28: note: previous declaration of ‘ft_curckt’ was here
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_list_insts’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:23: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_bsim_3v32’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:150: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:154: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:158: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:162: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:166: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:170: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:174: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:178: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:182: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:186: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:190: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:194: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:198: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:202: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:206: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:210: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:214: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:218: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:222: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:226: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:230: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:234: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:238: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:242: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:246: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:250: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:254: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:258: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:262: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:266: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:270: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:274: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:278: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:282: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:286: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:290: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:294: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:298: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:302: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:306: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:310: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:314: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:318: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:322: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:326: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:330: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:334: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:338: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:342: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:346: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:350: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:354: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:358: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:362: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:366: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:370: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:374: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:378: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:382: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:386: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:390: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:394: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:398: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:402: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:406: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:410: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:414: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:418: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:422: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:426: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:430: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:434: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:439: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:443: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:447: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:451: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:455: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:459: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:463: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:467: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:471: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:475: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:479: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:483: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:487: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:491: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:495: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:499: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:503: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:507: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:511: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:515: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:519: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:523: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:527: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:531: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:535: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:539: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:543: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:547: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:551: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:555: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:559: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:563: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:567: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:571: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:575: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:579: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:583: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:587: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:591: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:595: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:599: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:603: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:607: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:611: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:615: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:619: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:623: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:627: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:631: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:635: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:639: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:643: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:647: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:651: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:655: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:659: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:663: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:667: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:671: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:675: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:679: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:683: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:687: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:691: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:695: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:699: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:703: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:707: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:711: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:715: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:719: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:723: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:727: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:731: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:735: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:739: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:743: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:747: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:751: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:755: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:759: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:763: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:767: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:771: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:775: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:779: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:783: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:787: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:791: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:795: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:799: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:803: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:807: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:811: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:815: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:819: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:823: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:827: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:831: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:835: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:839: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:843: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:847: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:851: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:855: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:859: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:863: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:867: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:871: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:875: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:879: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:883: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:887: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:891: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:895: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:899: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:903: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:907: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:911: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:915: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:919: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:923: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:927: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:931: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:935: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:939: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:943: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:947: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:951: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:955: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:959: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:963: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:967: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:971: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:975: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:979: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:983: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:987: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:991: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:995: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:999: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1003: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1007: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1011: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1015: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1019: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1023: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1027: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1031: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1035: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1039: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1043: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1047: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1051: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1055: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1059: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1063: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1067: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1071: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1075: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1079: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1083: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1087: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1091: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1095: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1099: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1103: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1107: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1111: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1115: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1119: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1123: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1127: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1131: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1135: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1139: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1143: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1147: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1151: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1155: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1159: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1163: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1167: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1171: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1175: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1179: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1183: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1187: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1191: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1195: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1199: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1203: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1207: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1211: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1215: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1219: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1223: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1227: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1231: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1235: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1239: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1243: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1247: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1251: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1255: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1259: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1263: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1267: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1271: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1275: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1279: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1283: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1287: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1291: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1295: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1299: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1303: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1307: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1311: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1315: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1319: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1323: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1327: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1331: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1335: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1339: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1343: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1347: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1351: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1355: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1359: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1363: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1367: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1371: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1375: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1379: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1383: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1387: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1391: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1395: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1399: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1403: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1407: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1411: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1415: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1419: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1423: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1427: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1431: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1435: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1439: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1443: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1447: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1451: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1455: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1459: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1463: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1467: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1471: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1475: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1479: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1483: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1487: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1491: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1495: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1499: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1503: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1507: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1511: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1515: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1519: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1523: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1527: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1531: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1535: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1539: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1543: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1547: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1551: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1555: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1559: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1563: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1567: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1571: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1575: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1579: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1583: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1587: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1591: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1595: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1599: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1603: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1607: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1611: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1615: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1619: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1623: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1627: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1631: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1635: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1639: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1643: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1647: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1651: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1655: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1659: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1663: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1667: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1671: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1675: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1679: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1683: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1687: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1691: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1695: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1699: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1703: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1707: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1711: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1715: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1719: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1723: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1727: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1731: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1735: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1739: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1743: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1747: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1751: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1755: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1759: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1763: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1767: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1771: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1775: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1779: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1783: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1787: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1791: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1795: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1799: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1803: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1807: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1811: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1815: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1819: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1823: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1827: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1831: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1835: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1839: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1844: warning: conversion to ‘float’ from ‘long int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:43: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_bsim_4v5’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2067: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2071: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2075: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2079: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2083: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2087: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2091: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2095: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2099: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2103: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2107: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2111: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2115: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2119: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2123: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2127: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2131: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2135: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2139: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2143: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2147: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2151: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2155: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2159: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2163: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2167: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2171: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2175: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2179: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2183: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2187: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2191: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2195: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2199: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2203: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2207: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2211: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2215: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2219: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2223: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2227: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2231: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2235: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2239: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2243: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2247: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2251: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2255: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2259: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2263: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2267: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2271: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2275: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2279: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2283: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2287: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2291: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2295: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2299: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2303: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2307: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2311: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2315: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2319: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2323: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2327: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2331: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2335: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2339: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2343: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2347: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2351: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2355: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2359: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2363: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2367: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2371: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2375: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2379: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2383: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2387: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2391: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2395: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2399: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2403: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2407: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2411: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2415: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2419: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2423: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2427: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2431: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2435: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2439: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2443: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2447: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2451: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2455: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2459: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2463: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2467: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2471: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2475: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2479: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2483: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2487: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2491: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2495: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2499: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2503: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2507: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2511: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2515: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2519: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2523: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2527: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2531: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2535: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2539: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2543: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2547: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2551: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2555: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2559: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2563: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2567: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2571: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2575: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2579: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2583: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2587: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2591: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2595: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2599: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2603: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2607: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2611: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2615: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2619: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2623: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2627: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2631: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2635: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2639: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2643: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2647: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2651: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2655: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2659: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2663: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2667: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2671: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2675: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2679: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2683: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2687: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2691: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2695: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2699: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2703: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2707: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2711: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2715: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2719: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2723: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2727: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2731: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2735: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2739: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2743: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2747: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2751: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2755: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2759: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2763: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2767: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2771: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2775: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2779: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2783: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2787: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2791: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2795: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2800: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2804: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2808: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2812: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2816: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2820: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2824: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2828: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2832: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2836: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2840: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2844: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2848: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2852: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2856: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2860: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2864: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2868: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2872: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2876: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2880: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2884: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2888: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2892: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2896: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2900: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2904: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2908: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2912: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2916: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2920: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2924: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2928: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2932: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2936: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2940: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2944: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2948: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2952: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2956: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2960: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2964: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2968: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2972: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2976: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2980: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2984: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2988: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2992: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:2996: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3000: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3004: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3008: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3012: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3016: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3020: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3024: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3028: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3032: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3036: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3040: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3044: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3048: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3052: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3056: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3060: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3064: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3068: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3072: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3076: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3080: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3084: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3088: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3092: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3096: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3100: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3104: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3108: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3112: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3116: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3120: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3124: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3128: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3132: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3136: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3140: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3144: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3148: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3152: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3156: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3160: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3164: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3168: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3172: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3176: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3180: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3184: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3188: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3192: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3196: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3200: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3204: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3208: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3212: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3216: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3220: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3224: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3228: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3232: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3236: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3240: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3244: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3248: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3252: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3256: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3260: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3264: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3268: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3272: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3276: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3280: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3284: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3288: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3292: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3296: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3300: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3304: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3308: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3312: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3316: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3320: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3324: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3328: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3332: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3336: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3340: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3344: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3348: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3352: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3356: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3360: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3364: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3368: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3372: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3376: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3380: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3384: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3388: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3392: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3396: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3400: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3404: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3408: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3412: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3416: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3420: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3424: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3428: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3432: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3436: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3440: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3444: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3448: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3452: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3456: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3460: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3464: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3468: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3472: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3476: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3480: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3484: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3488: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3492: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3496: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3500: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3504: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3508: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3512: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3516: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3520: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3524: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3528: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3532: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3536: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3540: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3544: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3548: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3552: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3556: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3560: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3564: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3568: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3572: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3576: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3580: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3584: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3588: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3592: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3596: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3600: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3604: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3608: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3612: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3616: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3620: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3624: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3628: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3632: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3636: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3640: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3644: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3648: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3652: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3656: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3660: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3664: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3668: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3672: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3676: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3680: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3684: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3688: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3692: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3696: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3700: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3704: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3708: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3712: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3716: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3720: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3724: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3728: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3732: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3736: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3740: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3744: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3748: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3752: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3756: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3760: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3764: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3768: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3772: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3776: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3780: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3784: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3788: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3792: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3796: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3800: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3804: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3808: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3812: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3816: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3820: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3824: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3828: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3832: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3836: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3840: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3844: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3848: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3852: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3856: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3860: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3864: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3868: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3872: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3876: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3880: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3884: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3888: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3892: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3896: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3900: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3904: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3908: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3912: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3916: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3920: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3924: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3928: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3932: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3936: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3940: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3944: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3948: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3952: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3956: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3960: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3964: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3968: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3972: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3976: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3980: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3984: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3988: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3992: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:3996: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4000: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4004: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4008: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4012: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4016: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4020: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4024: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4028: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4032: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4036: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4040: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4044: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4048: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4052: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4056: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4060: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4064: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4068: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4072: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4076: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4080: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4084: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4088: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4092: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4096: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4100: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4104: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4108: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4112: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4116: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4120: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4124: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4128: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4132: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4136: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4140: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4144: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4148: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4152: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4156: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4160: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4164: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4168: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4172: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4176: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4180: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4184: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4188: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4192: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4196: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4200: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4204: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4208: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4212: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4216: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4220: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4224: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4228: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4232: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4236: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4240: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4244: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4248: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4252: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4256: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4260: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4264: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4268: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4272: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4276: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4280: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4284: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4288: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4292: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4296: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4300: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4304: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4308: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4312: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4316: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4320: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4324: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4328: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4332: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4336: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4340: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4344: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4348: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4352: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4356: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4360: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4364: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4368: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4372: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4376: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4380: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4384: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4388: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4392: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4396: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4400: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4404: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4408: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4412: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4416: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4420: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4424: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4428: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4432: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4436: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4440: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4444: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4448: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4452: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4456: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4460: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4464: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4468: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4472: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4476: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4480: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4484: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4488: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4492: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4496: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4500: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4504: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4508: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4512: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4516: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4520: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4524: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4528: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4532: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4536: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4540: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4544: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4548: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4552: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4556: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4560: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4564: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4568: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4572: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4576: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4580: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4584: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4588: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4592: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4596: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4600: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4604: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4608: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4612: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4616: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4620: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4624: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4628: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4632: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4636: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4640: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4644: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4648: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4652: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4656: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4660: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4664: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4668: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4672: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4676: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4680: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4684: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4688: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4692: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4696: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4700: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4704: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4708: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4712: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4716: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4720: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4724: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4728: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4732: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4736: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4740: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4744: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4748: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4752: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4756: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4760: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4764: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4768: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4772: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4776: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4780: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4784: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4788: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4792: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4796: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4800: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4804: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4808: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4812: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4816: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4820: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4824: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4828: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4832: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4836: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4840: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4844: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4848: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4852: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4856: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4860: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4864: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4868: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4872: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4876: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4880: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4884: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4888: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4892: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4896: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4900: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4904: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4908: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4912: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4916: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4920: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4924: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4928: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4932: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4936: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4940: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4944: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4948: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4952: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4956: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4960: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4964: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4968: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4972: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4976: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4980: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4984: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4988: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4992: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:4996: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5000: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5004: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5008: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5012: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5016: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5020: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5024: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5028: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5032: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5036: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5040: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5044: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5048: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5052: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5056: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5060: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5064: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5068: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5072: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5076: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5080: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5084: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5088: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5092: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5096: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5100: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5104: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5108: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5112: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5117: warning: conversion to ‘float’ from ‘long int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:1849: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: At top level:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5121: warning: no previous prototype for ‘get_rand_distribution_uniform’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5126: warning: no previous prototype for ‘get_rand_distribution_gauss’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_monte_carlo_3v32’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5147: warning: conversion to ‘ordinal’ from ‘long int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5150: warning: implicit declaration of function ‘resolve_context’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5150: warning: nested extern declaration of ‘resolve_context’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5179: warning: passing argument 1 of ‘get_bsim3v32_inner_calc’ from incompatible pointer type
+/tmp/ramspice_build/preprocessed-regular/ngspice/root/spicelib/devices/bsim3v32/bsim3v32def.h:545: note: expected ‘struct BSIM3v32instance *’ but argument is of type ‘struct GENinstance *’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5186: warning: conversion to ‘long unsigned int’ from ‘ordinal’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:16906: warning: passing argument 4 of ‘Tcl_SplitList’ from incompatible pointer type
+/usr/include/tclDecls.h:1516: note: expected ‘const char ***’ but argument is of type ‘char ***’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:16914: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:16915: warning: conversion to ‘long unsigned int’ from ‘ordinal’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:16915: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17391: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17392: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:16917: warning: unused variable ‘target_index’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5158: warning: unused variable ‘found_model’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:5133: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_monte_carlo_4v5’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17413: warning: conversion to ‘ordinal’ from ‘long int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17445: warning: passing argument 1 of ‘get_bsim4v5_inner_calc’ from incompatible pointer type
+/tmp/ramspice_build/preprocessed-regular/ngspice/root/spicelib/devices/bsim4v5/bsim4v5def.h:975: note: expected ‘struct BSIM4v5instance *’ but argument is of type ‘struct GENinstance *’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17452: warning: conversion to ‘long unsigned int’ from ‘ordinal’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:39897: warning: passing argument 4 of ‘Tcl_SplitList’ from incompatible pointer type
+/usr/include/tclDecls.h:1516: note: expected ‘const char ***’ but argument is of type ‘char ***’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:39905: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:39906: warning: conversion to ‘long unsigned int’ from ‘ordinal’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:39906: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40721: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40722: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:39908: warning: unused variable ‘target_index’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17424: warning: unused variable ‘found_model’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:17399: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_fe_add_instance’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40737: warning: conversion to ‘size_t’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40737: warning: conversion to ‘int’ from ‘size_t’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40739: warning: conversion to ‘char’ from ‘int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40762: warning: passing argument 3 of ‘INPpName’ from incompatible pointer type
+/tmp/ramspice_build/preprocessed-regular/ngspice/inpdefs.h:106: note: expected ‘struct CKTcircuit *’ but argument is of type ‘struct circ *’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40767: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40729: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘tcl_sweep’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40815: warning: passing argument 4 of ‘Tcl_SplitList’ from incompatible pointer type
+/usr/include/tclDecls.h:1516: note: expected ‘const char ***’ but argument is of type ‘char ***’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40821: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40822: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40823: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40855: warning: statement with no effect
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40858: warning: unused variable ‘ptemp’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40831: warning: unused variable ‘tab’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40880: warning: passing argument 4 of ‘Tcl_SplitList’ from incompatible pointer type
+/usr/include/tclDecls.h:1516: note: expected ‘const char ***’ but argument is of type ‘char ***’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40902: warning: conversion to ‘long unsigned int’ from ‘int’ may change the sign of the result
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40924: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40805: warning: unused parameter ‘clientData’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: In function ‘register_tcl_input_functions’:
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40929: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40930: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40931: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40932: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40933: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40934: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40935: warning: passing argument 3 of ‘Tcl_CreateCommand’ from incompatible pointer type
+/usr/include/tclDecls.h:584: note: expected ‘int (*)(void *, struct Tcl_Interp *, int,  const char **)’ but argument is of type ‘int (*)(void *, struct Tcl_Interp *, int,  char **)’
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c:40936: warning: control reaches end of non-void function
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.c: At top level:
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:276: warning: ‘get_circuits’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:277: warning: ‘get_ckt_tree’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:278: warning: ‘get_ckt_lines’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:279: warning: ‘set_ckt_lines’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:280: warning: ‘get_ckt_devices’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:281: warning: ‘get_spice_data’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:282: warning: ‘get_vectors’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:283: warning: ‘get_var’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:284: warning: ‘set_var’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:285: warning: ‘tcl_fork’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:286: warning: ‘array_set’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:287: warning: ‘array_get’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:288: warning: ‘array_list’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:289: warning: ‘array_data’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:290: warning: ‘array_set_legend’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:291: warning: ‘array_get_legend’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:292: warning: ‘array_get_dim’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:293: warning: ‘array_get_size’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:294: warning: ‘array_linearize’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:295: warning: ‘alter_param’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:296: warning: ‘network_mode’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:297: warning: ‘network_update’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:298: warning: ‘tcl_add_network_node’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:299: warning: ‘send_task_to_node’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:300: warning: ‘tcl_send_task_to_base’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:301: warning: ‘tcl_ctree’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:302: warning: ‘eval_task_from_node’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:303: warning: ‘node_release’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:304: warning: ‘network_task_done’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:305: warning: ‘set_param’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:306: warning: ‘get_Ids’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:307: warning: ‘LUT2hit’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:308: warning: ‘tcl_enable_hit’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:309: warning: ‘tcl_list_hit’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:332: warning: ‘send_task_to_base’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:335: warning: ‘set_base_ip’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:337: warning: ‘init_ip’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:338: warning: ‘network_wait_loop’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:339: warning: ‘add_network_node’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:340: warning: ‘tcp_send’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/Gamma/Data/ctree.h:341: warning: ‘tcp_send_no_fork’ declared ‘static’ but never defined
+/tmp/ramspice_build/preprocessed-regular/ngspice/MC/tcl_input.h:4: warning: ‘tcl_alter_model’ declared ‘static’ but never defined
+gcc: Internal error: Killed (program cc1)
+Please submit a full bug report.
+See <http://bugzilla.redhat.com/bugzilla> for instructions.
+In file included from /tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:1:
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:37: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:44: warning: function declaration isn’t a prototype
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:86: warning: redundant redeclaration of ‘Captured_Thermal_Noise’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:26: note: previous declaration of ‘Captured_Thermal_Noise’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:87: warning: redundant redeclaration of ‘Captured_Ssi’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:27: note: previous declaration of ‘Captured_Ssi’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:88: warning: redundant redeclaration of ‘Captured_EffFreq’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:28: note: previous declaration of ‘Captured_EffFreq’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:89: warning: redundant redeclaration of ‘Captured_Quick_Noise’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:29: note: previous declaration of ‘Captured_Quick_Noise’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:90: warning: redundant redeclaration of ‘Captured_Cgs’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:30: note: previous declaration of ‘Captured_Cgs’ was here
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:91: warning: redundant redeclaration of ‘Captured_Cgd’
+/tmp/ramspice_build/preprocessed-regular/ramspice_types.h:31: note: previous declaration of ‘Captured_Cgd’ was here
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c: In function ‘create_heatmap’:
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:45: warning: conversion to ‘float’ from ‘double’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:47: warning: conversion to ‘float’ from ‘int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:53: warning: conversion to ‘float’ from ‘int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:85: warning: conversion to ‘float’ from ‘int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:86: warning: conversion to ‘float’ from ‘int’ may alter its value
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:108: warning: implicit declaration of function ‘set_BMP_pixel_html’
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:108: warning: nested extern declaration of ‘set_BMP_pixel_html’
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c:54: warning: unused variable ‘approximations’
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.c: At top level:
+/tmp/ramspice_build/preprocessed-regular/Gamma/Web/heatmap/heatmap.h:4: warning: ‘tcl_heatmap’ declared ‘static’ but never defined

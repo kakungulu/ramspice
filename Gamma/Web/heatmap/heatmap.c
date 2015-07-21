@@ -61,7 +61,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
     int thresholds[pal_size];
     thresholds[0] = 0;
     thresholds[pal_size] = HEATMAP_RESOLUTION-1;
-    
+    key[0]=zmin;
     for (m=1;m<=pal_size;m++){
         int zlow = 0; //taken from given points initially
         int zhigh = HEATMAP_Z_RESOLUTION-1; //taken from given points initially
@@ -89,6 +89,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
 	 key[m]=zmid*(zmax-zmin)/HEATMAP_Z_RESOLUTION+zmin;
 	 last_thresholdtest=thresholdtest;
     }
+    key[pal_size]=zmax;
     BMP *bmp=new_BMP(HEATMAP_RESOLUTION,HEATMAP_RESOLUTION);
     int threshlow = 0;
     int threshmid = pal_size/2;
