@@ -1,6 +1,30 @@
 source $::env(RAMSPICE)/Gamma/Web/svg/svg.tcl
 set ::heatmap_pallet {0xa50026 0xd73027 0xf46d43 0xfdae61 0xfee090 0xffffbf 0xe0f3f8 0xabd9e9 0x74add1 0x4575b4 0x313695}
 set ::arrow_icon "<svg enable-background=\"new 0 0 128 128\" height=\"18px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 128 128\" width=\"18px\" xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g><g><path d=\"M64.032,13.869c-27.642,0-50.129,22.489-50.129,50.131c0.002,27.643,22.49,50.131,50.131,50.131    c27.64,0,50.126-22.488,50.126-50.131C114.16,36.358,91.673,13.869,64.032,13.869z M64.034,110.131    C38.6,110.131,17.905,89.438,17.903,64c0-25.437,20.693-46.131,46.129-46.131c25.435,0,46.128,20.694,46.128,46.131    C110.16,89.438,89.468,110.131,64.034,110.131z M78.539,68.918L66.034,79.694V43.942c0-1.104-0.896-2-2-2s-2,0.896-2,2v35.752    L49.527,68.918c-0.837-0.721-2.101-0.627-2.821,0.21s-0.627,2.101,0.21,2.821l17.118,14.748L81.15,71.949    c0.837-0.722,0.931-1.984,0.209-2.821C80.639,68.291,79.376,68.197,78.539,68.918z\" /></g></g></svg>"
+proc get_step {min max} {
+    set step 1e-25
+    while {$step<abs($min)} {
+        set step [expr 10*$step]
+    }
+    set step [expr $step/100]
+    set count 200
+    set search_index 0
+    while {$count>12} {
+        set step [expr $step*[lindex {2 2.5 2} [expr $search_index%3]]]
+	incr search_index
+        set low_bar [expr int($min/$step)*$step]
+        set high_bar [expr int($max/$step)*$step]
+	set count [expr int(($high_bar-$low_bar)/$step)+1]
+    }
+    if {$step>1.0} {
+        regsub {\.[0-9]+} $step {} step
+    } elseif {[regexp e $step]} {
+        regsub {\.[0-9]+} $step {} step
+    } else {
+        regsub {0\.(.).*} $step {0.\1} step
+    }
+    return $step
+}
 proc SVG::graph_pareto_front {args} {
     array set opt {
         x 0
@@ -23,6 +47,7 @@ proc SVG::graph_pareto_front {args} {
         script {}
 	heatmap 0
 	pallet {}
+	z {}
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -108,6 +133,10 @@ proc SVG::graph_pareto_front {args} {
     if {$opt(heatmap)} {
         <image xlink:href="http://www.engr.colostate.edu/~ystatter/hm$opt(heatmap).bmp" x="$opt(x)" y="$opt(y)" height="$opt(height)" width="$opt(width)" />  
 	set key_index 0
+	SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 text-decoration "underline" {
+	    print "$opt(z) \[$opt(z_unit)\]"
+	}   
+	incr key_index 2
 	set key [lindex $opt(key) 0]
 	SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
 	    print [eng $key $opt(z_unit)]
@@ -131,17 +160,22 @@ proc SVG::graph_pareto_front {args} {
     SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 15  {
         print "$opt(x_title)"
     }
-    for {set i 0} {$i<=10} {incr i} {
-        set x_coord [expr $opt(x)+($opt(width)/10.0)*$i]
+    set xstep [get_step $min_x $max_x]
+    set ystep [get_step $min_y $max_y]
+    Info: xstep=$xstep ystep=$ystep
+    set ::x_value [expr int($min_x/$xstep)*$xstep]
+    if {$::x_value<$min_x} {
+        set ::x_value [expr $::x_value+$xstep]
+    }
+    while {$::x_value<=$max_x} {
+        set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
+	Info: x_coord=$x_coord
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
-        set ::x_value [expr $min_x+($max_x-$min_x)/10.0*$i]
-        if {$opt(x_type)=="log"} {
-            set ::x_value [expr exp($::x_value)]
-        }
-        SVG::text x $x_coord y $y3_coord font-size 10 {
+        SVG::text x $x_coord y $y3_coord font-size 18 {
             print [eng $::x_value $opt(x_unit)]
         }
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke black stroke-width 1 stroke-dasharray 5,5
+	set ::x_value [expr $::x_value+$xstep]
     }
     set x1_coord [expr $opt(x)]
     set x2_coord [expr $x1_coord-10]
@@ -150,17 +184,18 @@ proc SVG::graph_pareto_front {args} {
     SVG::text x $x4_coord y [expr $opt(y)+(0.8*$opt(height))] font-size 15 style "direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;" {
         print "$opt(y_title)"
     }
-    for {set i 0} {$i<=10} {incr i} {
-        set y_coord [expr $opt(y)+($opt(height)/10.0)*$i]
+    set ::y_value [expr int($min_y/$ystep)*$ystep]
+    if {$::y_value<$min_y} {
+        set ::y_value [expr $::y_value+$ystep]
+    }
+    while {$::y_value<=$max_y} {
+        set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
-        set ::y_value [expr $min_y+($max_y-$min_y)/10.0*(10-$i)]
-        if {$opt(y_type)=="log"} {
-            set ::y_value [expr exp($::y_value)]
-        }
-        SVG::text x $x3_coord y $y_coord font-size 10 {
-            print [eng $::y_value $opt(y_unit)]
+        SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
+  	    print [eng $::y_value $opt(y_unit)]
         }
         SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
+        set ::y_value [expr $::y_value+$ystep]
     }
     foreach $order $opt(data) id $::circuit_ids index $::circuit_list {
         set color green
@@ -366,6 +401,9 @@ set z_unit {}
 if {[info exists ::properties($z,unit)]} {
     set z_unit $::properties($z,unit)
 }
+foreach dim {x y z} {
+    regsub {<[^>]+>} [set ${dim}_unit] {} ${dim}_unit
+}
 # set z_unit m2
 set rowspan 2
 foreach key [lsort -unique [concat $x $y $z [array names ::opt] $selected_g]] {
@@ -383,17 +421,18 @@ incr rowspan [llength $selected_g]
 set rowsize 15
 set frame_size [expr 600+$rowsize*$rowspan]
 set outer_frame_size [expr $frame_size+200]
+
 if {[info exists $z=="none"]} {
     default ::opt(title) "$y \[$y_unit\] vs $x \[$x_unit\]"
 } else {
-    default ::opt(title) "$z \[$z_unit\] vs $y \[$y_unit\] and $x \[$x_unit\]"
+    default ::opt(title) "$z \[$z_unit\] vs $y \[$y_unit\] vs $x \[$x_unit\]"
 }
 
 <table><tr bgcolor=$::colors(gray)>
 <td rowspan="$rowspan bgcolor=$::colors(gray)" class="tableFormatter" id="MapContainer">
 ::SVG::svg width $outer_frame_size height $outer_frame_size {
     if {$z=="none"} {
-        ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green connect all x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
+        ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 6:green connect all x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
     } else {
         set pallet $::heatmap_pallet
         if {[info exists ::properties($z,step)]} {
@@ -406,7 +445,7 @@ if {[info exists $z=="none"]} {
 	}
         set hm /top/students/GRAD/ECE/ystatter/home/public_html/hm[pid].bmp
         set key [heatmap $3d_pixels $pallet $hm]
-        ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 8:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z_unit $z_unit title $::opt(title)
+        ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 6:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z $z z_unit $z_unit title $::opt(title)
     }
 }
 </td>
