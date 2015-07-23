@@ -9,7 +9,7 @@
 #define HEATMAP_RESOLUTION 512
 #define HEATMAP_Z_RESOLUTION 1000000
 #define HEATMAP_AREA HEATMAP_RESOLUTION*HEATMAP_RESOLUTION
-#define HEATMAP_BLUR_FACTOR 25
+#define HEATMAP_BLUR_FACTOR 50
 #define HEATMAP_BLUR (HEATMAP_RESOLUTION/HEATMAP_BLUR_FACTOR)*(HEATMAP_RESOLUTION/HEATMAP_BLUR_FACTOR)
 #define HEATMAP_TEST 400
 
@@ -52,12 +52,36 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
             float weighted_sum=0.0;
             for (k=0;k<count*3;k+=3) { //loop through the scalled inputs and calculate xdelta and ydelta
                 float weight=1.0/(HEATMAP_BLUR+(i-(input_scaled[k]))*(i-(input_scaled[k]))+(j-(input_scaled[k+1]))*(j-(input_scaled[k+1]))); // Square-Euclidean distance (round contures)
+		weight*=weight;
                 weight_sum+=weight;
                 weighted_sum+=weight*input_scaled[k+2];
             }
             z_map[i+HEATMAP_RESOLUTION*j]=weighted_sum/weight_sum;
         }//endof j
     }//endof i
+    /*
+    for (i=0;i<HEATMAP_RESOLUTION;i++){
+        for (j=0;j<HEATMAP_RESOLUTION;j++){
+	    int given=0;
+	    for (k=0;k<count*3;k+=3) if ((i==(input_scaled[k]))&&(j==(input_scaled[k+1]))) given=1;
+	    if (given) continue;
+            float dist=HEATMAP_AREA;
+            float second_dist=HEATMAP_AREA;
+	    int closest=0; 
+	    int second_closest=0; 
+	    for (k=0;k<count*3;k+=3) {
+	    	int dist_to_this_input=sqrt((i-input_scaled[k])*(i-input_scaled[k])+(j-input_scaled[k+1])*(j-input_scaled[k+1]));
+	    	if (dist_to_this_input<dist) {
+		    second_dist=dist;
+		    second_closest=closest;
+	    	    dist=dist_to_this_input;
+		    closest=k+2;
+	    	}
+	    }
+	    z_map[i+HEATMAP_RESOLUTION*j]=(input_scaled[closest]*second_dist+input_scaled[second_closest]*dist)/(second_dist+dist);
+	}
+    }	    
+    */
     // Draw given pixels
     for (i=0;i<count*3;i=i+3) z_map[input_scaled[i]+HEATMAP_RESOLUTION*input_scaled[i+1]] = input_scaled[i+2];	
     int approximations=0;

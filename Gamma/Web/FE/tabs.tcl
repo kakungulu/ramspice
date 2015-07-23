@@ -20,21 +20,37 @@ if {$method=="post"} {
 } else {
     foreach field [split $::env(QUERY_STRING) &] {
         lassign [split $field =] var val
+	# skip {[info exists ::opt($var)]}
         set ::opt($var) $val
     }
 }
 set ::session $::env(HTTP_X_FORWARDED_FOR)
 set ::sessions_path $fe_path/gamma_sessions
+set ::heatmap_pallet {0xa50026 0xd73027 0xf46d43 0xfdae61 0xfee090 0xffffbf 0xe0f3f8 0xabd9e9 0x74add1 0x4575b4 0x313695}
+
 array set ::colors {
     gray #F2F2F3
     green #1FDA9A
     red #EE4B3E
     orange #E9BC1B
     yellow #F5EACD 
+    
+    red #a50026 
+    orange #fdae61
+    yellow #fee090 
+    gray #e0f3f8
+    bg #ffffbf
+    blue 0x313695
 }
 if {![file exists $::sessions_path]} {
     file mkdir $::sessions_path
 }
+Info: $::env(REQUEST_METHOD)
+Info: opt=
+foreach {var val} [array get opt] {
+    Info: $var=$val
+}
+Info: sessions_path=$::sessions_path $authenticate
 if {[info exists ::opt(authentication_user)]} {
     Info: authentication request from $::opt(authentication_user)
     if {[file exists $fe_path/users.tcl]} {
@@ -46,17 +62,17 @@ if {[info exists ::opt(authentication_user)]} {
 	}
     }
 }
-if {$authenticate} {
-    foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
-        skip {[file mtime $session_file]-[clock seconds]>15*60}
-        array unset ::SESSION
-        source $session_file
-        if {$::SESSION(ip)==$::session} {
-            set authenticate 0
-	    set ::active_session [file tail $session_file]
-            break
-        }	
-    }
+Info: sessions_path=$::sessions_path $authenticate
+foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
+    Info: $session_file [expr [file mtime $session_file]-[clock seconds]]
+    skip {[file mtime $session_file]-[clock seconds]>15*60}
+    array unset ::SESSION
+    source $session_file
+    if {$::SESSION(ip)==$::session} {
+	set authenticate 0
+    	set ::active_session [file tail $session_file]
+	break
+    }	    
 }
 if {$authenticate} {
 <!doctype html>
@@ -124,6 +140,34 @@ foreach tech_dir [glob $::env(RAMSPICE)/Etc/Tech_DB/*] {
   <link href="http://www.engr.colostate.edu/~ystatter//simple-slider-volume.css" rel="stylesheet" type="text/css" />  
 #  <link rel="stylesheet" href="/resources/demos/style.css">
   <script> 
+  default ::SESSION(selected_axes) "none%2Cnone%2Cnone%2C"
+set ::selected_axes_list {}
+foreach axis [regsub -all {%2C} $::SESSION(selected_axes) " "] i {0 1 2} default {Adc Rout none} {
+    if {$axis=="none"} {
+        set axis $default
+    }
+    lappend ::selected_axes_list $axis
+}
+regsub -all { } $::selected_axes_list {","} ::selected_axes_list
+puts $::HTML "var selected=\[\"$::selected_axes_list\"\];"
+set ::property_list {
+    Adc
+    CMRR
+    PSRR
+    Vos
+    Rout
+    BW
+    ts
+    Nt
+    fc
+    Area
+    Power
+}
+foreach property $::property_list {
+    default ::SESSION($property) ""
+    puts $::HTML "var $property='$::SESSION($property)';"
+}
+
   puts $::HTML {
       $(function() {
           $( "#tabs" ).tabs();
@@ -131,9 +175,13 @@ foreach tech_dir [glob $::env(RAMSPICE)/Etc/Tech_DB/*] {
       var selected_tech="none";
       var selected_topology="none";
       var axes=["X","Y","Z"];
-      var selected=["none","none","none"];
+//      var selected=["none","none","none"];
       var selected_g=[];
+      var selected_circuits=[];
       var xhr; 
+      var focus_circuit='none';
+      var updateSpecTable = function () {};
+      var UpdateFocusOn=function() {};
       if (window.ActiveXObject) { 
           xhr = new ActiveXObject ("Microsoft.XMLHTTP"); 
       } 

@@ -1,6 +1,10 @@
 source $::env(RAMSPICE)/Gamma/Web/svg/svg.tcl
 set ::heatmap_pallet {0xa50026 0xd73027 0xf46d43 0xfdae61 0xfee090 0xffffbf 0xe0f3f8 0xabd9e9 0x74add1 0x4575b4 0x313695}
 set ::arrow_icon "<svg enable-background=\"new 0 0 128 128\" height=\"18px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 128 128\" width=\"18px\" xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g><g><path d=\"M64.032,13.869c-27.642,0-50.129,22.489-50.129,50.131c0.002,27.643,22.49,50.131,50.131,50.131    c27.64,0,50.126-22.488,50.126-50.131C114.16,36.358,91.673,13.869,64.032,13.869z M64.034,110.131    C38.6,110.131,17.905,89.438,17.903,64c0-25.437,20.693-46.131,46.129-46.131c25.435,0,46.128,20.694,46.128,46.131    C110.16,89.438,89.468,110.131,64.034,110.131z M78.539,68.918L66.034,79.694V43.942c0-1.104-0.896-2-2-2s-2,0.896-2,2v35.752    L49.527,68.918c-0.837-0.721-2.101-0.627-2.821,0.21s-0.627,2.101,0.21,2.821l17.118,14.748L81.15,71.949    c0.837-0.722,0.931-1.984,0.209-2.821C80.639,68.291,79.376,68.197,78.539,68.918z\" /></g></g></svg>"
+set ::config_icon "<svg height='18px' id='Layer_7' style='enable-background:new 0 0 64 64' version='1.1' viewBox='3 3 78 78' width='18px' xml:space='preserve' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><path d='M78.197,37.708l-3.726-16.331l-9.873-1.097l-2.511-3.15l1.131-9.865L48.122,0l-7.008,7.028h-4.031  L30.073,0L14.979,7.266l1.131,9.865l-2.511,3.15l-9.873,1.097L0,37.708l8.413,5.271l0.898,3.928l-5.299,8.397l10.45,13.098  l9.365-3.293l3.632,1.749l3.262,9.375h16.754l3.262-9.375l3.632-1.749l9.365,3.293l10.45-13.098l-5.299-8.397l0.897-3.928  L78.197,37.708z M66.833,54.897l-5.13,6.43l-7.693-2.705l-8.12,3.911l-2.68,7.699h-8.223l-2.68-7.699l-8.12-3.911l-7.693,2.705  l-5.13-6.43L15.717,48l-2.01-8.784l-6.908-4.329l1.829-8.017l8.109-0.901l5.617-7.046l-0.93-8.101l7.41-3.567l5.758,5.773h9.012  l5.757-5.773l7.411,3.566l-0.93,8.101l5.617,7.046l8.109,0.901l1.829,8.017l-6.91,4.329L62.481,48L66.833,54.897z M39.099,23.587  c-8.286,0-15,6.713-15,15s6.714,15,15,15s15-6.713,15-15S47.385,23.587,39.099,23.587z M39.099,49.087c-5.79,0-10.5-4.71-10.5-10.5  s4.71-10.5,10.5-10.5s10.5,4.71,10.5,10.5S44.889,49.087,39.099,49.087z' style='fill:#333F4F'/></svg>"
+set ::goal_icon_gray2 {<svg enable-background='new 0 0 200 200' height='18px'  version='1.1' viewBox='0 0 200 200' width='18px' xml:space='preserve' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' ><g><path d='M106.582,63.015c-4.273,4.856-7.285,9.74-8.877,14.553c-0.502,1.523-0.854,3.021-1.063,4.488   c-2.215-0.544-4.521-0.837-6.898-0.837c-16.009,0-29.036,13.028-29.036,29.036c0,16.01,13.026,29.034,29.036,29.034   c16.009,0,29.034-13.024,29.034-29.034c0-2.375-0.291-4.686-0.835-6.9c6.094-0.852,12.553-4.224,19.045-9.933   c1.877,5.267,2.906,10.931,2.906,16.833c0,27.652-22.499,50.152-50.15,50.152c-27.654,0-50.152-22.5-50.152-50.152   c0-27.653,22.498-50.15,50.152-50.15C95.649,60.104,101.318,61.136,106.582,63.015z M162.652,57.992   c-3.902,7.567-8.006,14.359-12.231,20.235c5.071,9.567,7.946,20.466,7.946,32.028c0,37.843-30.779,68.626-68.623,68.626   c-37.84,0-68.626-30.783-68.626-68.626c0-37.841,30.786-68.627,68.626-68.627c11.563,0,22.465,2.879,32.035,7.951   c5.856-4.217,12.632-8.319,20.224-12.234c-14.728-10.588-32.775-16.833-52.259-16.833C40.259,20.512,0,60.773,0,110.255   c0,49.485,40.259,89.744,89.744,89.744c49.481,0,89.743-40.259,89.743-89.744C179.487,90.771,173.241,72.722,162.652,57.992z    M92.301,97.312c-0.827-0.167-1.682-0.254-2.557-0.254c-7.28,0-13.197,5.92-13.197,13.198c0,7.278,5.917,13.197,13.197,13.197   c7.278,0,13.198-5.919,13.198-13.197c0-0.875-0.09-1.729-0.25-2.556l-8.962,6.983c-1.044,0.816-2.354,1.269-3.688,1.269   c-1.598,0-3.106-0.625-4.238-1.756c-2.135-2.138-2.344-5.549-0.485-7.928L92.301,97.312z' fill='#808080'/><path d='M168.587,36.007c6.827,1.365,21.227,3.238,27.908-3.444c10.069-10.07-3.803-25.252-13.385-15.674   c9.582-9.578-5.603-23.454-15.676-13.384c-6.678,6.68-4.805,21.079-3.442,27.906l-3.439,3.44   c-48.37,20.299-64.252,44.289-56.816,56.846l-14.027,17.998c-0.129,0.167-0.117,0.406,0.035,0.561   c0.152,0.154,0.394,0.165,0.564,0.033l17.996-14.022c12.551,7.433,36.543-8.446,56.844-56.819L168.587,36.007z' fill='#808080' /></g></svg>}
+set ::goal_icon_black2 {<svg enable-background='new 0 0 200 200' height='18px'  version='1.1' viewBox='0 0 200 200' width='18px' xml:space='preserve' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' ><g><path d='M106.582,63.015c-4.273,4.856-7.285,9.74-8.877,14.553c-0.502,1.523-0.854,3.021-1.063,4.488   c-2.215-0.544-4.521-0.837-6.898-0.837c-16.009,0-29.036,13.028-29.036,29.036c0,16.01,13.026,29.034,29.036,29.034   c16.009,0,29.034-13.024,29.034-29.034c0-2.375-0.291-4.686-0.835-6.9c6.094-0.852,12.553-4.224,19.045-9.933   c1.877,5.267,2.906,10.931,2.906,16.833c0,27.652-22.499,50.152-50.15,50.152c-27.654,0-50.152-22.5-50.152-50.152   c0-27.653,22.498-50.15,50.152-50.15C95.649,60.104,101.318,61.136,106.582,63.015z M162.652,57.992   c-3.902,7.567-8.006,14.359-12.231,20.235c5.071,9.567,7.946,20.466,7.946,32.028c0,37.843-30.779,68.626-68.623,68.626   c-37.84,0-68.626-30.783-68.626-68.626c0-37.841,30.786-68.627,68.626-68.627c11.563,0,22.465,2.879,32.035,7.951   c5.856-4.217,12.632-8.319,20.224-12.234c-14.728-10.588-32.775-16.833-52.259-16.833C40.259,20.512,0,60.773,0,110.255   c0,49.485,40.259,89.744,89.744,89.744c49.481,0,89.743-40.259,89.743-89.744C179.487,90.771,173.241,72.722,162.652,57.992z    M92.301,97.312c-0.827-0.167-1.682-0.254-2.557-0.254c-7.28,0-13.197,5.92-13.197,13.198c0,7.278,5.917,13.197,13.197,13.197   c7.278,0,13.198-5.919,13.198-13.197c0-0.875-0.09-1.729-0.25-2.556l-8.962,6.983c-1.044,0.816-2.354,1.269-3.688,1.269   c-1.598,0-3.106-0.625-4.238-1.756c-2.135-2.138-2.344-5.549-0.485-7.928L92.301,97.312z' fill='#000000'/><path d='M168.587,36.007c6.827,1.365,21.227,3.238,27.908-3.444c10.069-10.07-3.803-25.252-13.385-15.674   c9.582-9.578-5.603-23.454-15.676-13.384c-6.678,6.68-4.805,21.079-3.442,27.906l-3.439,3.44   c-48.37,20.299-64.252,44.289-56.816,56.846l-14.027,17.998c-0.129,0.167-0.117,0.406,0.035,0.561   c0.152,0.154,0.394,0.165,0.564,0.033l17.996-14.022c12.551,7.433,36.543-8.446,56.844-56.819L168.587,36.007z' fill='#000000' /></g></svg>}
+set ::focus_icon {<svg height='18px' viewBox='0 0 48 48' width='18px' xmlns='http://www.w3.org/2000/svg'><path d='M31 28h-1.59l-.55-.55c1.96-2.27 3.14-5.22 3.14-8.45 0-7.18-5.82-13-13-13s-13 5.82-13 13 5.82 13 13 13c3.23 0 6.18-1.18 8.45-3.13l.55.55v1.58l10 9.98 2.98-2.98-9.98-10zm-12 0c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z'/><path d='M0 0h48v48h-48z' fill='none'/></svg>}
 proc get_step {min max} {
     set step 1e-25
     while {$step<abs($min)} {
@@ -11,10 +15,10 @@ proc get_step {min max} {
     set search_index 0
     while {$count>12} {
         set step [expr $step*[lindex {2 2.5 2} [expr $search_index%3]]]
-	incr search_index
+        incr search_index
         set low_bar [expr int($min/$step)*$step]
         set high_bar [expr int($max/$step)*$step]
-	set count [expr int(($high_bar-$low_bar)/$step)+1]
+        set count [expr int(($high_bar-$low_bar)/$step)+1]
     }
     if {$step>1.0} {
         regsub {\.[0-9]+} $step {} step
@@ -45,9 +49,9 @@ proc SVG::graph_pareto_front {args} {
         connect_pattern 2,5
         connect_width 1
         script {}
-	heatmap 0
-	pallet {}
-	z {}
+        heatmap 0
+        pallet {}
+        z {}
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -132,25 +136,25 @@ proc SVG::graph_pareto_front {args} {
     set max_y [SVG::align $y_max]
     if {$opt(heatmap)} {
         <image xlink:href="http://www.engr.colostate.edu/~ystatter/hm$opt(heatmap).bmp" x="$opt(x)" y="$opt(y)" height="$opt(height)" width="$opt(width)" />  
-	set key_index 0
-	SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 text-decoration "underline" {
-	    print "$opt(z) \[$opt(z_unit)\]"
-	}   
-	incr key_index 2
-	set key [lindex $opt(key) 0]
-	SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
-	    print [eng $key $opt(z_unit)]
-	}   
-	incr key_index
-	foreach key [lrange $opt(key) 1 end] color $opt(pallet) {
-	    regsub {0x} $color {#} color
-	    SVG::rect x [expr $opt(x)+$opt(width)] y [expr $opt(y)+85+15*$key_index] width 100 height 12 style "fill:$color"
-	    incr key_index
-	    SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
-	        print [eng $key $opt(z_unit)]
-	    }	
-	    incr key_index
-	} 
+        set key_index 0
+        SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 text-decoration "underline" {
+            print "$opt(z) \[$opt(z_unit)\]"
+        }   
+        incr key_index 2
+        set key [lindex $opt(key) 0]
+        SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
+            print [eng $key $opt(z_unit)]
+        }   
+        incr key_index
+        foreach key [lrange $opt(key) 1 end] color $opt(pallet) {
+            regsub {0x} $color {#} color
+            SVG::rect x [expr $opt(x)+$opt(width)] y [expr $opt(y)+85+15*$key_index] width 100 height 12 style "fill:$color"
+            incr key_index
+            SVG::text x [expr $opt(x)+$opt(width)] y [expr $opt(y)+100+15*$key_index] font-size 15 {
+                print [eng $key $opt(z_unit)]
+            }	
+            incr key_index
+        } 
     }	
     SVG::rect x $opt(x) y $opt(y) width $opt(width) height $opt(height) fill none stroke black stroke-width 3
     set y1_coord [expr $opt(y)+$opt(height)]
@@ -169,13 +173,13 @@ proc SVG::graph_pareto_front {args} {
     }
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
-	Info: x_coord=$x_coord
+        Info: x_coord=$x_coord
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
         SVG::text x $x_coord y $y3_coord font-size 18 {
             print [eng $::x_value $opt(x_unit)]
         }
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke black stroke-width 1 stroke-dasharray 5,5
-	set ::x_value [expr $::x_value+$xstep]
+        set ::x_value [expr $::x_value+$xstep]
     }
     set x1_coord [expr $opt(x)]
     set x2_coord [expr $x1_coord-10]
@@ -192,7 +196,7 @@ proc SVG::graph_pareto_front {args} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
         SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
-  	    print [eng $::y_value $opt(y_unit)]
+            print [eng $::y_value $opt(y_unit)]
         }
         SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
         set ::y_value [expr $::y_value+$ystep]
@@ -224,6 +228,8 @@ proc SVG::graph_pareto_front {args} {
         set radius [lindex $marker 0]
         set x_coord [expr $opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x)]
         set y_coord [expr $opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y)]
+	if {[regexp {[nN]} $x_coord]} continue;
+	if {[regexp {[nN]} $y_coord]} continue;
         default ::SESSION(selcircuit_$id) 0
         if {$::SESSION(selcircuit_$id)} {
             <circle cx="$x_coord" cy="$y_coord" r="[expr 2*$radius]" fill="transparent" stroke="$color" stroke-width="1" visibility="visible">
@@ -288,10 +294,12 @@ foreach id $::opt(deselect) {
     set ::SESSION(selcircuit_$id) 0
 }
 Info: [array get ::SESSION selcircuit_*]
+Info: QUERY_STRING=$::env(QUERY_STRING)
 foreach key [array names ::opt] {
     skip {$key=="launch"}
     skip {$key=="selected_circuit"}
     set ::SESSION($key) $::opt($key)
+    Info: $key=$::opt($key)
 }
 if {![info exists ::SESSION(selected_topology)]} return
 source $::env(RAMSPICE)/Etc/Templates/$::SESSION(selected_topology)/data.tcl
@@ -427,123 +435,165 @@ if {[info exists $z=="none"]} {
 } else {
     default ::opt(title) "$z \[$z_unit\] vs $y \[$y_unit\] vs $x \[$x_unit\]"
 }
-
-<table><tr bgcolor=$::colors(gray)>
-<td rowspan="$rowspan bgcolor=$::colors(gray)" class="tableFormatter" id="MapContainer">
+set O [open out.js w]
+set selected_circuits_ids {}
+set ::table_code ""
+set entry_offset [llength [@ /$::SESSION(selected_topology)/circuits PAT sizes]]
+append ::table_code "table+=\"<tr bgcolor='$::colors(bg)'><td></td><td></td>"
+foreach property $::property_list {
+    if {[catch {expr $::opt($property)+0}]} {
+        set ::opt($property) {}
+    }
+    set property_color($property) gray
+    foreach axis {x y z} {
+        skip {[set $axis]!=$property}
+        set property_color($property) black
+    }
+    if {$::opt($property)!={}} {
+        set property_color($property) black
+    }
+    if {[lsearch $selected_g $property]!=-1} {
+        set property_color($property) black
+    }
+    append ::table_code "<td align='center'><table><tr><td onclick=\\\"DefinePropertySpec('$property','$::opt($property)')\\\">$::config_icon</td>"
+    if {$x==$property} {
+	append ::table_code "<td id='X_$property' onclick=\\\"toggle_axis2(0,'$property')\\\"><font color=\\\"#000000\\\"><b>X</b></font></td>"
+    } else {
+	append ::table_code "<td id='X_$property' onclick=\\\"toggle_axis2(0,'$property')\\\"><font color=\\\"#808080\\\">X</font></td>"
+    }
+    if {$y==$property} {
+	append ::table_code "<td id='Y_$property' onclick=\\\"toggle_axis2(1,'$property')\\\"><font color=\\\"#000000\\\"><b>Y</b></font></td>"
+    } else {
+	append ::table_code "<td id='Y_$property' onclick=\\\"toggle_axis2(1,'$property')\\\"><font color=\\\"#808080\\\">Y</font></td>"
+    }
+    if {$z==$property} {
+	append ::table_code "<td id='Z_$property' onclick=\\\"toggle_axis2(2,'$property')\\\"><font color=\\\"#000000\\\"><b>Z</b></font></td>"
+    } else {
+	append ::table_code "<td id='Z_$property' onclick=\\\"toggle_axis2(2,'$property')\\\"><font color=\\\"#808080\\\">Z</font></td>"
+    }
+    if {[lsearch $selected_g $property]==-1} {
+        append ::table_code "<td id='G_$property' onclick=\\\"toggle_g2('$property')\\\">$::goal_icon_gray2</td>"
+    } else {
+        append ::table_code "<td id='G_$property' onclick=\\\"toggle_g2('$property')\\\">$::goal_icon_black2</td>"
+    }
+    append ::table_code "<tr></tr><td colspan='4' align='center'><font color='$property_color($property)'><b>$property</b></font></td></tr></table></td>"
+}
+append ::table_code "<td id='SelectedCircuitID'></td></tr>\"\;\n"
+append ::table_code "table+=\"<tr bgcolor=$::colors(bg)><td></td><td><b>Spec:</b></td>"
+foreach property $::property_list {
+    set value {}
+    if {$::opt($property)!={}} {
+        if {$::properties($property,step)>0} {
+	    append value " >"
+	} else {
+	    append value " <"
+	}
+	append value [eng $::opt($property) $::properties($property,unit)]
+    }
+    append ::table_code "<td align='center'><b>$value</b></td>"
+}
+append ::table_code "\"\;\n"
+set j 0
+foreach circuit $::circuit_ids index $::circuit_list {
+     set color green
+     foreach property $::property_list  {
+     	 if {$::opt($property)!={}} {
+     	     set entry [lsearch $::ref_list $property]
+     	     set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+     	     if {$::properties($property,step)>0} {
+     		 if {$value<$::opt($property)} {
+     		     set color red
+     		 }
+     	     } else {
+     		 if {$value>$::opt($property)} {
+     		     set color red
+     		 }
+     	     }
+     	     
+     	 }   
+     }
+    default ::SESSION(selcircuit_$circuit) 0
+    if {$::SESSION(selcircuit_$circuit)} {
+        lappend selected_circuits_ids $circuit
+    }
+    set tag [lsearch $::SESSION(selected_circuits_tags) $circuit]
+    set bgcolor [lindex {yellow orange} [expr $j%2]] 
+    set bgcolor $::colors($bgcolor)
+    append ::table_code "    if (selected_circuits.lastIndexOf($circuit)!=-1) \{\n        table+=\"<tr bgcolor=$::colors(bg)><td><button onclick='DeSelect($circuit)'>X</button></td><td bgcolor=$bgcolor><font color='$color'><b>$tag</b></font></td>"
+    incr j
+    foreach property $::property_list {
+        set entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT properties] $property]
+	incr entry $entry_offset
+        set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+        set font_color $property_color($property)
+        if {$::opt($property)!={}} {
+            if {$::properties($property,step)>0} {
+                if {$value>=$::opt($property)} {
+                    set font_color green
+                } else {
+                    set font_color red
+                }
+            } else {
+                if {$value>=$::opt($property)} {
+                    set font_color red
+                } else {
+                    set font_color green
+                }
+            }
+        }
+	set bgcolor [lindex {yellow orange} [expr $j%2]] 
+	set bgcolor $::colors($bgcolor)
+        append ::table_code "<td bgcolor=$bgcolor><font color='$font_color'> [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::properties($property,unit)] </font></td>"
+	incr j
+    }
+    append ::table_code "<td><button onclick='FocusOn($circuit)'>$::focus_icon</button></td></tr>\"\;\n    \}\n"
+}
+puts $O "selected_circuits=\[[join $selected_circuits_ids ,]\];"
+puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFormatter'>\"\;\n$::table_code    table+=\"</table>\";\n    document.getElementById(\"NewSpecTable\").innerHTML=table\;\n\}\;"
+<table><tr bgcolor=$::colors(bg)>
+#<td rowspan="$rowspan" bgcolor="$::colors(bg)" class="tableFormatter" id="NewSpecTable">
+#</td>
+<td colspan="2" rowspan="$rowspan" bgcolor="$::colors(bg)" class="tableFormatter" id="MapContainer">
 ::SVG::svg width $outer_frame_size height $outer_frame_size {
     if {$z=="none"} {
         ::SVG::graph_pareto_front x 100 y 100 width $frame_size height $frame_size data $pixels markers 6:green connect all x_title $x y_title $y x_unit $x_unit y_unit $y_unit title $::opt(title)
     } else {
         set pallet $::heatmap_pallet
         if {[info exists ::properties($z,step)]} {
-	    if {$::properties($z,step)<0} {
-	        set pallet {}
-		foreach color $::heatmap_pallet {
-		    set pallet [concat $color $pallet]
-		}
-	    }
-	}
+            if {$::properties($z,step)<0} {
+                set pallet {}
+                foreach color $::heatmap_pallet {
+                    set pallet [concat $color $pallet]
+                }
+            }
+        }
         set hm /top/students/GRAD/ECE/ystatter/home/public_html/hm[pid].bmp
         set key [heatmap $3d_pixels $pallet $hm]
         ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 6:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z $z z_unit $z_unit title $::opt(title)
     }
 }
 </td>
-set selected_circuits {}
-<td bgcolor=$::colors(yellow)><b>Property</b></td><td bgcolor=$::colors(gray)><b>Required</b></td>
-set i 0
-foreach circuit [array names ::SESSION selcircuit_*] {
-    skip {$::SESSION($circuit)==0}
-    lassign [split $circuit _] -> id
-    lappend selected_circuits $id
-}    
-set selected_circuits [lsort -integer $selected_circuits]
-set present_selected_circuits {}
-foreach id $selected_circuits {
-    foreach index $::circuit_list {
-        skip {$id!=[@ /$::SESSION(selected_topology)/circuits PAT id $index]}
-        lappend present_selected_circuits $id
-        break
-    }
-}
-set selected_circuits $present_selected_circuits
-foreach id $selected_circuits {
-    set tag [lsearch $::SESSION(selected_circuits_tags) $id]
-    set color [lindex {yellow gray} [expr $i%2]] 
-    <td align="center" bgcolor=$::colors($color)><button onclick="DeSelect($id)">X</button><b>$tag</b><button onclick="Focus($id)">$::arrow_icon</button></td>
-    incr i
-}
-</tr>
-set i 0
-foreach key [lsort -unique [concat $x $y $z [array names ::opt] $selected_g]] {
-    skip {$key=="Name"}
-    skip {$key=="none"}
-    if {[info exists ::SESSION($key)] && [lsearch $selected_g $key]==-1 && $x!=$key && $y!=$key && $z!=$key} {
-        skip {$::opt($key)=={}}
-        skip {![info exists ::properties($key,unit)]}
-    }
-    skip {![info exists ::properties($key,unit)]}
-    Info: KEY=$key [lsearch $::ref_list $key]
-    set j $i 
-    set color [lindex {yellow orange} [expr $j%2]] 
-    set prefix [lindex {<b>X:</b> <b>Y:</b> <b>Z:</b>} [lsearch [list $x $y $z] $key]]
-    <tr><td bgcolor=$::colors($color)>$prefix <b>$::properties($key,html)</b></td>
-    incr j
-    set color [lindex {yellow orange} [expr $j%2]] 
-    set entry [lsearch $::ref_list $key]
-    set value [eng $::opt($key) $::properties($key,unit)]
-    if {$::opt($key)=={}} {
-        set value {}
-    }
-    if {[lsearch $selected_g $key]==-1} {
-        puts $::HTML "<td bgcolor=$::colors($color)>$value</td>"
-    } else {
-        <td bgcolor=$::colors($color)>
-        <svg enable-background="new 0 0 200 200" height="16px"  version="1.1" viewBox="0 0 200 200" width="16px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ><g><path d="M106.582,63.015c-4.273,4.856-7.285,9.74-8.877,14.553c-0.502,1.523-0.854,3.021-1.063,4.488   c-2.215-0.544-4.521-0.837-6.898-0.837c-16.009,0-29.036,13.028-29.036,29.036c0,16.01,13.026,29.034,29.036,29.034   c16.009,0,29.034-13.024,29.034-29.034c0-2.375-0.291-4.686-0.835-6.9c6.094-0.852,12.553-4.224,19.045-9.933   c1.877,5.267,2.906,10.931,2.906,16.833c0,27.652-22.499,50.152-50.15,50.152c-27.654,0-50.152-22.5-50.152-50.152   c0-27.653,22.498-50.15,50.152-50.15C95.649,60.104,101.318,61.136,106.582,63.015z M162.652,57.992   c-3.902,7.567-8.006,14.359-12.231,20.235c5.071,9.567,7.946,20.466,7.946,32.028c0,37.843-30.779,68.626-68.623,68.626   c-37.84,0-68.626-30.783-68.626-68.626c0-37.841,30.786-68.627,68.626-68.627c11.563,0,22.465,2.879,32.035,7.951   c5.856-4.217,12.632-8.319,20.224-12.234c-14.728-10.588-32.775-16.833-52.259-16.833C40.259,20.512,0,60.773,0,110.255   c0,49.485,40.259,89.744,89.744,89.744c49.481,0,89.743-40.259,89.743-89.744C179.487,90.771,173.241,72.722,162.652,57.992z    M92.301,97.312c-0.827-0.167-1.682-0.254-2.557-0.254c-7.28,0-13.197,5.92-13.197,13.198c0,7.278,5.917,13.197,13.197,13.197   c7.278,0,13.198-5.919,13.198-13.197c0-0.875-0.09-1.729-0.25-2.556l-8.962,6.983c-1.044,0.816-2.354,1.269-3.688,1.269   c-1.598,0-3.106-0.625-4.238-1.756c-2.135-2.138-2.344-5.549-0.485-7.928L92.301,97.312z" fill="#000000"/><path d="M168.587,36.007c6.827,1.365,21.227,3.238,27.908-3.444c10.069-10.07-3.803-25.252-13.385-15.674   c9.582-9.578-5.603-23.454-15.676-13.384c-6.678,6.68-4.805,21.079-3.442,27.906l-3.439,3.44   c-48.37,20.299-64.252,44.289-56.816,56.846l-14.027,17.998c-0.129,0.167-0.117,0.406,0.035,0.561   c0.152,0.154,0.394,0.165,0.564,0.033l17.996-14.022c12.551,7.433,36.543-8.446,56.844-56.819L168.587,36.007z" fill="#000000" /></g></svg>
-        </td>
-    }	
-    foreach id $selected_circuits {
-        foreach index $::circuit_list {
-            skip {$id!=[@ /$::SESSION(selected_topology)/circuits PAT id $index]}
-            incr j 
-            set color [lindex {yellow orange} [expr $j%2]] 
-            set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
-            set font_color black
-            if {$::opt($key)!={}} {
-                if {$::properties($key,step)>0} {
-                    if {$value>=$::opt($key)} {
-                        set font_color green
-                    } else {
-                        set font_color red
-                    }
-                } else {
-                    if {$value>=$::opt($key)} {
-                        set font_color red
-                    } else {
-                        set font_color green
-                    }
-                }
-                Info: $key=$::opt($key) step=$::properties($key,step) value=$value font_color=$font_color
-            }
-            
-            puts $::HTML "<td bgcolor=\"$::colors($color)\"><font color=\"$font_color\">&nbsp[eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::properties($key,unit)]&nbsp</font></td>"
-            break
-        }    
-    }
-    incr i
-    </tr>
-}
-<tr bgcolor=$::colors(green)><td colspan="[expr 2+[llength $selected_circuits]]" align="center">
-draw_schematic $::SESSION(selected_topology) 
+<td>
+draw_schematic $::SESSION(selected_topology) [expr $frame_size-200]
 </td>
 </tr>
-incr ::svg_width -100
-foreach sizer $::sizer_list {
-    set color [lindex {yellow orange} [expr $i%2]] 
-    <tr bgcolor=$::colors($color)><td><b>$sizer</b></td><td colspan="[expr 2+[llength $selected_circuits]]"><input type=range id="$sizer" min="$::sizers($sizer,min)"  max="$::sizers($sizer,max)" style="width:${::svg_width}px"></td></tr>
-    incr i 
-}
 </table>
+set focus_code {}
+foreach circuit $::circuit_ids index $::circuit_list {
+    append focus_code "if (focus_circuit=='$circuit') \{\n"
+    set entry 0
+    foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+        foreach key [array names ::local_ids] {
+	    skip {$::local_ids($key)!=$size}
+	    set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] V]
+            append focus_code "    document.getElementById('schematic_$key').innerHTML='$value';\n"
+	}
+	incr entry
+    }
+    append focus_code "\}\n"
+}
+puts $O "UpdateFocusOn=function() \{$focus_code\}\;"
+close $O
 save_session
 return
 save_session
