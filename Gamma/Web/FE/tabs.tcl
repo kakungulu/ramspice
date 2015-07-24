@@ -74,6 +74,12 @@ foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
 	break
     }	    
 }
+if {[info exists ::opt(ajax)]} {
+    source $fe_path/ajax.tcl
+    close $::HTML
+    return
+}
+
 if {$authenticate} {
 <!doctype html>
  <html lang="en">
@@ -109,11 +115,6 @@ proc save_session {} {
 }
 save_session
 set ::USER default
-if {[info exists ::opt(ajax)]} {
-    source $fe_path/ajax.tcl
-    close $::HTML
-    return
-}
 source schematic_lib.tcl
 proc function {name body} {
    set body [uplevel [list subst $body]]
