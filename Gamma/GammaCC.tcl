@@ -1160,6 +1160,96 @@ proc .compile_circuit {args} {
     *c "    if (max_Adc>20) break;"
     *c "\}"
     *c "\}"
+    
+    code_target RANDOM_BREED_SINGLE
+    *c "ClientData CD;"
+    *c "int i;"
+    *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
+    *c "int more_to_breed=0;"
+    *c "long int r;"
+    *c "long int breed_count=p->content->num_of;"
+    *c "float step;"
+    *c "int sweep_size=p->content->num_of;"
+    *c "int searched_id=(int)@circuit_breed_id;"
+    *c "for (i=0;i<p->content->num_of;i++) \{"
+    *c "    if (p->content->content[i]->id==searched_id) break;"
+    *c "\}"
+    *c "printf(\"Found circuit id %d at index %d\\n\",searched_id,i);"
+    *c "while (1) \{"
+    if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
+    set j 0
+    @ size foreach_child s {
+        *c "@size:$s=p->content->content[i]->sizes->content[$j];"
+        incr j;
+    }
+    @ size foreach_child s {
+        *c "while (1) \{"
+        *c "step=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
+        *c "if (@size:$s+step<@size:$s:min) continue;"
+        *c "if (@size:$s+step>@size:$s:max) continue;"
+        *c "break;"
+        *c "\}"
+        *c "@size:$s+=step;"
+    }
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {[@ param:$n ?]} {
+            *c "@$n:V=@param:$n;"
+        } else {
+            *c "@$n:V=@vdd:V/2;"
+        }
+    }	 
+    *c "@vdd:V=$::opt(topv);"
+    *c "@0:V=0;"
+    *c ""
+    *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {[@ param:$n ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {$::debug_mode} {*c "printf(\"$n=%g Viable=%d\\n\",@$n:V,viable);"}
+        *c "if (!isfinite(@$n:V)) continue;"
+        *c "if (@$n:V==0) continue;"
+    }     
+    @ property foreach_child p {
+        if {$::debug_mode} {*c "printf(\"$p=%g Viable=%d\\n\",@property:$p,viable);"}
+        *c "if (!isfinite(@property:$p)) continue;"
+    }
+    *c "if (@property:ts<0) continue;"
+    *c "if (@property:Adc<1) continue;"
+    if {$::debug_mode} {*c "printf(\"Viable=%d\\n\",viable);"}
+    *c "vector_float *sizes=new_vector_float();"
+    @ size foreach_child s {
+        *c "add_entry_vector_float(sizes,@size:$s);"
+    }	
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        skip {[@ param:$n ?]}
+        *c "add_entry_vector_float(sizes,@$n:V);"
+    }
+    *c "vector_float *properties=new_vector_float();"
+    set chain {}
+    @ size foreach_child w {
+        skip {![regexp {^W} $w]}
+        regsub {^W} $w L l
+        lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
+    }
+    *c "@property:Vos=$::VOS_FORMULA;"
+    *c "@property:Area=[join $chain +];"	
+    *c "@property:Power=@size:iref*@vdd:V;"
+    @ property foreach_child p {
+        *c "add_entry_vector_float(properties,@property:$p);"
+    }	
+    *c "add_pat_entry(p,sizes,properties);"
+    *c "free(sizes);"
+    *c "free(properties);"
+    *c "if (p->content->num_of>=breed_count+1000) break;"
+    *c "\}"
     gcc $opt(name)
 }
 
@@ -1213,6 +1303,10 @@ namespace eval C {
             RANDOM_BREED_CODE_GOES_HERE
             return TCL_OK;
         }
+        static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+            RANDOM_BREED_SINGLE_CODE_GOES_HERE
+            return TCL_OK;
+        }
         // Initializing cTree references and registering the tcl_gamma_op_cmd command as ::C::@name
         int Gamma_Init(Tcl_Interp *interp) {
             if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
@@ -1223,6 +1317,7 @@ namespace eval C {
             GLOBAL_POINTER_INIT_GO_HERE
             Tcl_CreateObjCommand(interp, "::C::random", tcl_gamma_random_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::random_breed", tcl_gamma_random_breed_cmd, NULL, NULL);
+            Tcl_CreateObjCommand(interp, "::C::random_breed_single", tcl_gamma_random_breed_single_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::breed", tcl_gamma_breed_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::grad", tcl_gamma_grad_cmd, NULL, NULL);
             Tcl_CreateObjCommand(interp, "::C::op", tcl_gamma_op_cmd, NULL, NULL);

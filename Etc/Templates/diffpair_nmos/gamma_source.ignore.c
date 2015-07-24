@@ -623,6 +623,7 @@ float *Pproperty_fc_Wn;
 float *Pproperty_fc_Ln;
 float *Pproperty_fc_Ws;
 float *Pproperty_fc_Ls;
+float *Pcircuit_breed_id;
 float *Pop_iterations;
 float diffpair_nmos_circuits_PAT;
 float pat_size_target;
@@ -1243,6 +1244,7 @@ float property_fc_Wn;
 float property_fc_Ln;
 float property_fc_Ws;
 float property_fc_Ls;
+float circuit_breed_id;
 float op_iterations;
 // The compiled function
 static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
@@ -1854,6 +1856,7 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     property_fc_Ln=*Pproperty_fc_Ln;
     property_fc_Ws=*Pproperty_fc_Ws;
     property_fc_Ls=*Pproperty_fc_Ls;
+    circuit_breed_id=*Pcircuit_breed_id;
     op_iterations=*Pop_iterations;
     return TCL_OK;
 }
@@ -2466,6 +2469,7 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Pproperty_fc_Ln=property_fc_Ln;
     *Pproperty_fc_Ws=property_fc_Ws;
     *Pproperty_fc_Ls=property_fc_Ls;
+    *Pcircuit_breed_id=circuit_breed_id;
     *Pop_iterations=op_iterations;
     return TCL_OK;
 }
@@ -4400,6 +4404,143 @@ static int tcl_gamma_random_breed_cmd(ClientData clientData,Tcl_Interp *interp, 
     }
     return TCL_OK;
 }
+static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    ClientData CD;
+    int i;
+    PAT *p=(PAT *)Pdiffpair_nmos_circuits_PAT;
+    int more_to_breed=0;
+    long int r;
+    long int breed_count=p->content->num_of;
+    float step;
+    int sweep_size=p->content->num_of;
+    int searched_id=(int)circuit_breed_id;
+    for (i=0;i<p->content->num_of;i++) {
+        if (p->content->content[i]->id==searched_id) break;
+    }
+    printf("Found circuit id %d at index %d\n",searched_id,i);
+    while (1) {
+        size_iref=p->content->content[i]->sizes->content[0];
+        size_Wp=p->content->content[i]->sizes->content[1];
+        size_Lp=p->content->content[i]->sizes->content[2];
+        size_Wn=p->content->content[i]->sizes->content[3];
+        size_Ln=p->content->content[i]->sizes->content[4];
+        size_Ws=p->content->content[i]->sizes->content[5];
+        size_Ls=p->content->content[i]->sizes->content[6];
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_iref_step;
+            if (size_iref+step<size_iref_min) continue;
+            if (size_iref+step>size_iref_max) continue;
+            break;
+        }
+        size_iref+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Wp_step;
+            if (size_Wp+step<size_Wp_min) continue;
+            if (size_Wp+step>size_Wp_max) continue;
+            break;
+        }
+        size_Wp+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Lp_step;
+            if (size_Lp+step<size_Lp_min) continue;
+            if (size_Lp+step>size_Lp_max) continue;
+            break;
+        }
+        size_Lp+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Wn_step;
+            if (size_Wn+step<size_Wn_min) continue;
+            if (size_Wn+step>size_Wn_max) continue;
+            break;
+        }
+        size_Wn+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Ln_step;
+            if (size_Ln+step<size_Ln_min) continue;
+            if (size_Ln+step>size_Ln_max) continue;
+            break;
+        }
+        size_Ln+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Ws_step;
+            if (size_Ws+step<size_Ws_min) continue;
+            if (size_Ws+step>size_Ws_max) continue;
+            break;
+        }
+        size_Ws+=step;
+        while (1) {
+            step=(2.0*random()/RAND_MAX-1)*size_Ls_step;
+            if (size_Ls+step<size_Ls_min) continue;
+            if (size_Ls+step>size_Ls_max) continue;
+            break;
+        }
+        size_Ls+=step;
+        outm_V=vdd_V/2;
+        outp_V=vdd_V/2;
+        inp_V=param_inp;
+        tail_V=vdd_V/2;
+        inn_V=param_inn;
+        vbias_V=vdd_V/2;
+        vdd_V=1.1;
+        CONST_0_V=0;
+        tcl_gamma_op_cmd(CD,NULL,0,NULL);
+        if (!isfinite(outm_V)) continue;
+        if (outm_V==0) continue;
+        if (!isfinite(outp_V)) continue;
+        if (outp_V==0) continue;
+        if (!isfinite(tail_V)) continue;
+        if (tail_V==0) continue;
+        if (!isfinite(vbias_V)) continue;
+        if (vbias_V==0) continue;
+        if (!isfinite(property_Adc)) continue;
+        if (!isfinite(property_CMRR)) continue;
+        if (!isfinite(property_PSRR)) continue;
+        if (!isfinite(property_Rout)) continue;
+        if (!isfinite(property_BW)) continue;
+        if (!isfinite(property_ts)) continue;
+        if (!isfinite(property_Nt)) continue;
+        if (!isfinite(property_Nf)) continue;
+        if (!isfinite(property_fc)) continue;
+        if (!isfinite(property_Vos)) continue;
+        if (!isfinite(property_Area)) continue;
+        if (!isfinite(property_Power)) continue;
+        if (property_ts<0) continue;
+        if (property_Adc<1) continue;
+        vector_float *sizes=new_vector_float();
+        add_entry_vector_float(sizes,size_iref);
+        add_entry_vector_float(sizes,size_Wp);
+        add_entry_vector_float(sizes,size_Lp);
+        add_entry_vector_float(sizes,size_Wn);
+        add_entry_vector_float(sizes,size_Ln);
+        add_entry_vector_float(sizes,size_Ws);
+        add_entry_vector_float(sizes,size_Ls);
+        add_entry_vector_float(sizes,outm_V);
+        add_entry_vector_float(sizes,outp_V);
+        add_entry_vector_float(sizes,tail_V);
+        add_entry_vector_float(sizes,vbias_V);
+        vector_float *properties=new_vector_float();
+        property_Vos=0;
+        property_Area=size_Wp*size_Lp+40e-9*size_Wp+size_Wn*size_Ln+40e-9*size_Wn+size_Ws*size_Ls+40e-9*size_Ws;
+        property_Power=size_iref*vdd_V;
+        add_entry_vector_float(properties,property_Adc);
+        add_entry_vector_float(properties,property_CMRR);
+        add_entry_vector_float(properties,property_PSRR);
+        add_entry_vector_float(properties,property_Rout);
+        add_entry_vector_float(properties,property_BW);
+        add_entry_vector_float(properties,property_ts);
+        add_entry_vector_float(properties,property_Nt);
+        add_entry_vector_float(properties,property_Nf);
+        add_entry_vector_float(properties,property_fc);
+        add_entry_vector_float(properties,property_Vos);
+        add_entry_vector_float(properties,property_Area);
+        add_entry_vector_float(properties,property_Power);
+        add_pat_entry(p,sizes,properties);
+        free(sizes);
+        free(properties);
+        if (p->content->num_of>=breed_count+1000) break;
+    }
+    return TCL_OK;
+}
 // Initializing cTree references and registering the tcl_gamma_op_cmd command as ::C::diffpair_nmos
 int Gamma_Init(Tcl_Interp *interp) {
     if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
@@ -5634,10 +5775,13 @@ int Gamma_Init(Tcl_Interp *interp) {
     Pproperty_fc_Ws=(float *)(&c->value.s);
     c=create_context("property:fc:Ls");
     Pproperty_fc_Ls=(float *)(&c->value.s);
+    c=create_context("circuit_breed_id");
+    Pcircuit_breed_id=(float *)(&c->value.s);
     c=create_context("op_iterations");
     Pop_iterations=(float *)(&c->value.s);
     Tcl_CreateObjCommand(interp, "::C::random", tcl_gamma_random_cmd, NULL, NULL);
     Tcl_CreateObjCommand(interp, "::C::random_breed", tcl_gamma_random_breed_cmd, NULL, NULL);
+    Tcl_CreateObjCommand(interp, "::C::random_breed_single", tcl_gamma_random_breed_single_cmd, NULL, NULL);
     Tcl_CreateObjCommand(interp, "::C::breed", tcl_gamma_breed_cmd, NULL, NULL);
     Tcl_CreateObjCommand(interp, "::C::grad", tcl_gamma_grad_cmd, NULL, NULL);
     Tcl_CreateObjCommand(interp, "::C::op", tcl_gamma_op_cmd, NULL, NULL);

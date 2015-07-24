@@ -24,10 +24,14 @@ if {$method=="post"} {
         set ::opt($var) $val
     }
 }
+Info: QUERY_STRING=$::env(QUERY_STRING)
+foreach key [array names ::opt] {
+    Info: OPT $key=$::opt($key)
+}
 set ::session $::env(HTTP_X_FORWARDED_FOR)
 set ::sessions_path $fe_path/gamma_sessions
 set ::heatmap_pallet {0xa50026 0xd73027 0xf46d43 0xfdae61 0xfee090 0xffffbf 0xe0f3f8 0xabd9e9 0x74add1 0x4575b4 0x313695}
-
+source $::env(RAMSPICE)/Gamma/Web/FE/gamma_procs.tcl
 array set ::colors {
     gray #F2F2F3
     green #1FDA9A
@@ -75,7 +79,11 @@ foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
     }	    
 }
 if {[info exists ::opt(ajax)]} {
-    source $fe_path/ajax.tcl
+    if {[info exists ::opt(optimize_selected)]} {
+        source $fe_path/optimize.tcl
+    } else {
+        source $fe_path/mine_data.tcl
+    }
     close $::HTML
     return
 }
@@ -108,18 +116,9 @@ if {![info exists ::active_session]} {
     
 }
 set ::active_analysis [file rootname $::active_session].html
-proc save_session {} {
-    set S [open $::sessions_path/$::active_session w]
-    puts $S [list array set ::SESSION [array get ::SESSION]]
-    close $S
-}
 save_session
 set ::USER default
 source schematic_lib.tcl
-proc function {name body} {
-   set body [uplevel [list subst $body]]
-   puts $::HTML [list function $name $body]
-}
 foreach tech_dir [glob $::env(RAMSPICE)/Etc/Tech_DB/*] {
     skip {![file isdirectory $tech_dir]}
     skip {![file exists $tech_dir/data.tcl]}

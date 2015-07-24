@@ -156,14 +156,7 @@ function updateSelectedSpec(circuit) {
     }
     if (found==0) selected_circuits.push(circuit);
     updateSpecTable();
-    $::ajax_send_code 
-    url+="&selected_circuit=" + escape(circuit);
-    // Open a connection to the server 
-    xhr.open ("GET", url, true); 
-    // Setup a function for the server to run when it is done 
-    xhr.onreadystatechange = PopAjaxResponse; 
-    // Send the request 
-    xhr.send(null); 
+    if (found==0) SendOptimizeToServer(circuit);
 }
 function DeSelect(circuit) {
     var url = "";
@@ -185,12 +178,13 @@ function FocusOn(circuit) {
     focus_circuit=circuit;
     document.getElementById("SelectedCircuitID").innerHTML=circuit;
     UpdateFocusOn();
+    updateSpecTable();
 }
 function DefinePropertySpec(property,old_value) {
     var url = "";
     $::ajax_send_code
     var value=prompt("Please enter a new value for "+property,old_value);
-    eval(property+"="+value);
+    eval(property+"='"+value+"'");
     url += "&"+property+"="+escape(value);
     xhr.open ("GET", url, true); 
     xhr.onreadystatechange = PopAjaxResponse; 
@@ -201,6 +195,15 @@ function SendSpecToServer() {
     $::ajax_send_code
     xhr.open ("GET", url, true); 
     xhr.onreadystatechange = PopAjaxResponse; 
+    xhr.send(null); 
+} 
+function SendOptimizeToServer(circuit) { 
+    var url = "";
+    $::ajax_send_code
+    url +="&selected_circuit=" + escape(circuit);
+    url += "&"+"optimize_selected=1";
+    xhr.open ("GET", url, true); 
+    xhr.onreadystatechange = SendSpecToServer; 
     xhr.send(null); 
 } 
 function UpdateTech() {
