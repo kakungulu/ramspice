@@ -29,7 +29,7 @@ foreach topology $topology_list {
     foreach key [array names ::properties] {
         set ::topologies($topology,$key) $::properties($key)
     }
-    append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax=1&selected_tech=\" + escape(selected_tech) + \"&selected_axes=\" + escape(selected) + \"&selected_g=\" + escape(selected_g) + \"&selected_topology=\" + escape(selected_topology)"
+    append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax_cmd=generate_map&selected_tech=\" + escape(selected_tech) + \"&selected_axes=\" + escape(selected) + \"&selected_g=\" + escape(selected_g) + \"&selected_topology=\" + escape(selected_topology)"
     set i 0
     foreach property $::property_list {
         set color [lindex {yellow orange} [expr $i%2]] 
@@ -69,7 +69,7 @@ function toggle_axis(dim,id) {
         inst.innerHTML="<font color='#000000'>"+D+"</font>";
         selected[dim]=id;
     }
-    SendSpecToServer();
+    SendSpecToServer("","");
 }
 function toggle_axis2(dim,id) {
     var D=axes[dim];
@@ -93,7 +93,7 @@ function toggle_axis2(dim,id) {
         inst.innerHTML="<font color='#000000'><b>"+D+"</b></font>";
         selected[dim]=id;
     }
-    SendSpecToServer();
+    SendSpecToServer("","");
 }
 function toggle_g(id) {
     var i;
@@ -103,13 +103,13 @@ function toggle_g(id) {
             document.getElementById("G_"+selected_g[i]).innerHTML='$::goal_icon_gray';
             selected_g[i]=selected_g[selected_g.length-1];
             selected_g.pop();
-            SendSpecToServer();
+            SendSpecToServer("","");
             return
         }
     }
     inst.innerHTML='$::goal_icon_black';
     selected_g.push(id);
-    SendSpecToServer();
+    SendSpecToServer("","");
 }
 function toggle_g2(id) {
     var i;
@@ -119,15 +119,15 @@ function toggle_g2(id) {
             document.getElementById("G_"+selected_g[i]).innerHTML='$::goal_icon_gray2';
             selected_g[i]=selected_g[selected_g.length-1];
             selected_g.pop();
-            SendSpecToServer();
+            SendSpecToServer("","");
             return
         }
     }
     inst.innerHTML='$::goal_icon_black2';
     selected_g.push(id);
-    SendSpecToServer();
+    SendSpecToServer("","");
 }
-function PopAjaxResponse() {
+function PopMap() {
     if (xhr.readyState==4) {
         if (xhr.status==200) {
             var allProperties=xhr.responseText;
@@ -135,44 +135,39 @@ function PopAjaxResponse() {
             var fileref=document.createElement('script');
             fileref.setAttribute("type","text/javascript");
             fileref.setAttribute("src", 'http://www.engr.colostate.edu/~ystatter/cgi-bin/out.js');
-	    document.getElementsByTagName("head")[0].appendChild(fileref);
-	    setTimeout(function(){
-	        updateSpecTable();
+            document.getElementsByTagName("head")[0].appendChild(fileref);
+            setTimeout(function(){
+                updateSpecTable();
             }, 1000);
         }
     }
     
 }
-function updateSelectedSpec(circuit) {
-    var url = "";
-    var i,p;
-    var found=0;
-    for (i=0;i<selected_circuits.length;i++) {
-        if (selected_circuits[i]==circuit) {
-            selected_circuits[i]=selected_circuits[selected_circuits.length-1];
-            selected_circuits.pop();
-            found=1;
-        }
-    }
-    if (found==0) selected_circuits.push(circuit);
+function updateSelectedSpec(id) {
+    var i=selected_circuits.lastIndexOf(id);
+    if (i!=-1) {
+    	selected_circuits[i]=selected_circuits[selected_circuits.length-1];
+    	selected_circuits.pop();
+	document.getElementById("washer"+id).style.display='none';
+	document.getElementById("tag"+id).style.display='none';
+    } else {
+        selected_circuits.push(id);
+	document.getElementById("washer"+id).style.display='block';
+	document.getElementById("tag"+id).style.display='block';
+    }	
     updateSpecTable();
-    if (found==0) SendOptimizeToServer(circuit);
+    AjaxCmd("update_selected",id);
 }
-function DeSelect(circuit) {
-    var url = "";
-    for (i=0;i<selected_circuits.length;i++) {
-        if (selected_circuits[i]==circuit) {
-            selected_circuits[i]=selected_circuits[selected_circuits.length-1];
-            selected_circuits.pop();
-            found=1;
-        }
+function DeSelect(id) {
+    var i=selected_circuits.lastIndexOf(id);
+    if (i!=-1) {
+        selected_circuits[i]=selected_circuits[selected_circuits.length-1];
+        selected_circuits.pop();
+        updateSpecTable();
+        AjaxCmd("update_deselect",id);
+	document.getElementById("washer"+id).style.display='none';
+	document.getElementById("tag"+id).style.display='none';
     }
-    updateSpecTable();
-    $::ajax_send_code 
-    url+="&deselect=" + escape(circuit);
-    xhr.open ("GET", url, true); 
-    xhr.onreadystatechange = PopAjaxResponse; 
-    xhr.send(null); 
 }
 function FocusOn(circuit) {
     focus_circuit=circuit;
@@ -185,27 +180,24 @@ function DefinePropertySpec(property,old_value) {
     $::ajax_send_code
     var value=prompt("Please enter a new value for "+property,old_value);
     eval(property+"='"+value+"'");
-    url += "&"+property+"="+escape(value);
+    SendSpecToServer(property,value);
+}
+function SendSpecToServer(property,value) { 
+    var url = "";
+    $::ajax_send_code
+    if (property!="") {
+        url += "&"+property+"="+escape(value);
+    }
     xhr.open ("GET", url, true); 
-    xhr.onreadystatechange = PopAjaxResponse; 
+    xhr.onreadystatechange = PopMap; 
+    xhr.send(null); 
+} 
+function AjaxCmd(cmd,args) {
+    var url = "?ajax_cmd="+cmd+"&arg="+escape(args);
+    xhr.open ("GET", url, true); 
+    xhr.onreadystatechange = null; 
     xhr.send(null); 
 }
-function SendSpecToServer() { 
-    var url = "";
-    $::ajax_send_code
-    xhr.open ("GET", url, true); 
-    xhr.onreadystatechange = PopAjaxResponse; 
-    xhr.send(null); 
-} 
-function SendOptimizeToServer(circuit) { 
-    var url = "";
-    $::ajax_send_code
-    url +="&selected_circuit=" + escape(circuit);
-    url += "&"+"optimize_selected=1";
-    xhr.open ("GET", url, true); 
-    xhr.onreadystatechange = SendSpecToServer; 
-    xhr.send(null); 
-} 
 function UpdateTech() {
     if (document.getElementById("TechSelectForm").selectedIndex>=0) {
         selected_tech = tech_array\[document.getElementById("TechSelectForm").selectedIndex\]\;
@@ -220,7 +212,7 @@ function UpdateTopology() {
         selected_topology = topology_array\[document.getElementById("TopologySelectForm").selectedIndex\]\;
         document.getElementById("TopologyRequest").innerHTML="<b>Topology:</b>"\;
     }
-    SendSpecToServer();
+    SendSpecToServer("","");
 }
 
 set ::restore_session_code {}
@@ -235,7 +227,7 @@ if {[info exists ::SESSION(selected_topology)]} {
     append ::restore_session_code "selected_topology=\"$::SESSION(selected_topology)\"\;"
     append ::restore_session_code "document.getElementById(\"TopologySelectForm\").selectedIndex\=i\;"
     append ::restore_session_code "document.getElementById(\"TopologyRequest\").innerHTML=\"<b>Topology:</b>\"\;\n"
-    append ::restore_session_code "SendSpecToServer();\n"
+    append ::restore_session_code "SendSpecToServer(\"\",\"\");\n"
 }
 function initForm() {
     var i=-1;

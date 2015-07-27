@@ -159,7 +159,7 @@ proc fork_task {group_var task {limit {}}} {
         set num_of_active [llength [glob -nocomplain /tmp/forked_processes/[pid]-*-running]]
         if {$limit>$num_of_active} break
         #	 Info: $num_of_active forked processes still active. Limit is $limit.
-    p    }
+    }
     set parent_pid [pid]
     set p [fork]
     if {$p!=0} {

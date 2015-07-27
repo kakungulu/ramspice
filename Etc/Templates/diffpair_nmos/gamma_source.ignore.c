@@ -624,6 +624,7 @@ float *Pproperty_fc_Ln;
 float *Pproperty_fc_Ws;
 float *Pproperty_fc_Ls;
 float *Pcircuit_breed_id;
+float *Pcircuit_breed_target;
 float *Pop_iterations;
 float diffpair_nmos_circuits_PAT;
 float pat_size_target;
@@ -1245,6 +1246,7 @@ float property_fc_Ln;
 float property_fc_Ws;
 float property_fc_Ls;
 float circuit_breed_id;
+float circuit_breed_target;
 float op_iterations;
 // The compiled function
 static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
@@ -1857,6 +1859,7 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     property_fc_Ws=*Pproperty_fc_Ws;
     property_fc_Ls=*Pproperty_fc_Ls;
     circuit_breed_id=*Pcircuit_breed_id;
+    circuit_breed_target=*Pcircuit_breed_target;
     op_iterations=*Pop_iterations;
     return TCL_OK;
 }
@@ -2470,6 +2473,7 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Pproperty_fc_Ws=property_fc_Ws;
     *Pproperty_fc_Ls=property_fc_Ls;
     *Pcircuit_breed_id=circuit_breed_id;
+    *Pcircuit_breed_target=circuit_breed_target;
     *Pop_iterations=op_iterations;
     return TCL_OK;
 }
@@ -4411,6 +4415,7 @@ static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *i
     int more_to_breed=0;
     long int r;
     long int breed_count=p->content->num_of;
+    long int watchdog=0;
     float step;
     int sweep_size=p->content->num_of;
     int searched_id=(int)circuit_breed_id;
@@ -4419,6 +4424,8 @@ static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *i
     }
     printf("Found circuit id %d at index %d\n",searched_id,i);
     while (1) {
+        watchdog++;
+        if (watchdog>10000) break;
         size_iref=p->content->content[i]->sizes->content[0];
         size_Wp=p->content->content[i]->sizes->content[1];
         size_Lp=p->content->content[i]->sizes->content[2];
@@ -4537,7 +4544,7 @@ static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *i
         add_pat_entry(p,sizes,properties);
         free(sizes);
         free(properties);
-        if (p->content->num_of>=breed_count+1000) break;
+        if (p->content->num_of>=breed_count+circuit_breed_target) break;
     }
     return TCL_OK;
 }
@@ -5777,6 +5784,8 @@ int Gamma_Init(Tcl_Interp *interp) {
     Pproperty_fc_Ls=(float *)(&c->value.s);
     c=create_context("circuit_breed_id");
     Pcircuit_breed_id=(float *)(&c->value.s);
+    c=create_context("circuit_breed_target");
+    Pcircuit_breed_target=(float *)(&c->value.s);
     c=create_context("op_iterations");
     Pop_iterations=(float *)(&c->value.s);
     Tcl_CreateObjCommand(interp, "::C::random", tcl_gamma_random_cmd, NULL, NULL);

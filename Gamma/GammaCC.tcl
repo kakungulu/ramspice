@@ -948,9 +948,12 @@ proc .compile_circuit {args} {
         lappend chain "@size:$w*(@size:$l+@param:area_spacing)"
     }
     *c "@property:Vos=$::VOS_FORMULA;"
-    *c "@property:Area=[join $chain +];"	
+    *c "@property:Area=1e12*([join $chain +]);"	
     *c "@property:Power=@size:iref*@vdd:V;"
     @ property foreach_child p {
+        if {[lsearch {Adc CMRR PSRR} $p]!=-1} {
+	    *c "@property:p=20*log10(@property:p);"
+	}
         *c "add_entry_vector_float(properties,@property:$p);"
     }	
     *c "add_pat_entry(p,sizes,properties);"
@@ -1035,9 +1038,12 @@ proc .compile_circuit {args} {
                 lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
             }
             *c "@property:Vos=$::VOS_FORMULA;"
-            *c "@property:Area=[join $chain +];"	
+            *c "@property:Area=1e12*([join $chain +]);"	
             *c "@property:Power=@size:iref*@vdd:V;"
             @ property foreach_child p {
+                if {[lsearch {Adc CMRR PSRR} $p]!=-1} {
+	            *c "@property:p=20*log10(@property:p);"
+	        }
                 *c "add_entry_vector_float(properties,@property:$p);"
             }	
             *c "add_pat_entry(p,sizes,properties);"
@@ -1138,9 +1144,12 @@ proc .compile_circuit {args} {
         lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
     }
     *c "@property:Vos=$::VOS_FORMULA;"
-    *c "@property:Area=[join $chain +];"	
+    *c "@property:Area=1e12*([join $chain +]);"	
     *c "@property:Power=@size:iref*@vdd:V;"
     @ property foreach_child p {
+        if {[lsearch {Adc CMRR PSRR} $p]!=-1} {
+	    *c "@property:p=20*log10(@property:p);"
+	}
         *c "add_entry_vector_float(properties,@property:$p);"
     }	
     *c "if (@property:Adc>max_Adc) max_Adc=@property:Adc;"
@@ -1168,6 +1177,7 @@ proc .compile_circuit {args} {
     *c "int more_to_breed=0;"
     *c "long int r;"
     *c "long int breed_count=p->content->num_of;"
+    *c "long int watchdog=0;"
     *c "float step;"
     *c "int sweep_size=p->content->num_of;"
     *c "int searched_id=(int)@circuit_breed_id;"
@@ -1175,7 +1185,7 @@ proc .compile_circuit {args} {
     *c "    if (p->content->content[i]->id==searched_id) break;"
     *c "\}"
     *c "printf(\"Found circuit id %d at index %d\\n\",searched_id,i);"
-    *c "while (1) \{"
+    *c "while (watchdog++<10000) \{"
     if {$::debug_mode} {*c "printf(\"Visiting %d\\n\",i);"}
     set j 0
     @ size foreach_child s {
@@ -1240,15 +1250,18 @@ proc .compile_circuit {args} {
         lappend chain "@size:$w*@size:$l+40e-9*@size:$w"
     }
     *c "@property:Vos=$::VOS_FORMULA;"
-    *c "@property:Area=[join $chain +];"	
+    *c "@property:Area=1e12*([join $chain +]);"	
     *c "@property:Power=@size:iref*@vdd:V;"
     @ property foreach_child p {
+        if {[lsearch {Adc CMRR PSRR} $p]!=-1} {
+	    *c "@property:p=20*log10(@property:p);"
+	}
         *c "add_entry_vector_float(properties,@property:$p);"
     }	
     *c "add_pat_entry(p,sizes,properties);"
     *c "free(sizes);"
     *c "free(properties);"
-    *c "if (p->content->num_of>=breed_count+1000) break;"
+    *c "if (p->content->num_of>=breed_count+@circuit_breed_target) break;"
     *c "\}"
     gcc $opt(name)
 }
