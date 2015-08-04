@@ -15,7 +15,7 @@ proc function {name body} {
    puts $::HTML [list function $name $body]
 }
 proc get_step {min max} {
-    set step 1e-25
+    set step 1e-35
     while {$step<abs($min)} {
         set step [expr 10*$step]
     }
@@ -34,7 +34,7 @@ proc get_step {min max} {
     } elseif {[regexp e $step]} {
         regsub {\.[0-9]+} $step {} step
     } else {
-        regsub {0\.(.).*} $step {0.\1} step
+        regsub {0\.(0*[^0]).*} $step {0.\1} step
     }
     return $step
 }
@@ -180,6 +180,7 @@ proc SVG::graph_pareto_front {args} {
     if {$::x_value<$min_x} {
         set ::x_value [expr $::x_value+$xstep]
     }
+    Info: x_value=$::x_value min_x=$min_x max_x=$max_x
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
         Info: x_coord=$x_coord
@@ -203,6 +204,7 @@ proc SVG::graph_pareto_front {args} {
     }
     while {$::y_value<=$max_y} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
+        Info: y_coord=$y_coord
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
         SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
             print [eng $::y_value $opt(y_unit)]
@@ -289,5 +291,35 @@ proc SVG::graph_pareto_front {args} {
             set previous_y $y_coord
         }
     }
+}
+namespace eval ::GEN_SPICE {
+}
+proc ::GEN_SPICE::transistor {name d g s b L W {corner ss}} {
+    set type [string index $name 0]
+    set n [expr int(ceil($W/(10*$L)))]
+    set W [expr $W/$n]
+    for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
+        skip {$::bin($type,$i,lmax)<$L}
+        skip {$::bin($type,$i,lmin)>$L}
+        skip {$::bin($type,$i,wmax)<$W}
+        skip {$::bin($type,$i,wmin)>$W}
+	break
+    }
+    if {![info exists ::bin($type,$i,lmax)]} {
+        Error: Transistor dimensions L=$l and W=$W (n=$n) do not correspond to any bin
+	exit
+    }
+    set retval {}
+    if {$n==1} {
+	append retval [list $name $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
+	append retval "\n"
+        return $retval
+    }
+    set retval {}
+    for {set j 0} {$j<$n} {incr j} {
+        append retval [list ${name}_$j $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
+	append retval "\n"
+    }
+    return $retval
 }
 

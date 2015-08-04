@@ -23,7 +23,8 @@ default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
 default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/5:5:3:6/
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
-
+@ area_spacing = 0.160e-6
+@ max_Adc = 0
 @ / load Etc/Templates/$::opt(topology)/ctree.db
 @ op_iterations = 5
 proc present_property {p {val {}}} {
@@ -45,7 +46,7 @@ default ::opt(iref) 40e-6
 @ sizer_step = 20e-9
 set pat_sizes {}
 @ size foreach_child s {
-    @ size:$s:step = 500e-9
+    @ size:$s:step = 50e-9
     lappend pat_sizes $s
 }
 @ size:iref:step = 1e-6
@@ -56,6 +57,7 @@ set pat_sizes {}
     skip {[@ param:$n ?]}
     lappend pat_sizes $n
 }
+@ param:rload = 1e40
 set pat_properties {}
 @ property foreach_child p {
     if {[@ property/$p/step_factor]<0} {
@@ -68,20 +70,35 @@ load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
 set i 0
 set initial_size [@ $::opt(topology)/circuits PAT size]
 @ pat_size_target = $::opt(sample)
-@ param/unique = 2
-::C::import
-::C::random
-@ $::opt(topology)/circuits PAT  unique 2
-Info: size after random=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
 @ param/unique = 5
-::C::import
-::C::random_breed
-Info: size after  breed=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
-default ::opt(target) 500000
-@ pat_size_target = $::opt(target)
+while {[@ max_Adc]<9} {
+    Info: max_Adc=[@ max_Adc] Trying [@ pat_size_target]
+    ::C::import
+    ::C::random
+    ::C::export
+    @ $::opt(topology)/circuits PAT  unique 3
+#    @ $::opt(topology)/circuits PAT  stars
+}
+Info: size after random=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
 @ param/unique = 0
+while {[@ max_Adc]<20} {
+    Info: PAT=[@ $::opt(topology)/circuits PAT size] max_Adc=[eng [@ max_Adc] dB] Trying [@ pat_size_target]
+    ::C::import
+    ::C::random_breed
+    ::C::export
+    @ $::opt(topology)/circuits PAT  unique 8
+#    @ $::opt(topology)/circuits PAT stars
+}
+@ size foreach_child s {
+    @ size:$s:step = 100e-9
+    lappend pat_sizes $s
+}
+@ size:iref:step = 1e-6
+@ param/unique = 0
+@ pat_size_target = $::opt(target)
 ::C::import
 ::C::random_breed
+Info: Done, saving PAT
 @ / save Etc/Templates/$::opt(topology)/pareto_bi.db
 exit
 for {set i 0} {$i<[@ $::opt(topology)/circuits PAT size]} {incr i} {

@@ -111,7 +111,6 @@ foreach key [array names ::opt] {
         foreach circuit $::circuit_list {
             lappend ::circuit_ids  [@ /$::SESSION(selected_topology)/circuits PAT id $circuit]
         }
-        Info: circuit_ids=$circuit_ids
         set pixels {}
         foreach index $::circuit_list {
             set circuit [@ /$::SESSION(selected_topology)/circuits PAT index $index]
@@ -314,21 +313,35 @@ foreach key [array names ::opt] {
         </td>
         <td>
         draw_schematic $::SESSION(selected_topology) [expr $frame_size-200]
+	default ::SESSION(spice_netlist) [regsub {\.tcl} $::env(RAMSPICE)/../../$::active_session.sn {}]
+	puts $::HTML "<a href='http://www.engr.colostate.edu/~ystatter/[file tail $::SESSION(spice_netlist)]' download='[file tail $::SESSION(spice_netlist)]'>"
+	puts $::HTML "<svg enable-background=\"new 0 0 50 50\" height=\"32px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 50 50\" width=\"32px\" xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><rect fill=\"none\" height=\"50\" width=\"50\" /><path d=\"  M32,35c0,0,8.312,0,9.098,0C45.463,35,49,31.463,49,27.099s-3.537-7.902-7.902-7.902c-0.02,0-0.038,0.003-0.058,0.003  c0.061-0.494,0.103-0.994,0.103-1.504c0-6.71-5.439-12.15-12.15-12.15c-5.229,0-9.672,3.309-11.386,7.941  c-1.087-1.089-2.591-1.764-4.251-1.764c-3.319,0-6.009,2.69-6.009,6.008c0,0.085,0.01,0.167,0.013,0.251  C3.695,18.995,1,22.344,1,26.331C1,31.119,4.881,35,9.67,35c0.827,0,8.33,0,8.33,0\" fill=\"none\" stroke=\"#000000\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-miterlimit=\"10\" stroke-width=\"2\" /><polyline fill=\"none\" points=\"30,41 25,46 20,41   \" stroke=\"#000000\" stroke-linecap=\"round\" stroke-miterlimit=\"10\" stroke-width=\"2\" /><line fill=\"none\" stroke=\"#000000\" stroke-linecap=\"round\" stroke-miterlimit=\"10\" stroke-width=\"2\" x1=\"25\" x2=\"25\" y1=\"26\" y2=\"45.668\" /></svg>"
+	puts $::HTML "</a>"
         </td>
         </tr>
         </table>
         set focus_code {}
         foreach circuit $::circuit_ids index $::circuit_list {
             append focus_code "if (focus_circuit=='$circuit') \{\n"
-            set entry 0
-            foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
-                foreach key [array names ::local_ids] {
+            foreach key [array names ::local_ids] {
+		set value "$::local_ids($key) "
+                set entry -1
+                foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+                    incr entry
                     skip {$::local_ids($key)!=$size}
-                    set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] V]
+                    append value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] V]
                     append value "<set attributeName=\\\"visibility\\\" from=\\\"hidden\\\" to=\\\"visible\\\" begin=\\\"schematic_sense_$key.mouseover\\\" end=\\\"schematic_sense_$key.mouseout\\\"/>"
                     append focus_code "    document.getElementById('schematic_$key').innerHTML='$value';\n"
                 }
-                incr entry
+                set entry -1
+                foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+                    incr entry
+                    skip {![info exists ::sizers($size,id_list)]}
+                    skip {[lsearch $::sizers($size,id_list) $::local_ids($key)]==-1}
+		    append value "$size=[eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::sizers($size,unit)] "
+		}  
+                append value "<set attributeName=\\\"visibility\\\" from=\\\"hidden\\\" to=\\\"visible\\\" begin=\\\"schematic_sense_$key.mouseover\\\" end=\\\"schematic_sense_$key.mouseout\\\"/>"
+                append focus_code "    document.getElementById('schematic_$key').innerHTML='$value';\n"
             }
             append focus_code "\}\n"
         }

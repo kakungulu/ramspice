@@ -3265,6 +3265,24 @@ void pat_unique(PAT *p,float f) {
 	}    
     }
 }
+void pat_stars(PAT *p) {
+    ordinal i,j,k;
+    vector_float *max=new_vector_float();
+    vector_int *indices=new_vector_int();
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(max,p->content->content[0]->properties->content[i]);
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_int(indices,0);
+    for (i=0;i<p->content->num_of;i++) for (j=0;j<p->properties->num_of;j++) {
+    	if (p->content->content[i]->properties->content[j]<=max->content[j]) continue;
+	max->content[j]=p->content->content[i]->properties->content[j];
+	indices->content[j]=p->content->content[i]->id;
+    }
+    for (i=0;i<p->content->num_of;i++) {
+        int star=0;
+        for (j=0;j<p->properties->num_of;j++) if (indices->content[j]==p->content->content[i]->id) star=1;
+	if (star) continue;
+	delete_entry_vector_pointer_PAT_entry(p->content,i--);
+    }	
+}
 
 
 static int
@@ -3542,6 +3560,14 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
             ordinal j;
             j=atoi(argv[4]);
             delete_entry_vector_pointer_PAT_entry(p->content,j);
+            return TCL_OK;
+        }
+        if (strcmp(argv[3],"stars")==0) {
+            if (argc!=4) {
+                #Error: "(ctree) The PAT stars sub-command requires no more arguments"
+                return TCL_ERROR;
+            }
+	    pat_stars(p);
             return TCL_OK;
         }
         #Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]

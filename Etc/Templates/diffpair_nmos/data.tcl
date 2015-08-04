@@ -17,8 +17,8 @@ define_properties {
 define_sizers {
     Lp {p_1 p_2} 40e-9 10e6 m
     Wp {p_1 p_2} 40e-9 10e6 m
-    Ln {n_1 n_2} 40e-9 10e6 m
-    Wn {n_1 n_2} 40e-9 10e6 m
+    Ln {nin_1 nin_2} 40e-9 10e6 m
+    Wn {nin_1 nin_2} 40e-9 10e6 m
     Ls {n_ref n_tail} 40e-9 10e6 m
     Ws {n_ref n_tail} 40e-9 10e6 m
     iref cbias 0 100e-6 A
@@ -49,7 +49,7 @@ set ::topologies($name,schematic) {
     terminal 0 90 outp
     nl 0 0 {}
     
-    csrc 0 180 vbias
+    csrc 0 180 cbias
     terminal 0 270 inp
     nmos 1 270 nin_1
     blank 0 0 {}

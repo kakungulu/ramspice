@@ -182,6 +182,7 @@ void pat_unique(PAT *p,float f);
 void write_pointer_PAT(FILE *O,PAT *p);
 PAT *read_pointer_PAT();
 void pat_graph(FILE *O,PAT *p,int x,int y);
+void pat_stars(PAT *p);
 POLY *new_POLY();
 void link_POLY(POLY *p);
 float calc_polynomial(vector_float *p);

@@ -3,13 +3,6 @@ exec $RAMSPICE/ramspice $0 $argv
 ##########################################################################
 ######### Read input
 ##########################################################################
-set O [open ~ystatter/apache_info.txt w]
-puts $O [clock format [clock seconds]]
-puts $O $::env(HOSTNAME)
-close $O
-exec ps -e | grep ram >> ~ystatter/apache_info.txt
-###exec cat /proc/cpuinfo >> ~ystatter/apache_info.txt
-###exec free >> ~ystatter/apache_info.txt
 set fe_path $::env(RAMSPICE)/Gamma/Web/FE
 set ::process_path $fe_path/gamma_process
 if {![file exists $::process_path]} {
@@ -72,11 +65,12 @@ if {[info exists ::opt(authentication_user)]} {
 default ::SESSION(ip) {}
 Info: sessions_path=$::sessions_path $authenticate
 foreach session_file [glob -nocomplain $::sessions_path/*.tcl] {
-    Info: $session_file [expr [file mtime $session_file]-[clock seconds]]
-    skip {[file mtime $session_file]-[clock seconds]>15*60}
+    Info: $session_file [expr [clock seconds]-[file mtime $session_file]]
+    skip {[clock seconds]-[file mtime $session_file]>15*60}
     array unset ::SESSION
     source $session_file
     default  ::SESSION(ip) 
+    Info: ip=$::SESSION(ip) =?= $::session
     if {$::SESSION(ip)==$::session} {
         set authenticate 0
         set ::active_session [file tail $session_file]
@@ -123,6 +117,7 @@ if {![info exists ::active_session]} {
     
 }
 set ::active_analysis [file rootname $::active_session].html
+set ::SESSION(ip) $::session
 save_session
 set ::USER default
 source schematic_lib.tcl

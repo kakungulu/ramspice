@@ -122,6 +122,11 @@ set ::auto_context_index 0
 proc . {} {
     return [string repeat .... [info level]]
 }
+proc Stack: {} {
+    for {set i 1} {$i<[info level]} {incr i} {
+        Info: [.] [info level $i] 
+    }
+}
 proc ^ {args} {
     set text $args
     if {[llength $args]==1} {

@@ -46,7 +46,6 @@ regsub -all {""} $tech_list {","} tech_list
 regsub -all {""} $topology_js_list {","} topology_js_list
 puts $::HTML "var tech_array = \[$tech_list\]\;"
 puts $::HTML "var topology_array = \[$topology_js_list\]\;"
-
 function toggle_axis(dim,id) {
     var D=axes[dim];
     var inst=document.getElementById(D+"_"+ id);
@@ -174,6 +173,7 @@ function FocusOn(circuit) {
     document.getElementById("SelectedCircuitID").innerHTML=circuit;
     UpdateFocusOn();
     updateSpecTable();
+    AjaxCmd("update_focus",circuit);
 }
 function DefinePropertySpec(property,old_value) {
     var url = "";
@@ -205,6 +205,7 @@ function UpdateTech() {
         if (selected_topology=="none") {
             document.getElementById("TopologyRequest").innerHTML="<font color=red>Now, select topology:</font>"\;
         }
+	AjaxCmd("SaveInSession","selected_tech,"+selected_tech);
     }
 }
 function UpdateTopology() {
