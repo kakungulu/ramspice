@@ -1,9 +1,23 @@
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        if {[@ param:$n ?]} {
+            *c "@$n:V=@param:$n;"
+        } else {
+            *c "@$n:V=@vdd:V/2;"
+        }
+    }	 
+    *c "@vdd:V=$::opt(topv);"
+    *c "@0:V=0;"
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
     if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@op_iterations);"}
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
-    *c "for (op_it=0;op_it<@op_iterations;op_it++) \{"
+    *c "for (op_it=0;((op_it<@op_iterations)||(fabs(@outp:V-@outm:V)>10e-3));op_it++) \{"
+    *c "if (op_it>100) return TCL_ERROR;"
+    *c "float previous_out_dc=@$::output_net:V;"
     if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
     foreach transistor $::all_transistors {
         set L $::transistors($transistor,L)
@@ -48,7 +62,7 @@
             *c "@$node:V=($expression($node))*@Ted;"
             *c "if (@$node:V<0) @$node:V=0;"
             *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
-            if {$::debug_mode} {*c "printf(\"$node=%g\\n\",@$node:V);"}
+            if {1} {*c "if (@print_op_steps>0) printf(\"%d) $node=%g\\n\",op_it,@$node:V);"}
         }
         incr i
     }
@@ -187,24 +201,40 @@
     *c "if (@max_Adc<@property:Adc) @max_Adc=@property:Adc;"
     ####################### Add circuit to the PAT
     *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
-    *c "vector_float *sizes=new_vector_float();"
+    set index 0
     @ size foreach_child s {
-        *c "add_entry_vector_float(sizes,@size:$s);"
+	incr index
     }	
     @ / foreach_child n {
         skip {![@ $n:V ?]}
         skip {$n=="vdd"}
         skip {$n=="0"}
         skip {[@ param:$n ?]}
-        *c "add_entry_vector_float(sizes,@$n:V);"
+	incr index
     }
-    *c "vector_float *properties=new_vector_float();"
-    @ property foreach_child p {
-        *c "add_entry_vector_float(properties,@property:$p);"
+    *c "float sizes\[$index\];"
+    set index 0
+    @ size foreach_child s {
+        *c "sizes\[$index\]=@size:$s;"
+	incr index
     }	
-    *c "add_pat_entry(p,sizes,properties);"
+    @ / foreach_child n {
+        skip {![@ $n:V ?]}
+        skip {$n=="vdd"}
+        skip {$n=="0"}
+        skip {[@ param:$n ?]}
+        *c "sizes\[$index\]=@$n:V;"
+	incr index
+    }
+    set index 0
+    @ property foreach_child p {
+	incr index
+    }	
+    *c "float properties\[$index\];"
+    set index 0
+    @ property foreach_child p {
+        *c "properties\[$index\]=@property:$p;"
+	incr index
+    }	
+    *c "add_pat_array(p,sizes,properties);"
     if {$::debug_mode} {*c "printf(\"PAT contains %d entries\\n\",p->content->num_of);"}
-    
-    *c "free(sizes);"
-    *c "free(properties);"
-    *c "return TCL_OK;"

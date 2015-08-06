@@ -11,7 +11,7 @@ set lvalues {3.6e-8 4.333e-8 4.5e-8 4.667e-8 5.233e-8 5.4e-8 5.567e-8 8.833e-8 9
 set wvalues {1.08e-7 2.674e-7 2.7e-7 2.726e-7 5.374e-7 5.4e-7 5.426e-7 8.974e-7 9e-7 9.025999999999999e-7 8.9974e-6 9e-6 9.0026e-6 0.00090001}
 set ::bsim_version 4v5
 
-@ area_spacing = 0.160e-6
+@ param/area_spacing = 0.160e-6
 
 set ::VOS_FORMULA {
     float x = property_Area;

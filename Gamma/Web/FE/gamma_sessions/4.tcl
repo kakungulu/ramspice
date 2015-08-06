@@ -1,0 +1,52 @@
+array set ::SESSION {
+Adc {}
+Area {}
+BW {}
+CMRR {}
+Nt {}
+PSRR {}
+Power {}
+Rout {}
+Vos {}
+ajax_cmd update_selected
+arg 83618
+circuit_list {178 279 308 324 481 896 1090 2577 2741 3028 3317 3685 4702 4705 7084 7533 7534 8590 8599 8608 8815 8941 9052 9119 9122}
+deselect {}
+fc {}
+focus_circuit 83618
+ip 10.1.21.12
+selcircuit_66360 0
+selcircuit_77052 0
+selcircuit_83292 0
+selcircuit_83618 1
+selcircuit_83856 0
+selcircuit_84297 0
+selcircuit_86324 0
+selcircuit_86633 0
+selcircuit_86961 0
+selcircuit_87391 0
+selcircuit_88557 0
+selcircuit_88560 0
+selcircuit_91153 0
+selcircuit_91344 0
+selcircuit_91669 0
+selcircuit_91670 0
+selcircuit_92889 0
+selcircuit_92898 0
+selcircuit_92920 0
+selcircuit_92921 0
+selcircuit_93147 0
+selcircuit_93296 0
+selcircuit_93419 0
+selcircuit_93505 0
+selcircuit_93508 0
+selected_axes Adc%2CRout%2Cnone
+selected_circuits_tags {84297 93505 91344 88557 86961 91669 91670 88560 93508 93147 91153 86633 92898 93296 92921 83856 92920 86324 77052 66360 93419 87391 83618 83292 92889}
+selected_g {}
+selected_tech tsmc040
+selected_tech%2Ctsmc040 {}
+selected_topology diffpair_nmos
+spice_netlist /net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice/../../4.sn
+ts {}
+user ystatter
+}

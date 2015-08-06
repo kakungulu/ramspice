@@ -1,0 +1,55 @@
+array set ::SESSION {
+Adc {}
+Area {}
+BW {}
+CMRR {}
+Nt {}
+PSRR {}
+Power {}
+Rout {}
+Vos {}
+ajax_cmd update_deselect
+arg 115690
+circuit_list {166 194 227 271 336 1346 1449 1956 2536 3662 3993 4338 4646 4692 5560 5950 6291 6381 6555 6672 7550 7610 7931 8388 8855 8922 9214 9833}
+deselect {}
+fc {}
+focus_circuit 115620
+ip 10.1.21.12
+selcircuit_115620 1
+selcircuit_115690 0
+selcircuit_128847 0
+selcircuit_145588 0
+selcircuit_146673 0
+selcircuit_147294 0
+selcircuit_147886 0
+selcircuit_149077 0
+selcircuit_149433 0
+selcircuit_149794 0
+selcircuit_150135 0
+selcircuit_150186 0
+selcircuit_151108 0
+selcircuit_151515 0
+selcircuit_151894 0
+selcircuit_151991 0
+selcircuit_152171 0
+selcircuit_152304 0
+selcircuit_153239 0
+selcircuit_153301 0
+selcircuit_153661 0
+selcircuit_154143 0
+selcircuit_154660 0
+selcircuit_154737 0
+selcircuit_155053 0
+selcircuit_155360 0
+selcircuit_155721 0
+selcircuit_54845 0
+selected_axes Adc%2CRout%2Cnone
+selected_circuits_tags {54845 155721 149077 128847 154660 152171 147294 152304 155053 147886 150186 151515 153239 151108 155360 151991 150135 151894 153661 146673 149794 153301 149433 154737 154143 115620 115690 145588}
+selected_g {}
+selected_tech tsmc040
+selected_tech%2Ctsmc040 {}
+selected_topology diffpair_nmos
+spice_netlist /net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice/../../25.sn
+ts {}
+user ystatter
+}

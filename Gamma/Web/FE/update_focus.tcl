@@ -26,14 +26,12 @@ foreach s [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
     @ size:$s = [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $i]
     incr i
 }
-Info: SFSG
 source $::env(RAMSPICE)/Etc/Tech_DB/$::SESSION(selected_tech)/binning_$::SESSION(selected_tech).tcl
 set netlist {}
 set topology_file $::env(RAMSPICE)/Etc/Topologies/$::SESSION(selected_topology).gsp
 set ::required_models {}
 set I [open $topology_file r]
 while {[gets $I line]>=0} {
-    Info: $line
     switch -regexp [string index $line 0] {
         m {
             set name [string range [lindex $line 0] 1 end]
@@ -90,7 +88,7 @@ while {[gets $I line]>=0} {
 close $I
 regsub {\.tcl} $::env(RAMSPICE)/../../$::active_session.sn {} ::SESSION(spice_netlist)
 set O [open $::SESSION(spice_netlist) w]
-puts $O "* $::SESSION(selected_topology) Instance: $::SESSION(focus_circuit)"
+puts $O "* $::SESSION(selected_topology) Instance: $::SESSION(focus_circuit) $::SESSION(selected_tech)"
 set I [open $::env(RAMSPICE)/Etc/Tech_DB/$::SESSION(selected_tech)/$::SESSION(selected_tech).sp r]
 set copy_line 0
 Info: required_models=$::required_models

@@ -23,10 +23,10 @@ default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
 default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/5:5:3:6/
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
-@ area_spacing = 0.160e-6
 @ max_Adc = 0
 @ / load Etc/Templates/$::opt(topology)/ctree.db
-@ op_iterations = 5
+@ op_iterations = 15
+@ print_op_steps = 0
 proc present_property {p {val {}}} {
     regsub -all @ [@ property/$p/formula] $val expr
     return [eng [expr $expr] [@ property/$p/unit]]
@@ -41,7 +41,7 @@ foreach param_pair $::opt(param) {
     set span($s) [expr 10e-6-$min($s)]
 }
 default ::opt(sample) 100
-default ::opt(iref) 40e-6
+default ::opt(iref) 20e-6
 @ param:iref = $::opt(iref)
 @ sizer_step = 20e-9
 set pat_sizes {}
@@ -50,6 +50,8 @@ set pat_sizes {}
     lappend pat_sizes $s
 }
 @ size:iref:step = 1e-6
+@ size:iref:min = 5e-6
+@ size:iref:max = 25e-6
 @ / foreach_child n {
     skip {![@ $n:V ?]}
     skip {$n=="vdd"}
@@ -57,7 +59,7 @@ set pat_sizes {}
     skip {[@ param:$n ?]}
     lappend pat_sizes $n
 }
-@ param:rload = 1e40
+
 set pat_properties {}
 @ property foreach_child p {
     if {[@ property/$p/step_factor]<0} {
@@ -76,17 +78,18 @@ while {[@ max_Adc]<9} {
     ::C::import
     ::C::random
     ::C::export
-    @ $::opt(topology)/circuits PAT  unique 3
+#    @ $::opt(topology)/circuits PAT  unique 3
 #    @ $::opt(topology)/circuits PAT  stars
 }
+Info: max Adc = [@ max_Adc]
 Info: size after random=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
 @ param/unique = 0
-while {[@ max_Adc]<20} {
+while {[@ max_Adc]<15} {
     Info: PAT=[@ $::opt(topology)/circuits PAT size] max_Adc=[eng [@ max_Adc] dB] Trying [@ pat_size_target]
     ::C::import
     ::C::random_breed
     ::C::export
-    @ $::opt(topology)/circuits PAT  unique 8
+    @ $::opt(topology)/circuits PAT  unique 16
 #    @ $::opt(topology)/circuits PAT stars
 }
 @ size foreach_child s {
@@ -94,11 +97,14 @@ while {[@ max_Adc]<20} {
     lappend pat_sizes $s
 }
 @ size:iref:step = 1e-6
+@ size:iref:min = 5e-6
+@ size:iref:max = 25e-6
 @ param/unique = 0
 @ pat_size_target = $::opt(target)
 ::C::import
 ::C::random_breed
-Info: Done, saving PAT
+@ $::opt(topology)/circuits PAT  unique 128
+Info: Done, saving PAT=[@ $::opt(topology)/circuits PAT size]
 @ / save Etc/Templates/$::opt(topology)/pareto_bi.db
 exit
 for {set i 0} {$i<[@ $::opt(topology)/circuits PAT size]} {incr i} {

@@ -28,19 +28,6 @@
         *c "\}"
         *c "@size:$s+=step;"
     }
-    @ / foreach_child n {
-        skip {![@ $n:V ?]}
-        skip {$n=="vdd"}
-        skip {$n=="0"}
-        if {[@ param:$n ?]} {
-            *c "@$n:V=@param:$n;"
-        } else {
-            *c "@$n:V=@vdd:V/2;"
-        }
-    }	 
-    *c "@vdd:V=$::opt(topv);"
-    *c "@0:V=0;"
-    *c ""
     *c "if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;"
     *c "if (p->content->num_of>=breed_count+@circuit_breed_target) break;"
     *c "\}"

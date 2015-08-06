@@ -24,16 +24,6 @@ float *Psize_Ws_max;
 float *Psize_iref;
 float *Psize_iref_min;
 float *Psize_iref_max;
-float *Poutm_V;
-float *Pvdd_V;
-float *Poutp_V;
-float *Pinp_V;
-float *Pparam_inp;
-float *Ptail_V;
-float *Pinn_V;
-float *Pparam_inn;
-float *Pvbias_V;
-float *P0_V;
 float *Psize_iref_step;
 float *Psize_Wp_step;
 float *Psize_Wp_min;
@@ -46,6 +36,16 @@ float *Psize_Ws_min;
 float *Psize_Ls_step;
 float *Pmax_Adc;
 float *Pparam_unique;
+float *Poutm_V;
+float *Pvdd_V;
+float *Poutp_V;
+float *Pinp_V;
+float *Pparam_inp;
+float *Ptail_V;
+float *Pinn_V;
+float *Pparam_inn;
+float *Pvbias_V;
+float *P0_V;
 float *Pop_iterations;
 float *Pp_1_gm;
 float *P_look_up_tables_pch_gm_ss_LUT;
@@ -119,10 +119,9 @@ float *Pn_ref_dro_dvds;
 float *Pn_ref_dro_dvbs;
 float *Pn_ref_dro_dl;
 float *Pn_ref_Ideq;
-float *PGds_outp_0;
-float *Pparam_rload;
 float *PDet;
 float *PTed;
+float *Pprint_op_steps;
 float *Pparam_vdd;
 float *Pp_1_Nt_unit;
 float *P_look_up_tables_pch_thermal_noise_ss_LUT;
@@ -400,16 +399,6 @@ float size_Ws_max;
 float size_iref;
 float size_iref_min;
 float size_iref_max;
-float outm_V;
-float vdd_V;
-float outp_V;
-float inp_V;
-float param_inp;
-float tail_V;
-float inn_V;
-float param_inn;
-float vbias_V;
-float CONST_0_V;
 float size_iref_step;
 float size_Wp_step;
 float size_Wp_min;
@@ -422,6 +411,16 @@ float size_Ws_min;
 float size_Ls_step;
 float max_Adc;
 float param_unique;
+float outm_V;
+float vdd_V;
+float outp_V;
+float inp_V;
+float param_inp;
+float tail_V;
+float inn_V;
+float param_inn;
+float vbias_V;
+float CONST_0_V;
 float op_iterations;
 float p_1_gm;
 float _look_up_tables_pch_gm_ss_LUT;
@@ -495,10 +494,9 @@ float n_ref_dro_dvds;
 float n_ref_dro_dvbs;
 float n_ref_dro_dl;
 float n_ref_Ideq;
-float Gds_outp_0;
-float param_rload;
 float Det;
 float Ted;
+float print_op_steps;
 float param_vdd;
 float p_1_Nt_unit;
 float _look_up_tables_pch_thermal_noise_ss_LUT;
@@ -840,16 +838,6 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     size_iref=*Psize_iref;
     size_iref_min=*Psize_iref_min;
     size_iref_max=*Psize_iref_max;
-    outm_V=*Poutm_V;
-    vdd_V=*Pvdd_V;
-    outp_V=*Poutp_V;
-    inp_V=*Pinp_V;
-    param_inp=*Pparam_inp;
-    tail_V=*Ptail_V;
-    inn_V=*Pinn_V;
-    param_inn=*Pparam_inn;
-    vbias_V=*Pvbias_V;
-    CONST_0_V=*P0_V;
     size_iref_step=*Psize_iref_step;
     size_Wp_step=*Psize_Wp_step;
     size_Wp_min=*Psize_Wp_min;
@@ -862,6 +850,16 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     size_Ls_step=*Psize_Ls_step;
     max_Adc=*Pmax_Adc;
     param_unique=*Pparam_unique;
+    outm_V=*Poutm_V;
+    vdd_V=*Pvdd_V;
+    outp_V=*Poutp_V;
+    inp_V=*Pinp_V;
+    param_inp=*Pparam_inp;
+    tail_V=*Ptail_V;
+    inn_V=*Pinn_V;
+    param_inn=*Pparam_inn;
+    vbias_V=*Pvbias_V;
+    CONST_0_V=*P0_V;
     op_iterations=*Pop_iterations;
     p_1_gm=*Pp_1_gm;
     p_1_dgm_dvgs=*Pp_1_dgm_dvgs;
@@ -929,10 +927,9 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     n_ref_dro_dvbs=*Pn_ref_dro_dvbs;
     n_ref_dro_dl=*Pn_ref_dro_dl;
     n_ref_Ideq=*Pn_ref_Ideq;
-    Gds_outp_0=*PGds_outp_0;
-    param_rload=*Pparam_rload;
     Det=*PDet;
     Ted=*PTed;
+    print_op_steps=*Pprint_op_steps;
     param_vdd=*Pparam_vdd;
     p_1_Nt_unit=*Pp_1_Nt_unit;
     p_1_dNt_dvgs=*Pp_1_dNt_dvgs;
@@ -1208,16 +1205,6 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Psize_iref=size_iref;
     *Psize_iref_min=size_iref_min;
     *Psize_iref_max=size_iref_max;
-    *Poutm_V=outm_V;
-    *Pvdd_V=vdd_V;
-    *Poutp_V=outp_V;
-    *Pinp_V=inp_V;
-    *Pparam_inp=param_inp;
-    *Ptail_V=tail_V;
-    *Pinn_V=inn_V;
-    *Pparam_inn=param_inn;
-    *Pvbias_V=vbias_V;
-    *P0_V=CONST_0_V;
     *Psize_iref_step=size_iref_step;
     *Psize_Wp_step=size_Wp_step;
     *Psize_Wp_min=size_Wp_min;
@@ -1230,6 +1217,16 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Psize_Ls_step=size_Ls_step;
     *Pmax_Adc=max_Adc;
     *Pparam_unique=param_unique;
+    *Poutm_V=outm_V;
+    *Pvdd_V=vdd_V;
+    *Poutp_V=outp_V;
+    *Pinp_V=inp_V;
+    *Pparam_inp=param_inp;
+    *Ptail_V=tail_V;
+    *Pinn_V=inn_V;
+    *Pparam_inn=param_inn;
+    *Pvbias_V=vbias_V;
+    *P0_V=CONST_0_V;
     *Pop_iterations=op_iterations;
     *Pp_1_gm=p_1_gm;
     *Pp_1_dgm_dvgs=p_1_dgm_dvgs;
@@ -1297,10 +1294,9 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Pn_ref_dro_dvbs=n_ref_dro_dvbs;
     *Pn_ref_dro_dl=n_ref_dro_dl;
     *Pn_ref_Ideq=n_ref_Ideq;
-    *PGds_outp_0=Gds_outp_0;
-    *Pparam_rload=param_rload;
     *PDet=Det;
     *PTed=Ted;
+    *Pprint_op_steps=print_op_steps;
     *Pparam_vdd=param_vdd;
     *Pp_1_Nt_unit=p_1_Nt_unit;
     *Pp_1_dNt_dvgs=p_1_dNt_dvgs;
@@ -1558,9 +1554,19 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
 }
 static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     //            Tcl_ResetResult(interp);
+    outm_V=vdd_V/2;
+    outp_V=vdd_V/2;
+    inp_V=param_inp;
+    tail_V=vdd_V/2;
+    inn_V=param_inn;
+    vbias_V=vdd_V/2;
+    vdd_V=1.1;
+    CONST_0_V=0;
     // Calculating circuit operating point:
     int op_it=0;
-    for (op_it=0;op_it<op_iterations;op_it++) {
+    for (op_it=0;((op_it<op_iterations)||(fabs(outp_V-outm_V)>10e-3));op_it++) {
+        if (op_it>100) return TCL_ERROR;
+        float previous_out_dc=outp_V;
         p_1_gm=gamma_gcc_interpolateg_4(P_look_up_tables_pch_gm_ss_LUT,(outm_V-vdd_V),(outm_V-vdd_V),0,size_Lp,&p_1_dgm_dvgs,&p_1_dgm_dvds,&p_1_dgm_dvbs,&p_1_dgm_dl)*size_Wp/size_Lp;
         p_1_go=size_Wp/size_Lp/gamma_gcc_interpolateg_4(P_look_up_tables_pch_ro_ss_LUT,(outm_V-vdd_V),(outm_V-vdd_V),0,size_Lp,&p_1_dro_dvgs,&p_1_dro_dvds,&p_1_dro_dvbs,&p_1_dro_dl);
         p_1_Ideq=-gamma_gcc_interpolate_4(P_look_up_tables_pch_Ids_ss_LUT,(outm_V-vdd_V),(outm_V-vdd_V),0,size_Lp)*size_Wp/size_Lp-p_1_gm*(outm_V-vdd_V)-p_1_go*(outm_V-vdd_V);
@@ -1579,7 +1585,6 @@ static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, 
         n_ref_gm=gamma_gcc_interpolateg_4(P_look_up_tables_nch_gm_ss_LUT,vbias_V,vbias_V,CONST_0_V,size_Ls,&n_ref_dgm_dvgs,&n_ref_dgm_dvds,&n_ref_dgm_dvbs,&n_ref_dgm_dl)*size_Ws/size_Ls;
         n_ref_go=size_Ws/size_Ls/gamma_gcc_interpolateg_4(P_look_up_tables_nch_ro_ss_LUT,vbias_V,vbias_V,CONST_0_V,size_Ls,&n_ref_dro_dvgs,&n_ref_dro_dvds,&n_ref_dro_dvbs,&n_ref_dro_dl);
         n_ref_Ideq=gamma_gcc_interpolate_4(P_look_up_tables_nch_Ids_ss_LUT,vbias_V,vbias_V,CONST_0_V,size_Ls)*size_Ws/size_Ls-n_ref_gm*vbias_V-n_ref_go*vbias_V;
-        Gds_outp_0=1.0/param_rload;
         if (p_1_gm==0) p_1_gm=1e-6;
         if (p_1_go==0) p_1_go=1e-6;
         if (p_2_gm==0) p_2_gm=1e-6;
@@ -1592,30 +1597,37 @@ static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, 
         if (n_tail_go==0) n_tail_go=1e-6;
         if (n_ref_gm==0) n_ref_gm=1e-6;
         if (n_ref_go==0) n_ref_go=1e-6;
-        Det=-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))));
+        Det=-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))));
         Ted=1/Det;
         // Updating node voltages
-        inn_V=(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-+(n_ref_go+n_ref_gm)*(-param_inn)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inn))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inn)))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(-+(n_ref_go+n_ref_gm)*(-param_inn)))))))*Ted;
+        inn_V=(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-(n_ref_go+n_ref_gm)*(-param_inn)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inn))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inn)))-(p_2_go+nin_2_go)*((-nin_1_go)*(-(n_ref_go+n_ref_gm)*(-param_inn)))))))*Ted;
         if (inn_V<0) inn_V=0;
         if (inn_V>1.1) inn_V=1.1;
-        inp_V=(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))))))*Ted;
+        if (print_op_steps>0) printf("%d) inn=%g\n",op_it,inn_V);
+        inp_V=(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inp))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))-(p_2_go+nin_2_go)*((-nin_1_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))))))*Ted;
         if (inp_V<0) inp_V=0;
         if (inp_V>1.1) inp_V=1.1;
-        outm_V=(-((-nin_1_gm*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp))))+(-nin_1_Ideq+-p_1_Ideq)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(nin_2_gm*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(-nin_2_Ideq+-p_2_Ideq)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-+(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-p_2_go-p_2_gm)*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-p_1_go-p_1_gm)*(-(Gds_outp_0+p_2_go+nin_2_go)*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))+(-nin_2_go-nin_2_gm)*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
+        if (print_op_steps>0) printf("%d) inp=%g\n",op_it,inp_V);
+        outm_V=(-((-nin_1_gm*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inp))))+(-nin_1_Ideq-p_1_Ideq)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(nin_2_gm*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(-nin_2_Ideq-p_2_Ideq)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-p_2_go-p_2_gm)*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-p_1_go-p_1_gm)*(-(p_2_go+nin_2_go)*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))+(-nin_2_go-nin_2_gm)*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
         if (outm_V<0) outm_V=0;
         if (outm_V>1.1) outm_V=1.1;
-        outp_V=(-((-nin_1_gm*(-p_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*(-(-nin_1_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp))))+(p_1_go+p_1_gm+nin_1_go)*(nin_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(-nin_2_Ideq+-p_2_Ideq)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-+(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-p_2_go-p_2_gm)*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))-(-nin_1_Ideq+-p_1_Ideq)*(p_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(nin_2_gm*(-(-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+p_2_gm*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-+(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-nin_2_Ideq+-p_2_Ideq)*((-nin_1_go)*(n_ref_go+n_ref_gm))-(-p_2_go-p_2_gm)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-p_1_go-p_1_gm)*(p_2_gm*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))+(-nin_2_go-nin_2_gm)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
+        if (print_op_steps>0) printf("%d) outm=%g\n",op_it,outm_V);
+        outp_V=(-((-nin_1_gm*(-p_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))-(-nin_2_go-nin_2_gm)*(-(-nin_1_go)*(-(n_ref_go+n_ref_gm)*(-param_inp))))+(p_1_go+p_1_gm+nin_1_go)*(nin_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(-nin_2_Ideq-p_2_Ideq)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-p_2_go-p_2_gm)*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))-(-nin_1_Ideq-p_1_Ideq)*(p_2_gm*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*(nin_2_gm*(-(-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+p_2_gm*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-nin_2_Ideq-p_2_Ideq)*((-nin_1_go)*(n_ref_go+n_ref_gm))-(-p_2_go-p_2_gm)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-p_1_go-p_1_gm)*(p_2_gm*(-(nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))+(-nin_2_go-nin_2_gm)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
         if (outp_V<0) outp_V=0;
         if (outp_V>1.1) outp_V=1.1;
-        tail_V=(-((-nin_1_gm*(-p_2_gm*(-(-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp)))+(Gds_outp_0+p_2_go+nin_2_go)*(-(-nin_1_go)*(-+(n_ref_go+n_ref_gm)*(-param_inp))))+(p_1_go+p_1_gm+nin_1_go)*(nin_2_gm*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(Gds_outp_0+p_2_go+nin_2_go)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-+(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-nin_2_Ideq+-p_2_Ideq)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(-p_2_go-p_2_gm)*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-nin_1_Ideq+-p_1_Ideq)*(p_2_gm*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-p_1_go-p_1_gm)*(p_2_gm*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
+        if (print_op_steps>0) printf("%d) outp=%g\n",op_it,outp_V);
+        tail_V=(-((-nin_1_gm*(-p_2_gm*(-(-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_inp)))+(p_2_go+nin_2_go)*(-(-nin_1_go)*(-(n_ref_go+n_ref_gm)*(-param_inp))))+(p_1_go+p_1_gm+nin_1_go)*(nin_2_gm*(-(-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_inn)))+(p_2_go+nin_2_go)*((-nin_2_gm)*((n_ref_go+n_ref_gm)*(-param_inn))-(-nin_1_gm)*(-(n_ref_go+n_ref_gm)*(-param_inp))+(-n_tail_Ideq+nin_2_Ideq+nin_1_Ideq)*(n_ref_go+n_ref_gm)-n_tail_gm*(-n_ref_Ideq+size_iref))-(-nin_2_Ideq-p_2_Ideq)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(-p_2_go-p_2_gm)*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd))))+(-nin_1_Ideq-p_1_Ideq)*(p_2_gm*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-p_1_go-p_1_gm)*(p_2_gm*((-nin_2_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))-(p_2_go+nin_2_go)*((-nin_1_go)*((n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
         if (tail_V<0) tail_V=0;
         if (tail_V>1.1) tail_V=1.1;
-        vbias_V=(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-n_ref_Ideq+size_iref))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-n_ref_Ideq+size_iref)))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-n_ref_Ideq+size_iref))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(-n_ref_Ideq+size_iref))))))*Ted;
+        if (print_op_steps>0) printf("%d) tail=%g\n",op_it,tail_V);
+        vbias_V=(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-n_ref_Ideq+size_iref))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-n_ref_Ideq+size_iref)))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-n_ref_Ideq+size_iref))-(p_2_go+nin_2_go)*((-nin_1_go)*(-n_ref_Ideq+size_iref))))))*Ted;
         if (vbias_V<0) vbias_V=0;
         if (vbias_V>1.1) vbias_V=1.1;
-        vdd_V=(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-+(n_ref_go+n_ref_gm)*(-param_vdd)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_vdd))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-+(n_ref_go+n_ref_gm)*(-param_vdd)))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(-+(n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
+        if (print_op_steps>0) printf("%d) vbias=%g\n",op_it,vbias_V);
+        vdd_V=(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(-(n_ref_go+n_ref_gm)*(-param_vdd)))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_vdd))))+(-nin_1_go-nin_1_gm)*(p_2_gm*((-nin_2_go)*(-(n_ref_go+n_ref_gm)*(-param_vdd)))-(p_2_go+nin_2_go)*((-nin_1_go)*(-(n_ref_go+n_ref_gm)*(-param_vdd)))))))*Ted;
         if (vdd_V<0) vdd_V=0;
         if (vdd_V>1.1) vdd_V=1.1;
+        if (print_op_steps>0) printf("%d) vdd=%g\n",op_it,vdd_V);
     }
     if (!isfinite(outm_V)) return TCL_ERROR;
     if (outm_V==0) return TCL_ERROR;
@@ -1672,9 +1684,9 @@ static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, 
     n_ref_Nf=n_ref_Nf_unit*n_ref_gm*n_ref_gm/(size_Ws*size_Ls);
     if (!isfinite(n_ref_Nf))  return TCL_ERROR;
     // Calculating circuit properties:
-    property_Adc=(((-((((-(nin_1_gm*((-(p_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(((-(n_ref_go+n_ref_gm)))))))-(((-nin_2_go)-nin_2_gm)*(-((-nin_1_go)*(((-(n_ref_go+n_ref_gm))))))))))+(((p_1_go+p_1_gm)+nin_1_go)*((-(((-nin_2_go)-nin_2_gm)*((-((-nin_1_gm)*(((-(n_ref_go+n_ref_gm))))))))))))+(((-nin_1_go)-nin_1_gm)*((p_2_gm*((-((-nin_1_gm)*(((-(n_ref_go+n_ref_gm)))))))))))))*Ted)-((-((((((p_1_go+p_1_gm)+nin_1_go)*((nin_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm)))))+(-(((-nin_2_go)-nin_2_gm)*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm))))))))))+(((-nin_1_go)-nin_1_gm)*((nin_2_gm*(-((-nin_1_go)*((-(n_ref_go+n_ref_gm))))))+(p_2_gm*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm)))))))))))*Ted));
+    property_Adc=0.5*(((-((((-(nin_1_gm*((-(p_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(-((-(n_ref_go+n_ref_gm)))))))-(((-nin_2_go)-nin_2_gm)*(-(nin_1_go*((-(n_ref_go+n_ref_gm)))))))))+(((p_1_go+p_1_gm)+nin_1_go)*((-(((-nin_2_go)-nin_2_gm)*((-(nin_1_gm*((-(n_ref_go+n_ref_gm)))))))))))+(((-nin_1_go)-nin_1_gm)*((p_2_gm*((-(nin_1_gm*((-(n_ref_go+n_ref_gm))))))))))))*Ted)-((-((((((p_1_go+p_1_gm)+nin_1_go)*((nin_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm)))))+(-(((-nin_2_go)-nin_2_gm)*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm))))))))))+(((-nin_1_go)-nin_1_gm)*((nin_2_gm*(-((-nin_1_go)*((-(n_ref_go+n_ref_gm))))))+(p_2_gm*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm)))))))))))*Ted));
     if (!isfinite(property_Adc))  return TCL_ERROR;
-    property_CMRR=(((-((((-(nin_1_gm*((-(p_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(((-(n_ref_go+n_ref_gm)))))))-(((-nin_2_go)-nin_2_gm)*(-((-nin_1_go)*(((-(n_ref_go+n_ref_gm))))))))))+(((p_1_go+p_1_gm)+nin_1_go)*((-(((-nin_2_go)-nin_2_gm)*((-((-nin_1_gm)*(((-(n_ref_go+n_ref_gm))))))))))))+(((-nin_1_go)-nin_1_gm)*((p_2_gm*((-((-nin_1_gm)*(((-(n_ref_go+n_ref_gm)))))))))))))*Ted)+((-((((((p_1_go+p_1_gm)+nin_1_go)*((nin_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm)))))+(-(((-nin_2_go)-nin_2_gm)*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm))))))))))+(((-nin_1_go)-nin_1_gm)*((nin_2_gm*(-((-nin_1_go)*((-(n_ref_go+n_ref_gm))))))+(p_2_gm*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm)))))))))))*Ted));
+    property_CMRR=(((-((((-(nin_1_gm*((-(p_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(-((-(n_ref_go+n_ref_gm)))))))-(((-nin_2_go)-nin_2_gm)*(-(nin_1_go*((-(n_ref_go+n_ref_gm)))))))))+(((p_1_go+p_1_gm)+nin_1_go)*((-(((-nin_2_go)-nin_2_gm)*((-(nin_1_gm*((-(n_ref_go+n_ref_gm)))))))))))+(((-nin_1_go)-nin_1_gm)*((p_2_gm*((-(nin_1_gm*((-(n_ref_go+n_ref_gm))))))))))))*Ted)+((-((((((p_1_go+p_1_gm)+nin_1_go)*((nin_2_gm*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm)))))+(-(((-nin_2_go)-nin_2_gm)*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm))))))))))+(((-nin_1_go)-nin_1_gm)*((nin_2_gm*(-((-nin_1_go)*((-(n_ref_go+n_ref_gm))))))+(p_2_gm*(((-nin_2_gm)*((-(n_ref_go+n_ref_gm)))))))))))*Ted));
     if (!isfinite(property_CMRR))  return TCL_ERROR;
     property_PSRR=((-((((((p_1_go+p_1_gm)+nin_1_go)*((-(((-p_2_go)-p_2_gm)*(-(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm))))))))))+(((-nin_1_go)-nin_1_gm)*((-(((-p_2_go)-p_2_gm)*((-nin_1_go)*((-(n_ref_go+n_ref_gm)))))))))+(((-p_1_go)-p_1_gm)*((p_2_gm*(-(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*((-(n_ref_go+n_ref_gm))))))+(((-nin_2_go)-nin_2_gm)*((-nin_1_go)*((-(n_ref_go+n_ref_gm)))))))))*Ted);
     if (!isfinite(property_PSRR))  return TCL_ERROR;
@@ -1707,16 +1719,16 @@ static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, 
     s=-1;
     int BW_it;
     for (BW_it=0;BW_it<5;BW_it++) {
-        s-=(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm))))))/((-(((((p_1_go+p_1_gm)+nin_1_go)*(((Gds_outp_0+p_2_go)+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm))))));
+        s-=(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm))))))/((-(((((p_1_go+p_1_gm)+nin_1_go)*((p_2_go+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm))))));
     }
-    property_BW_s=(-(((((p_1_go+p_1_gm)+nin_1_go)*(((Gds_outp_0+p_2_go)+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm)))));
+    property_BW_s=(-(((((p_1_go+p_1_gm)+nin_1_go)*((p_2_go+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm)))));
     p1=-s;
     property_BW=p1/(2*3.141592656);
     if (!isfinite(property_BW))  return TCL_ERROR;
     if (property_BW<0)  return TCL_ERROR;
     s-=1e3;
     for (BW_it=0;BW_it<20;BW_it++) {
-        s-=((-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm))))))*(s+p1-5e2))/(((-(((((p_1_go+p_1_gm)+nin_1_go)*(((Gds_outp_0+p_2_go)+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm))))))*(s+p1-5e2)-(-(((p_1_go+p_1_gm+nin_1_go)*((Gds_outp_0+p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(Gds_outp_0+p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))))));
+        s-=((-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm))))))*(s+p1-5e2))/(((-(((((p_1_go+p_1_gm)+nin_1_go)*((p_2_go+nin_2_go)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))))-((-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*(-((n_tail_gm+n_tail_cgd*s)*(-(n_tail_cgd))+((n_tail_cgd))*(-n_tail_cgd*s)))+((p_2_cgd))*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s)))+(-(p_2_cgd))*((p_2_gm+p_2_cgd*s)*(((((nin_1_go+nin_1_gm)+nin_2_go)+nin_2_gm)+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-((-nin_2_go)-nin_2_gm)*(-nin_1_go)*(n_ref_go+n_ref_gm))))+(((-nin_1_go)-nin_1_gm)*(((p_2_cgd))*(-nin_2_go)*(n_ref_go+n_ref_gm))))))*(s+p1-5e2)-(-(((p_1_go+p_1_gm+nin_1_go)*((p_2_go+nin_2_go)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_2_go)*(n_ref_go+n_ref_gm)))-(-p_2_cgd*s)*((p_2_gm+p_2_cgd*s)*((nin_1_go+nin_1_gm+nin_2_go+nin_2_gm+n_tail_go)*(n_ref_go+n_ref_gm)-(n_tail_gm+n_tail_cgd*s)*(-n_tail_cgd*s))-(-nin_2_go-nin_2_gm)*((-nin_1_go)*(n_ref_go+n_ref_gm)))+(-nin_1_go-nin_1_gm)*((p_2_gm+p_2_cgd*s)*((-nin_2_go)*(n_ref_go+n_ref_gm))-(p_2_go+nin_2_go)*((-nin_1_go)*(n_ref_go+n_ref_gm)))))));
     }
     p2=-s;
     float A1=-p2/(-p1+p2);
@@ -1762,35 +1774,32 @@ static int tcl_gamma_op_cmd(ClientData clientData,Tcl_Interp *interp, int objc, 
     property_PSRR=20*log10(fabs(property_PSRR));
     if (max_Adc<property_Adc) max_Adc=property_Adc;
     PAT *p=(PAT *)Pdiffpair_nmos_circuits_PAT;
-    vector_float *sizes=new_vector_float();
-    add_entry_vector_float(sizes,size_iref);
-    add_entry_vector_float(sizes,size_Wp);
-    add_entry_vector_float(sizes,size_Lp);
-    add_entry_vector_float(sizes,size_Wn);
-    add_entry_vector_float(sizes,size_Ln);
-    add_entry_vector_float(sizes,size_Ws);
-    add_entry_vector_float(sizes,size_Ls);
-    add_entry_vector_float(sizes,outm_V);
-    add_entry_vector_float(sizes,outp_V);
-    add_entry_vector_float(sizes,tail_V);
-    add_entry_vector_float(sizes,vbias_V);
-    vector_float *properties=new_vector_float();
-    add_entry_vector_float(properties,property_Adc);
-    add_entry_vector_float(properties,property_CMRR);
-    add_entry_vector_float(properties,property_PSRR);
-    add_entry_vector_float(properties,property_Rout);
-    add_entry_vector_float(properties,property_BW);
-    add_entry_vector_float(properties,property_ts);
-    add_entry_vector_float(properties,property_Nt);
-    add_entry_vector_float(properties,property_Nf);
-    add_entry_vector_float(properties,property_fc);
-    add_entry_vector_float(properties,property_Vos);
-    add_entry_vector_float(properties,property_Area);
-    add_entry_vector_float(properties,property_Power);
-    add_pat_entry(p,sizes,properties);
-    free(sizes);
-    free(properties);
-    return TCL_OK;
+    float sizes[11];
+    sizes[0]=size_iref;
+    sizes[1]=size_Wp;
+    sizes[2]=size_Lp;
+    sizes[3]=size_Wn;
+    sizes[4]=size_Ln;
+    sizes[5]=size_Ws;
+    sizes[6]=size_Ls;
+    sizes[7]=outm_V;
+    sizes[8]=outp_V;
+    sizes[9]=tail_V;
+    sizes[10]=vbias_V;
+    float properties[12];
+    properties[0]=property_Adc;
+    properties[1]=property_CMRR;
+    properties[2]=property_PSRR;
+    properties[3]=property_Rout;
+    properties[4]=property_BW;
+    properties[5]=property_ts;
+    properties[6]=property_Nt;
+    properties[7]=property_Nf;
+    properties[8]=property_fc;
+    properties[9]=property_Vos;
+    properties[10]=property_Area;
+    properties[11]=property_Power;
+    add_pat_array(p,sizes,properties);
     return TCL_OK;
 }
 //      static int tcl_gamma_grad_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
@@ -1809,14 +1818,6 @@ static int tcl_gamma_random_cmd(ClientData clientData,Tcl_Interp *interp, int ob
         size_Ls=size_Ls_min+random()*(size_Ls_max-size_Ls_min)/RAND_MAX;
         size_Ws=size_Ls+random()*(size_Ws_max-size_Ls)/RAND_MAX;
         size_iref=size_iref_min+random()*(size_iref_max-size_iref_min)/RAND_MAX;
-        outm_V=vdd_V/2;
-        outp_V=vdd_V/2;
-        inp_V=param_inp;
-        tail_V=vdd_V/2;
-        inn_V=param_inn;
-        vbias_V=vdd_V/2;
-        vdd_V=1.1;
-        CONST_0_V=0;
         if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;
     }
     return TCL_OK;
@@ -1843,189 +1844,77 @@ static int tcl_gamma_breed_cmd(ClientData clientData,Tcl_Interp *interp, int obj
             size_iref=size_iref+size_iref_step;
             viable=1;
             if ((size_iref>=size_iref_min)&&(size_iref<=size_iref_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_iref=size_iref-2*size_iref_step;
             viable=1;
             if ((size_iref>=size_iref_min)&&(size_iref<=size_iref_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_iref=size_iref+size_iref_step;
             size_Wp=size_Wp+size_Wp_step;
             viable=1;
             if ((size_Wp>=size_Wp_min)&&(size_Wp<=size_Wp_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Wp=size_Wp-2*size_Wp_step;
             viable=1;
             if ((size_Wp>=size_Wp_min)&&(size_Wp<=size_Wp_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Wp=size_Wp+size_Wp_step;
             size_Lp=size_Lp+size_Lp_step;
             viable=1;
             if ((size_Lp>=size_Lp_min)&&(size_Lp<=size_Lp_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Lp=size_Lp-2*size_Lp_step;
             viable=1;
             if ((size_Lp>=size_Lp_min)&&(size_Lp<=size_Lp_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Lp=size_Lp+size_Lp_step;
             size_Wn=size_Wn+size_Wn_step;
             viable=1;
             if ((size_Wn>=size_Wn_min)&&(size_Wn<=size_Wn_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Wn=size_Wn-2*size_Wn_step;
             viable=1;
             if ((size_Wn>=size_Wn_min)&&(size_Wn<=size_Wn_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Wn=size_Wn+size_Wn_step;
             size_Ln=size_Ln+size_Ln_step;
             viable=1;
             if ((size_Ln>=size_Ln_min)&&(size_Ln<=size_Ln_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ln=size_Ln-2*size_Ln_step;
             viable=1;
             if ((size_Ln>=size_Ln_min)&&(size_Ln<=size_Ln_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ln=size_Ln+size_Ln_step;
             size_Ws=size_Ws+size_Ws_step;
             viable=1;
             if ((size_Ws>=size_Ws_min)&&(size_Ws<=size_Ws_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ws=size_Ws-2*size_Ws_step;
             viable=1;
             if ((size_Ws>=size_Ws_min)&&(size_Ws<=size_Ws_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ws=size_Ws+size_Ws_step;
             size_Ls=size_Ls+size_Ls_step;
             viable=1;
             if ((size_Ls>=size_Ls_min)&&(size_Ls<=size_Ls_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ls=size_Ls-2*size_Ls_step;
             viable=1;
             if ((size_Ls>=size_Ls_min)&&(size_Ls<=size_Ls_max)) {
-                outm_V=vdd_V/2;
-                outp_V=vdd_V/2;
-                inp_V=param_inp;
-                tail_V=vdd_V/2;
-                inn_V=param_inn;
-                vbias_V=vdd_V/2;
-                vdd_V=1.1;
-                CONST_0_V=0;
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_Ls=size_Ls+size_Ls_step;
@@ -2107,14 +1996,6 @@ static int tcl_gamma_random_breed_cmd(ClientData clientData,Tcl_Interp *interp, 
                 break;
             }
             size_Ls+=step;
-            outm_V=vdd_V/2;
-            outp_V=vdd_V/2;
-            inp_V=param_inp;
-            tail_V=vdd_V/2;
-            inn_V=param_inn;
-            vbias_V=vdd_V/2;
-            vdd_V=1.1;
-            CONST_0_V=0;
             int pre_volume=p->content->num_of;
             if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) {i--; continue;}
             if (pre_volume==p->content->num_of) {i--; continue;}
@@ -2206,14 +2087,6 @@ static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *i
             break;
         }
         size_Ls+=step;
-        outm_V=vdd_V/2;
-        outp_V=vdd_V/2;
-        inp_V=param_inp;
-        tail_V=vdd_V/2;
-        inn_V=param_inn;
-        vbias_V=vdd_V/2;
-        vdd_V=1.1;
-        CONST_0_V=0;
         if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;
         if (p->content->num_of>=breed_count+circuit_breed_target) break;
     }
@@ -2265,26 +2138,6 @@ int Gamma_Init(Tcl_Interp *interp) {
     Psize_iref_min=(float *)(&c->value.s);
     c=create_context("size:iref:max");
     Psize_iref_max=(float *)(&c->value.s);
-    c=create_context("outm:V");
-    Poutm_V=(float *)(&c->value.s);
-    c=create_context("vdd:V");
-    Pvdd_V=(float *)(&c->value.s);
-    c=create_context("outp:V");
-    Poutp_V=(float *)(&c->value.s);
-    c=create_context("inp:V");
-    Pinp_V=(float *)(&c->value.s);
-    c=create_context("param:inp");
-    Pparam_inp=(float *)(&c->value.s);
-    c=create_context("tail:V");
-    Ptail_V=(float *)(&c->value.s);
-    c=create_context("inn:V");
-    Pinn_V=(float *)(&c->value.s);
-    c=create_context("param:inn");
-    Pparam_inn=(float *)(&c->value.s);
-    c=create_context("vbias:V");
-    Pvbias_V=(float *)(&c->value.s);
-    c=create_context("0:V");
-    P0_V=(float *)(&c->value.s);
     c=create_context("size:iref:step");
     Psize_iref_step=(float *)(&c->value.s);
     c=create_context("size:Wp:step");
@@ -2309,6 +2162,26 @@ int Gamma_Init(Tcl_Interp *interp) {
     Pmax_Adc=(float *)(&c->value.s);
     c=create_context("param:unique");
     Pparam_unique=(float *)(&c->value.s);
+    c=create_context("outm:V");
+    Poutm_V=(float *)(&c->value.s);
+    c=create_context("vdd:V");
+    Pvdd_V=(float *)(&c->value.s);
+    c=create_context("outp:V");
+    Poutp_V=(float *)(&c->value.s);
+    c=create_context("inp:V");
+    Pinp_V=(float *)(&c->value.s);
+    c=create_context("param:inp");
+    Pparam_inp=(float *)(&c->value.s);
+    c=create_context("tail:V");
+    Ptail_V=(float *)(&c->value.s);
+    c=create_context("inn:V");
+    Pinn_V=(float *)(&c->value.s);
+    c=create_context("param:inn");
+    Pparam_inn=(float *)(&c->value.s);
+    c=create_context("vbias:V");
+    Pvbias_V=(float *)(&c->value.s);
+    c=create_context("0:V");
+    P0_V=(float *)(&c->value.s);
     c=create_context("op_iterations");
     Pop_iterations=(float *)(&c->value.s);
     c=create_context("p_1:gm");
@@ -2449,14 +2322,12 @@ int Gamma_Init(Tcl_Interp *interp) {
     Pn_ref_dro_dl=(float *)(&c->value.s);
     c=create_context("n_ref:Ideq");
     Pn_ref_Ideq=(float *)(&c->value.s);
-    c=create_context("Gds_outp_0");
-    PGds_outp_0=(float *)(&c->value.s);
-    c=create_context("param:rload");
-    Pparam_rload=(float *)(&c->value.s);
     c=create_context("Det");
     PDet=(float *)(&c->value.s);
     c=create_context("Ted");
     PTed=(float *)(&c->value.s);
+    c=create_context("print_op_steps");
+    Pprint_op_steps=(float *)(&c->value.s);
     c=create_context("param:vdd");
     Pparam_vdd=(float *)(&c->value.s);
     c=create_context("p_1:Nt_unit");

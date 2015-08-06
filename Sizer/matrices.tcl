@@ -132,6 +132,8 @@ proc deti {M i y} {
 proc DET {M_var {i -1} {y {}}} {
     regsub -all {([^\-\+\*/\(\)0-9\.][^\-\+\*/\(\)]*)} [det $M_var 0 {} $i $y] {@\1} line
     regsub -all {@+} $line @ line
+    regsub -all {\+\-} $line {-} line
+    regsub -all {\-\+} $line {-} line
     return $line
 }
 proc is_one {x} {

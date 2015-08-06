@@ -108,6 +108,7 @@ if {$authenticate} {
 array set ::config {
     analysis_timeout 5*60
 }
+default ::SESSION(user) $::opt(authentication_user)
 if {[file exists $fe_path/$::SESSION(user).tcl]} {
     source $fe_path/$::SESSION(user).tcl
 }

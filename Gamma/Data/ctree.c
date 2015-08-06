@@ -1679,7 +1679,6 @@ get_vectors (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         #Error: "No vectors exist"
         return TCL_ERROR;
     }
-    #Info: "Copying vectors to Tcl workspace: %d" vector_buffer_allocation
     struct plot *any_plot=plot_list;
     while (any_plot) {
         struct dvec *d=any_plot->pl_dvecs;
@@ -3088,6 +3087,53 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     for (i=0;i<sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes->content[i]);
     pe->properties=new_vector_float();
     for (i=0;i<properties->num_of;i++) add_entry_vector_float(pe->properties,properties->content[i]);
+    add_entry_vector_pointer_PAT_entry(p->content,pe);
+    return(p->content->num_of);
+}
+
+ordinal add_pat_array(PAT *p,float *sizes,float *properties) {
+    ordinal i,j;
+    // Negate all properties that are "less is better"
+    for (i=0;i<p->properties->num_of;i++) properties[i]=p->factors->content[i]*properties[i];
+    for (i=0;i<p->content->num_of;i++) {
+        int dominates=1;
+        int significantly_better=0;
+        int dominated=1;
+        int significantly_worse=0;
+        for (j=0;j<p->properties->num_of;j++) {
+            if (isnan(properties[j])) {
+                // This entry can't dominate ones that have properties that are missing from it.
+                if (!(isnan(p->content->content[i]->properties->content[j]))) dominates=0;
+                continue;
+            }	
+            if (isnan(p->content->content[i]->properties->content[j])) {
+                // This entry can't be dominated by ones that are missing properties it has.
+                if (!(isnan(properties[j]))) dominated=0;
+                continue;
+            } 
+            if (properties[j]>p->content->content[i]->properties->content[j]) dominated=0;
+            if (properties[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
+            if (properties[j]<p->content->content[i]->properties->content[j]) dominates=0;
+            if (properties[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
+	    if (!(dominated||dominates)) break;
+        }
+        if (dominated) {
+            return(-1);
+        }    
+        // If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
+        // Don't move on until you cleared the last entry that was put in place, hence the i--.
+        if (dominates&&significantly_better) {
+            delete_entry_vector_pointer_PAT_entry(p->content,i--);
+        }    
+    }
+    
+    PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
+    pe->id=p->id_counter++;
+    pe->flags=0;
+    pe->sizes=new_vector_float();
+    for (i=0;i<p->sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes[i]);
+    pe->properties=new_vector_float();
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(pe->properties,properties[i]);
     add_entry_vector_pointer_PAT_entry(p->content,pe);
     return(p->content->num_of);
 }

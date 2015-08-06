@@ -191,6 +191,7 @@ float derive_POLY(POLY *p,void *by_var);
 float root_POLY(POLY *p,void *by_var,float init);
 void write_pointer_POLY(FILE *O,POLY *p);
 POLY *read_pointer_POLY();
+ordinal add_pat_array(PAT *p,float *sizes,float *properties);
 ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties);
 
 float global_coord[$MAXDIM];

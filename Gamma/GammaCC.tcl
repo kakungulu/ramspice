@@ -450,7 +450,7 @@ proc .compile_circuit {args} {
         }
         if {$opt(inp)!={} && $opt(inn)!={}} {
             if {![@ property/Adc ?]} {
-                .property Adc -expression derive($::output_net,$opt(inp))-derive($::output_net,$opt(inn)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+                .property Adc -expression 0.5*(derive($::output_net,$opt(inp))-derive($::output_net,$opt(inn))) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
             }
         } elseif {$opt(in)!={}} {
             if {![@ property/Adc ?]} {
