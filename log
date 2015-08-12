@@ -8,31 +8,7 @@ Info: Traget=regular
     #                                                         #
     ###########################################################
 version=Wed Aug 05 14:03:28 MDT 2015
-Info: Running RAMSpice Script: Etc/tests/match_web_to_spice.tcl start: Thu Aug 06 14:39:12 MDT 2015 
-Info: SIMULATION FALSE=0 
-Info: SIMULATION TRUE=1.0V 
-Info: SIMULATION boltz=13.806yV 
-Info: SIMULATION c=299.793MV 
-Info: SIMULATION e=2.718V 
-Info: SIMULATION echarge=160.219zV 
-Info: SIMULATION i=0 1V 
-Info: SIMULATION inn=549.900mV 
-Info: SIMULATION inp=549.900mV 
-Info: SIMULATION kelvin=-273.15V 
-Info: SIMULATION no=0 
-Info: SIMULATION outm=649.659mV 
-Info: SIMULATION outp=649.659mV 
-Info: SIMULATION outpi=0 
-Info: SIMULATION pi=3.141V 
-Info: SIMULATION planck=662.62e-36V 
-Info: SIMULATION tail=134.481mV 
-Info: SIMULATION v-sweep=549.900mV 
-Info: SIMULATION vbias=599.899mV 
-Info: SIMULATION vdd=1.1V 
-Info: SIMULATION vdd#branch=-25.897uV 
-Info: SIMULATION vinn#branch=-32.545pV 
-Info: SIMULATION vinp#branch=-32.545pV 
-Info: SIMULATION yes=1.0V 
+Info: Running RAMSpice Script: Etc/tests/gamma_pat_breed_bi.tcl start: Mon Aug 10 09:53:39 MDT 2015 
 Info: Loading array ./ss 2MB 
 Info: Loading array ./tt 2MB 
 Info: Loading array ./ff 2MB 
@@ -73,82 +49,17 @@ Info: Loading array ./sf 2MB
 Info: Loading array ./mc 2MB 
 Info: Loading array ./ss 19KB 
 Info: Loading array ./ss 2MB 
-Info: PARAM area_spacing = 1.6e-07 
-Info: PARAM inp = 0.55 
-Info: PARAM inn = 0.55 
-Info: PARAM vdd = 1.1 
-Info: PARAM rload = 1e+30 
-Info: PARAM power_factor = 2 
-Info: PARAM unique = 0 
-Info: PARAM iref = 2e-05 
-0) inn=0.55
-0) inp=0.55
-0) outm=0.621639
-0) outp=0.621642
-0) tail=0
-0) vbias=0.604501
-0) vdd=1.1
-1) inn=0.55
-1) inp=0.55
-1) outm=0.639945
-1) outp=0.639946
-1) tail=0.0972895
-1) vbias=0.600022
-1) vdd=1.1
-2) inn=0.55
-2) inp=0.55
-2) outm=0.640856
-2) outp=0.640858
-2) tail=0.131777
-2) vbias=0.600068
-2) vdd=1.1
-3) inn=0.55
-3) inp=0.55
-3) outm=0.640551
-3) outp=0.64055
-3) tail=0.136022
-3) vbias=0.600066
-3) vdd=1.1
-4) inn=0.55
-4) inp=0.55
-4) outm=0.640428
-4) outp=0.640429
-4) tail=0.135774
-4) vbias=0.600066
-4) vdd=1.1
-Info: PROP Adc=25.0364 25.0453 
-Info: PROP CMRR=-12.0579 -12.0517 
-Info: PROP PSRR=-0.0450713 -0.045113 
-Info: PROP Rout=219734 219336 
-Info: PROP BW=2.48607e+08 2.48709e+08 
-Info: PROP ts=-1.07239e-10 -1.34259e-10 
-Info: PROP Nt=0.000635746 0.000632784 
-Info: PROP Nf=25.2259 25.149 
-Info: PROP fc=39679.3 39743.4 
-Info: PROP Vos=0.599116 13.4378 
-Info: PROP Area=136.717 2.47041e+07 
-Info: PROP Power=3.29993e-05 9.07482e-06 
-Info: PARAM area_spacing = 1.6e-07 
-Info: PARAM inp = 0.55 
-Info: PARAM inn = 0.55 
-Info: PARAM vdd = 1.1 
-Info: PARAM rload = 1e+30 
-Info: PARAM power_factor = 2 
-Info: PARAM unique = 0 
-Info: PARAM iref = 2e-05 
-Info: SIZE iref = 1.49997e-05 
-Info: SIZE Wp = 4.19095e-06 
-Info: SIZE Lp = 2.30797e-07 
-Info: SIZE Wn = 8.77577e-06 
-Info: SIZE Ln = 1.43973e-06 
-Info: SIZE Ws = 9.49142e-06 
-Info: SIZE Ls = 5.39048e-06 
-Info: GAMMA outm=640.428mV / / / SPICE 649.638mV / / / DIFF=1.417% 
-Info: GAMMA outp=640.429mV / / / SPICE 649.638mV / / / DIFF=1.417% 
-Info: GAMMA tail=135.774mV / / / SPICE 134.548mV / / / DIFF=0.911% 
-Info: GAMMA vbias=600.066mV / / / SPICE 599.899mV / / / DIFF=0.027% 
-Info: GAMMA Adc=25.036dB / / / SPICE 25.717dB / / / DIFF=2.649% 
-Info: GAMMA CMRR=-12.057dB / / / SPICE -13.351dB / / / DIFF=9.686% 
-doAnalyses: The input signal is shorted on the way to the output
-
-Error: pz simulation(s) aborted 
+Info: max_Adc=0 Trying 5000 
+Info: max Adc = 35.9543 
+Info: size after random=5000 seed Mon Aug 10 09:53:45 MDT 2015 
+               6000/10000=60% max gain=35.9544
+               6000/10000=60%
+               7000/10000=70% max gain=35.9544
+               7000/10000=70%
+               8000/10000=80% max gain=35.9544
+               8000/10000=80%
+               9000/10000=90% max gain=35.9544
+               9000/10000=90%
+               10000/10000=100% max gain=35.9544
+               10000/10000=100%
+Info: Done, saving PAT=4093 

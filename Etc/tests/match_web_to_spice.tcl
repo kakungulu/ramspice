@@ -34,7 +34,7 @@ set index $i
 set i 0
 foreach s [@ /$::opt(topology)/circuits PAT sizes] {
     if {![@ size:$s ?]} {
-#        @ $s:V = 0.55
+        #        @ $s:V = 0.55
         continue
     }
     @ size:$s = [lindex [@ /$::opt(topology)/circuits PAT index $index] $i]
@@ -72,13 +72,10 @@ set vectors [get_vectors]
     skip {[@ param:$c ?]}
     Info: GAMMA $c=[eng [@ $c:V] V] / / / SPICE [eng [get_spice_data $c 4] V] / / / DIFF=[eng [expr 100*abs([@ $c:V]/[get_spice_data $c 4]-1)] %]
 }
-set i 11
 foreach p [@ /$::opt(topology)/circuits PAT properties] {
     if {[info exists SPICE($p)]} {
         Info: GAMMA $p=[eng [@ property:$p] $::properties($p,unit)] / / / SPICE [eng $SPICE($p) $::properties($p,unit)] / / / DIFF=[eng [expr 100*abs([@ property:$p]/$SPICE($p)-1)] %]
-}
     }
-    incr i
 }
 ::spice::pz inp 0 outpi 0 vol pol
 

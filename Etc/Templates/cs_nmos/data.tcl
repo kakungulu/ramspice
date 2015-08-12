@@ -1,6 +1,5 @@
 set title "Common Source"
 set input_type NMOS
-
 #    Name Name (optional) {} {} {}
 define_properties {
     Adc A<sub>DC</sub> dB 0 1000 1
@@ -27,13 +26,13 @@ set ::topologies($name,schematic) {
    nl 0 0 {}
 
    blank 0 0 {}
-   twire 0 270 {}
-   terminal 0 90 out
-   nl 0 0 {}
-
-   blank 0 0 {}
    csrc 0 180 {}
    blank 0 0 {}
+   nl 0 0 {}
+  
+   blank 0 0 {}
+   twire 0 270 {}
+   terminal 0 90 out
    nl 0 0 {}
 
    terminal 0 270 in

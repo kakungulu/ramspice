@@ -778,7 +778,9 @@ proc find_mosfet_bin {type l w} {
     ###     puts "% setenv RAMSPICE_TECH <techfile>"
 ### }
 if {![info exists ::env(HOSTNAME)]} {
-    set ::env(HOSTNAME) [exec hostname]
+    if {[catch {set ::env(HOSTNAME) [exec hostname]}]} {
+        set ::env(HOST) web
+    }
 }
 ### if {![file exists $::env(RAMSPICE_TECH)]} {
     ###     puts "Warning: Tech file $::env(RAMSPICE_TECH), specified in env-var RAMSPICE_TECH, does not exist"

@@ -15,7 +15,7 @@
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
     if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@op_iterations);"}
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
-    *c "for (op_it=0;((op_it<@op_iterations)||(fabs(@outp:V-@outm:V)>10e-3));op_it++) \{"
+    *c "for (op_it=0;(op_it<@op_iterations);op_it++) \{"
     *c "if (op_it>100) return TCL_ERROR;"
     *c "float previous_out_dc=@$::output_net:V;"
     if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
@@ -24,13 +24,16 @@
         set W $::transistors($transistor,W)
         if {[info exists ::gm_equations($transistor)]} {
             *c "@$transistor:gm=$::gm_equations($transistor);"
+	    *c "if (@print_op_steps>0) printf(\"%d) $transistor:gm=%g\\n\",op_it,@$transistor:gm);"
             if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
             *c "@$transistor:go=$::go_equations($transistor);"
+	    *c "if (@print_op_steps>0) printf(\"%d) $transistor:go=%g\\n\",op_it,@$transistor:go);"
             if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
         } else {
             *c "@$transistor:g=$::g_equations($transistor);"
         }
         *c "@$transistor:Ideq=$::Ids_equations($transistor);"
+	*c "if (@print_op_steps>0) printf(\"%d) $transistor:Ideq=%g\\n\",op_it,@$transistor:Ideq);"
         if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
     }
     foreach name [array names ::G_equations] {
@@ -103,6 +106,8 @@
         if {$::debug_mode} {*c "printf(\"Temporary $p=%g\\n\",@property:$p);"}
 	*c "if (!isfinite(@property:$p))  return TCL_ERROR;"
     }	
+    *c "if (@print_op_steps>0) printf(\" Adc=%g\\n\",@property:Adc);"
+    *c "@property:Adc=fabs(@property:Adc);"
     *c "if (@property:Adc<1) return TCL_ERROR;"
     @ 0:V = 0
     .prep_mna zout
@@ -198,6 +203,7 @@
         }
         if {$::debug_mode} {*c "printf(\"Final $p=%g\\n\",@property:$p);"}
     }
+    
     *c "if (@max_Adc<@property:Adc) @max_Adc=@property:Adc;"
     ####################### Add circuit to the PAT
     *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
