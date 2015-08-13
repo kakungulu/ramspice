@@ -27,73 +27,13 @@ define_sizers {
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies($name,schematic) {
-    blank 0 0 {}
-    blank 0 0 {}
-    vdd   0 0 vdd
-    blank 0 0 {}
-    vdd   0 0 vdd
-    blank 0 0 {}
-    blank 0 0 {}
-    vdd   0 0 vdd
-    nl 0 0 {}
-    
-    blank 0 0 {}
-    blank 0 0 {}
-    pmos 1 90 p_1
-    twire 0 0 outm
-    pmos 0 270 p_2
-    corner 0 90 midoutp
-    line 0 90 midoutp
-    pmos 0 270 p_out
-    nl 0 0 {}
-    
-    vdd 0 0 vdd
-    blank 0 0 {}
-    twire 0 270 outm
-    corner 0 270 outm
-    twire 0 270 midoutp
-    twire 0 180 midoutp
-    cap  0 90 midoutp
-    crosswireconn 0 270 outp
-    terminal 0 90 outp
-    nl 0 0 {}
-    
-    csrc 0 180 vbias
-    terminal 0 270 inp
-    nmos 1 270 nin_1
-    blank 0 0 {}
-    nmos 0 90 nin_2
-    terminal 0 90 inn
-    blank 0 0 {}
-    line 0 0 outp
-    nl 0 0 {}
-    
-    twire 0 270 vbias
-    corner 0 180 vbias
-    corner 0 0 tail
-    twire 0 0 tail
-    corner 0 270 tail
-    blank 0 0 {}
-    blank 0 0 {}
-    line 0 0 outp
-    nl 0 0 {}
-    
-    nmos 0 90 n_ref
-    twire 0 180 vbias
-    line 0 90 vbias
-    nmos_linethrough 1 270 n_tail
-    line 0 90 vbias
-    line 0 90 vbias
-    line 0 90 vbias
-    nmos 1 270 n_out
-    nl 0 0 {}
-    
-    gnd  0 0 {}
-    blank  0 0 {}
-    blank  0 0 {}
-    gnd  0 0 {}
-    blank  0 0 {}
-    blank  0 0 {}	
-    blank  0 0 {}	
-    gnd  0 0 {}
+    NewFormat	
+    blank		blank			vdd(vdd)		blank				vdd(vdd)			blank			blank		vdd(vdd)					nl
+    blank		blank			pmos(p_1)/fr		twire(outm)			pmos(p_2)/rrr			corner(midoutp)/r	line(midoutp)/r	pmos(p_out)/rrr					nl
+    vdd(vdd)		blank			twire(outm)/rrr		corner(outm)/rrr		twire(midoutp)/rrr		twire(midoutp)/rr	cap(midoutp)/r	crosswireconn(outp)/rrr	terminal(outp)/r	nl
+    csrc(vbias)/rr	terminal(inp)/rrr	nmos(nin_1)/frrr	blank	nmos(nin_2)/r		terminal(inn)/r			blank			line(outp)							nl
+    twire(vbias)/rrr	corner(vbias)/rr	corner(tail)		twire(tail)			corner(tail)/rrr		blank			blank		line(outp)					nl
+    nmos(n_ref)/r	twire(vbias)/rr		line(vbias)/r		nmos_linethrough(n_tail)/frrr	line(vbias)/r			line(vbias)/r		line(vbias)/r	nmos(n_out)/frrr				nl
+    gnd			blank			blank			gnd				blank				blank			blank		gnd
+    end
 }

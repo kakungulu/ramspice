@@ -39,7 +39,16 @@ foreach key [array names ::opt] {
         } else {
             @ / load $work_pat_file
         }
-        
+	
+	# Recover topology name in case the PAT is a stand-in from another topology
+        if {![@ /$::SESSION(selected_topology)/circuits ?]} {
+	    @ / foreach_child c {
+	        if {[@ /$c/circuits]} {
+		    set ::SESSION(selected_topology) $c
+		}
+	    }
+	}
+	
         Info: properties=[@ /$::SESSION(selected_topology)/circuits PAT properties]
         Info: sizes=[@ /$::SESSION(selected_topology)/circuits PAT sizes]
         regsub -all %2C $::SESSION(selected_g) { } selected_g

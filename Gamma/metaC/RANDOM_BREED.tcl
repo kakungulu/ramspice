@@ -13,11 +13,11 @@
         *c "@size:$s=p->content->content[i]->sizes->content[$j];"
         incr j;
     }
-    @ size foreach_child s {
+    foreach s $::sizers_list {
         *c "while (1) \{"
-        *c "step=(2.0*random()/RAND_MAX-1)*@size:$s:step;"
-        *c "if (@size:$s+step<@size:$s:min) continue;"
-        *c "if (@size:$s+step>@size:$s:max) continue;"
+        *c "step=(2.0*random()/RAND_MAX-1)*$::sizing_code($s,step);"
+        *c "if (@size:$s+step<$::sizing_code($s,min)) continue;"
+        *c "if (@size:$s+step>$::sizing_code($s,max)) continue;"
         *c "break;"
         *c "\}"
         *c "@size:$s+=step;"

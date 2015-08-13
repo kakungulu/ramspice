@@ -25,15 +25,17 @@ proc .size {name = value {min {}} {max {}} {step {}} } {
     } else {
         @ size/$name = $evaluated_value
     }
-    if {$min!={}} {
-        @ size/$name/min = $min
+    foreach field {min max step} {
+        if {[catch {set evaluated_value [expr [set $field]]}]} {
+	    set ::sizing_code($name,$field) [set $field]
+	} else {
+	    set ::sizing_code($name,$field) @size:$name:$field
+	    @ size:$name:$field = $evaluated_value
+	}
     }
-    if {$max!={}} {
-        @ size/$name/max = $max
-    }
-    if {$step!={}} {
-        @ size/$name/step = $step
-    }
+    default ::sizers_list {}
+    lappend ::sizers_list $name
+    
 }
 proc .property {name args} {
     default ::DERMODE first

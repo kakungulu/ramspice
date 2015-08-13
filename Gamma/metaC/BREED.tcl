@@ -19,7 +19,7 @@
         foreach step_dir {+ -2*} {
             *c "@size:$s=@size:$s$step_dir@size:$s:step;"
             *c "viable=1;"
-            *c "if ((@size:$s>=@size:$s:min)&&(@size:$s<=@size:$s:max)) \{"
+            *c "if ((@size:$s>=$::sizing_code($s,min))&&(@size:$s<=$::sizing_code($s,max))) \{"
             *c "tcl_gamma_op_cmd(CD,NULL,0,NULL);"
             *c "\}"
         }
