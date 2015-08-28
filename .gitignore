@@ -10,3 +10,4 @@ temp*
 *.bmp
 *.tcsh
 tmp*
+Etc/Tech_DB/*/4d/*/*.db*
