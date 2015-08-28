@@ -8,7 +8,7 @@ Info: Traget=regular
     #                                                         #
     ###########################################################
 version=Thu Aug 27 13:10:53 MDT 2015
-Info: Running RAMSpice Script: Etc/tests/gamma_pat_breed_op_amp.tcl start: Fri Aug 28 14:08:26 MDT 2015 
+Info: Running RAMSpice Script: Etc/tests/gamma_pat_breed_op_amp.tcl start: Fri Aug 28 14:13:26 MDT 2015 
 Info: Loading File: Etc/Templates/op_amp/models_tsmc040.db 
 Info: Loading array ./ss 9MB 
 Info: Loading array ./tt 9MB 
@@ -57,25 +57,34 @@ Info: spacing=1.6e-07
 Info: spacing=1.6e-07 
 Info: F=2 
 Info: max Adc = 27.0432 
-Info: size after random=1 seed Fri Aug 28 14:08:29 MDT 2015 
+Info: size after random=1 seed Fri Aug 28 14:13:29 MDT 2015 
 Info: PAT=1 max_Adc=27.043dB Trying 5000 
-               1000/5000=20% max gain=52.0825
+               1000/5000=20% max gain=58.0491
                1000/5000=20%
-               2000/5000=40% max gain=57.8413
+               2000/5000=40% max gain=58.0491
                2000/5000=40%
-               3000/5000=60% max gain=57.8413
+               3000/5000=60% max gain=58.0491
                3000/5000=60%
-               4000/5000=80% max gain=57.8413
+               4000/5000=80% max gain=58.0491
                4000/5000=80%
-               5000/5000=100% max gain=57.8413
+               5000/5000=100% max gain=58.0491
                5000/5000=100%
-               2000/10000=20% max gain=57.8413
+               2000/10000=20% max gain=58.0491
                2000/10000=20%
-               3000/10000=30% max gain=57.8413
+               3000/10000=30% max gain=58.0491
                3000/10000=30%
-               4000/10000=40% max gain=57.8413
+               4000/10000=40% max gain=59.776
                4000/10000=40%
-               5000/10000=50% max gain=61.7025
+               5000/10000=50% max gain=59.776
                5000/10000=50%
-               6000/10000=60% max gain=62.0799
+               6000/10000=60% max gain=59.776
                6000/10000=60%
+               7000/10000=70% max gain=59.776
+               7000/10000=70%
+               8000/10000=80% max gain=59.776
+               8000/10000=80%
+               9000/10000=90% max gain=60.4826
+               9000/10000=90%
+               10000/10000=100% max gain=70.5825
+               10000/10000=100%
+Info: Done, saving PAT=10001 
