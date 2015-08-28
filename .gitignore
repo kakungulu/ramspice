@@ -1,4 +1,5 @@
 bin/*
+Etc/Templates/*/*.db
 *.db
 look_up_table.s
 noi_log
