@@ -1,1 +1,81 @@
-id: cannot find name for user ID 29193
+RAMSPICE=/net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice
+Info: Traget=regular 
+    ###########################################################
+    #                                                         #
+    # RAMSpice: Colorado State University version of NGSPICE  #
+    # Rewritten by Yishai Statter as part of PhD requirements #
+    # Advisor: Dr Tom Chen                                    #
+    #                                                         #
+    ###########################################################
+version=Thu Aug 27 13:10:53 MDT 2015
+Info: Running RAMSpice Script: Etc/tests/gamma_pat_breed_op_amp.tcl start: Fri Aug 28 14:08:26 MDT 2015 
+Info: Loading File: Etc/Templates/op_amp/models_tsmc040.db 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 19KB 
+Info: Loading array ./ss 19KB 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 9MB 
+Info: Loading array ./tt 9MB 
+Info: Loading array ./ff 9MB 
+Info: Loading array ./fs 9MB 
+Info: Loading array ./sf 9MB 
+Info: Loading array ./mc 9MB 
+Info: Loading array ./ss 19KB 
+Info: Loading array ./ss 19KB 
+Info: spacing1=1.6e-07 
+Info: spacing2=1.6e-07 
+Info: spacing3=1.6e-07 
+Info: spacing=1.6e-07 
+Info: spacing=1.6e-07 
+Info: F=2 
+Info: max Adc = 27.0432 
+Info: size after random=1 seed Fri Aug 28 14:08:29 MDT 2015 
+Info: PAT=1 max_Adc=27.043dB Trying 5000 
+               1000/5000=20% max gain=52.0825
+               1000/5000=20%
+               2000/5000=40% max gain=57.8413
+               2000/5000=40%
+               3000/5000=60% max gain=57.8413
+               3000/5000=60%
+               4000/5000=80% max gain=57.8413
+               4000/5000=80%
+               5000/5000=100% max gain=57.8413
+               5000/5000=100%
+               2000/10000=20% max gain=57.8413
+               2000/10000=20%
+               3000/10000=30% max gain=57.8413
+               3000/10000=30%
+               4000/10000=40% max gain=57.8413
+               4000/10000=40%
+               5000/10000=50% max gain=61.7025
+               5000/10000=50%
+               6000/10000=60% max gain=62.0799
+               6000/10000=60%
