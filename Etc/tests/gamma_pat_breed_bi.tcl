@@ -6,6 +6,7 @@ default ::opt(process) ss
 default ::opt(device) nch
 default ::opt(tech) tsmc040
 default ::opt(topv) 1.1
+default ::opt(rez) 5:5:3:6
 default ::opt(l) 360e-9
 default ::opt(w) 360e-9
 default ::opt(vgs) 1.0
@@ -21,11 +22,11 @@ default ::opt(topology) diffpair_nmos
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
-default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/5:5:3:6/
+default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/$::opt(rez)/
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
 @ max_Adc = 0
-@ / load Etc/Templates/$::opt(topology)/ctree.db
-@ op_iterations = 15
+@ / load Etc/Templates/$::opt(topology)/models_$::opt(tech).db
+@ op_iterations = 3000
 @ print_op_steps = 0
 proc present_property {p {val {}}} {
     regsub -all @ [@ property/$p/formula] $val expr
@@ -105,7 +106,7 @@ while {[@ max_Adc]<15} {
 ::C::random_breed
 @ $::opt(topology)/circuits PAT  unique 128
 Info: Done, saving PAT=[@ $::opt(topology)/circuits PAT size]
-@ / save Etc/Templates/$::opt(topology)/pareto_bi.db
+@ / save Etc/Templates/$::opt(topology)/$::opt(tech).db
 exit
 for {set i 0} {$i<[@ $::opt(topology)/circuits PAT size]} {incr i} {
     Info: [@ $::opt(topology)/circuits PAT index $i]

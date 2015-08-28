@@ -16,7 +16,6 @@ float *Psize_iref_min;
 float *Psize_iref_max;
 float *Psize_L_step;
 float *Psize_W_step;
-float *Psize_W_min;
 float *Psize_iref_step;
 float *Pmax_Adc;
 float *Pparam_unique;
@@ -110,7 +109,6 @@ float size_iref_min;
 float size_iref_max;
 float size_L_step;
 float size_W_step;
-float size_W_min;
 float size_iref_step;
 float max_Adc;
 float param_unique;
@@ -268,7 +266,6 @@ static int tcl_gamma_import_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     size_iref_max=*Psize_iref_max;
     size_L_step=*Psize_L_step;
     size_W_step=*Psize_W_step;
-    size_W_min=*Psize_W_min;
     size_iref_step=*Psize_iref_step;
     max_Adc=*Pmax_Adc;
     param_unique=*Pparam_unique;
@@ -359,7 +356,6 @@ static int tcl_gamma_export_cmd(ClientData clientData,Tcl_Interp *interp, int ob
     *Psize_iref_max=size_iref_max;
     *Psize_L_step=size_L_step;
     *Psize_W_step=size_W_step;
-    *Psize_W_min=size_W_min;
     *Psize_iref_step=size_iref_step;
     *Pmax_Adc=max_Adc;
     *Pparam_unique=param_unique;
@@ -611,12 +607,12 @@ static int tcl_gamma_breed_cmd(ClientData clientData,Tcl_Interp *interp, int obj
             size_L=size_L+size_L_step;
             size_W=size_W+size_W_step;
             viable=1;
-            if ((size_W>=size_W_min)&&(size_W<=size_W_max)) {
+            if ((size_W>=size_L)&&(size_W<=size_W_max)) {
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_W=size_W-2*size_W_step;
             viable=1;
-            if ((size_W>=size_W_min)&&(size_W<=size_W_max)) {
+            if ((size_W>=size_L)&&(size_W<=size_W_max)) {
                 tcl_gamma_op_cmd(CD,NULL,0,NULL);
             }
             size_W=size_W+size_W_step;
@@ -665,7 +661,7 @@ static int tcl_gamma_random_breed_cmd(ClientData clientData,Tcl_Interp *interp, 
             size_L+=step;
             while (1) {
                 step=(2.0*random()/RAND_MAX-1)*size_W_step;
-                if (size_W+step<size_W_min) continue;
+                if (size_W+step<size_L) continue;
                 if (size_W+step>size_W_max) continue;
                 break;
             }
@@ -724,7 +720,7 @@ static int tcl_gamma_random_breed_single_cmd(ClientData clientData,Tcl_Interp *i
         size_L+=step;
         while (1) {
             step=(2.0*random()/RAND_MAX-1)*size_W_step;
-            if (size_W+step<size_W_min) continue;
+            if (size_W+step<size_L) continue;
             if (size_W+step>size_W_max) continue;
             break;
         }
@@ -771,8 +767,6 @@ int Gamma_Init(Tcl_Interp *interp) {
     Psize_L_step=(float *)(&c->value.s);
     c=create_context("size:W:step");
     Psize_W_step=(float *)(&c->value.s);
-    c=create_context("size:W:min");
-    Psize_W_min=(float *)(&c->value.s);
     c=create_context("size:iref:step");
     Psize_iref_step=(float *)(&c->value.s);
     c=create_context("max_Adc");

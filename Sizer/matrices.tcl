@@ -130,10 +130,16 @@ proc deti {M i y} {
     return [det $M 0 {} $i $y]
 }
 proc DET {M_var {i -1} {y {}}} {
+    Info: DET start [clock format [clock seconds]]
+    for {set l 1} {$l<[info level]} {incr l} {
+        Info: DET $l) [info level $l]
+    }
     regsub -all {([^\-\+\*/\(\)0-9\.][^\-\+\*/\(\)]*)} [det $M_var 0 {} $i $y] {@\1} line
     regsub -all {@+} $line @ line
     regsub -all {\+\-} $line {-} line
     regsub -all {\-\+} $line {-} line
+    Info: DET=$line
+    Info: DET end [clock format [clock seconds]]
     return $line
 }
 proc is_one {x} {

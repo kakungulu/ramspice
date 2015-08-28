@@ -33,7 +33,7 @@ while {1} {
             }
         }
         if {$use_original_pat} {  
-            @ / load $::env(RAMSPICE)/Etc/Templates/$::SESSION(selected_topology)/pareto_bi.db
+            @ / load $::env(RAMSPICE)/Etc/Templates/$::SESSION(selected_topology)/$::SESSION(selected_tech).db
         } else {
             @ / load $work_pat_file
         }

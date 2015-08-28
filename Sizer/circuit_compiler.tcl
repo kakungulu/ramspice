@@ -18,10 +18,12 @@ default ::opt(step_limit) 1000
 default ::opt(step_count) 10
 default ::opt(np) 1
 default ::opt(mode) dc
+default ::opt(rez) 5:5:3:6
+
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
-default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/4d/5:5:3:6/
+default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/$::opt(rez)/
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
@@ -183,6 +185,9 @@ default ::opt(iref) 50e-6
 source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
 @ param/unique = 0
 .compile_circuit
+if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db]} {
+    exit
+}
 # Prepare some defaults in the skeleton db file
 set pareto_properties {}
 set pareto_sizes {}
@@ -236,6 +241,6 @@ foreach {p unit formula step_factor} {
 @ op_iterations = 10
 
 @ /pareto(([join $pareto_sizes ,]|[join $pareto_properties ,])) !
-@ / save $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/ctree.db
+@ / save $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db
 exit
 

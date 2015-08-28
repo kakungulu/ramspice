@@ -27,11 +27,11 @@ proc .size {name = value {min {}} {max {}} {step {}} } {
     }
     foreach field {min max step} {
         if {[catch {set evaluated_value [expr [set $field]]}]} {
-	    set ::sizing_code($name,$field) [set $field]
-	} else {
-	    set ::sizing_code($name,$field) @size:$name:$field
-	    @ size:$name:$field = $evaluated_value
-	}
+            set ::sizing_code($name,$field) [set $field]
+        } else {
+            set ::sizing_code($name,$field) @size:$name:$field
+            @ size:$name:$field = $evaluated_value
+        }
     }
     default ::sizers_list {}
     lappend ::sizers_list $name
@@ -390,7 +390,7 @@ proc .prep_mna {mode} {
         }
         puts $::HTML </table>
         puts $::HTML <h2>
-        puts $::HTML "DET=[DET ::MNA]"
+        #        puts $::HTML "DET=[DET ::MNA]"
         puts $::HTML </h2>
         if {$mode=="ac"} {
             puts $::HTML </body></html>
@@ -406,6 +406,11 @@ proc .prep_mna {mode} {
     #    set ::opt(topology) $name
 #}
 proc .compile_circuit {args} {
+    if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/bypass.ignore.c]} {
+        file copy -force $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/bypass.ignore.c /tmp/gamma_source.ignore.c
+	gcc $::opt(topology) 0
+	return
+    }
     get_opts outp {} out {} outn {} in {} inn {} inp {} vdd {} name {}
     set ::debug_mode 0
     if {[ginfo target]=="debug"} {
@@ -481,9 +486,12 @@ proc .compile_circuit {args} {
     @ op_iterations = $::opt(op_limit)
     foreach metaC_file [glob -nocomplain $::env(RAMSPICE)/Gamma/metaC/*.tcl] {
         regsub {\.tcl$} [file tail $metaC_file] {} target_name
-	Info: Compiling $target_name
-	code_target $target_name
-	source $metaC_file
+        if {[file exists $::env(RAMSPICE)/Gamma/metaC/$::opt(topology)/$target_name.tcl]} {
+            set metaC_file $::env(RAMSPICE)/Gamma/metaC/$::opt(topology)/$target_name.tcl
+        }
+        Info: Compiling $target_name from [file dirname $metaC_file]
+        code_target $target_name
+        source $metaC_file
     }
     gcc $opt(name)
 }
@@ -524,11 +532,11 @@ namespace eval C {
             OP_CODE_GOES_HERE
             return TCL_OK;
         }
-  //      static int tcl_gamma_grad_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+        //      static int tcl_gamma_grad_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
             //            Tcl_ResetResult(interp);
-  //          GRAD_CODE_GOES_HERE
-   //         return TCL_OK;
-    //    }
+            //          GRAD_CODE_GOES_HERE
+            //         return TCL_OK;
+        //    }
         static int tcl_gamma_random_cmd(ClientData clientData,Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
             RANDOM_CODE_GOES_HERE
             return TCL_OK;
@@ -665,82 +673,85 @@ proc ::C::tcl_preprocessor {c_code} {
 }
 
 
-proc gcc {name} {
-    regsub -all @name $::C::code_template $name body
-    set global_pointers {}
-    set global_variables {}
-    set global_pointer_init {}
-    set local_buffer_init_goes_here {}
-    set local_buffer_return_goes_here {}
-    set used_var_names {}
-    set used_pointer_names {}
-    foreach target [array names ::C::code] {
-        set code $::C::code($target)
-        while {[regexp {@+([A-Za-z0-9_:]+)} $code -> context_string]} {
-            if {[info exists pointer_names($context_string)]} {
-                #            regsub "&&@+$context_string" $code `$var_names($context_string) code
-                regsub "&@+$context_string" $code $pointer_names($context_string) code
-                regsub "@+$context_string" $code $var_names($context_string) code
-                continue
-            }
-            if {[regexp {^[0-9]} $context_string]} {
-                regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
-            } else {
-                regsub -all {[^a-zA-Z_0-9]} $context_string _ var_name
-            }
-            regsub -all {[^a-zA-Z_0-9]} P$context_string _ pointer_name
-            if {[lsearch $used_var_names $var_name]!=-1} {
-                set i 0
-                while {[lsearch $used_var_names $var_name$i]!=-1} {
-                    incr i
+proc gcc {name {preprocess 1}} {
+    if {$preprocess} {
+        regsub -all @name $::C::code_template $name body
+        set global_pointers {}
+        set global_variables {}
+        set global_pointer_init {}
+        set local_buffer_init_goes_here {}
+        set local_buffer_return_goes_here {}
+        set used_var_names {}
+        set used_pointer_names {}
+        foreach target [array names ::C::code] {
+            Info: Post processing $target
+            set code $::C::code($target)
+            while {[regexp {@+([A-Za-z0-9_:]+)} $code -> context_string]} {
+                if {[info exists pointer_names($context_string)]} {
+                    #            regsub "&&@+$context_string" $code `$var_names($context_string) code
+                    regsub "&@+$context_string" $code $pointer_names($context_string) code
+                    regsub "@+$context_string" $code $var_names($context_string) code
+                    continue
                 }
-                set var_name $var_name$i
-            }
-            lappend used_var_names $var_name
-            if {[lsearch $used_pointer_names $pointer_name]!=-1} {
-                set i 0
-                while {[lsearch $used_pointer_names $pointer_name$i]!=-1} {
-                    incr i
+                Info: converting $context_string
+                if {[regexp {^[0-9]} $context_string]} {
+                    regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
+                } else {
+                    regsub -all {[^a-zA-Z_0-9]} $context_string _ var_name
                 }
-                set pointer_name $pointer_name$i
+                regsub -all {[^a-zA-Z_0-9]} P$context_string _ pointer_name
+                if {[lsearch $used_var_names $var_name]!=-1} {
+                    set i 0
+                    while {[lsearch $used_var_names $var_name$i]!=-1} {
+                        incr i
+                    }
+                    set var_name $var_name$i
+                }
+                lappend used_var_names $var_name
+                if {[lsearch $used_pointer_names $pointer_name]!=-1} {
+                    set i 0
+                    while {[lsearch $used_pointer_names $pointer_name$i]!=-1} {
+                        incr i
+                    }
+                    set pointer_name $pointer_name$i
+                }
+                lappend used_pointer_names $pointer_name
+                append global_pointers "float *$pointer_name;\n"
+                append global_variables "float $var_name;\n"
+                if {[regexp {(.*):PAT} $context_string -> base]} {
+                    append global_pointer_init "$pointer_name=(float *)get_PAT(\"$base\");\n"
+                    regsub "&@+$context_string" $code $pointer_name code
+                } elseif {[regexp {(.*):LUT} $context_string -> base]} {
+                    append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
+                    regsub "&@+$context_string" $code $pointer_name code
+                } else {
+                    #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
+                    append global_pointer_init "c=create_context(\"$context_string\");\n"
+                    append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
+                    append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
+                    append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
+                    regsub "&@+$context_string" $code $pointer_name code
+                    regsub "@+$context_string" $code $var_name code
+                }
+                set pointer_names($context_string) $pointer_name
+                set var_names($context_string) $var_name
+                incr i
             }
-            lappend used_pointer_names $pointer_name
-            append global_pointers "float *$pointer_name;\n"
-            append global_variables "float $var_name;\n"
-            if {[regexp {(.*):PAT} $context_string -> base]} {
-                append global_pointer_init "$pointer_name=(float *)get_PAT(\"$base\");\n"
-                regsub "&@+$context_string" $code $pointer_name code
-            } elseif {[regexp {(.*):LUT} $context_string -> base]} {
-                append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
-                regsub "&@+$context_string" $code $pointer_name code
-            } else {
-                #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
-                append global_pointer_init "c=create_context(\"$context_string\");\n"
-                append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
-                append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
-                append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
-                regsub "&@+$context_string" $code $pointer_name code
-                regsub "@+$context_string" $code $var_name code
-            }
-            set pointer_names($context_string) $pointer_name
-            set var_names($context_string) $var_name
-            incr i
+            regsub -all \& $code ` code
+            regsub ${target}_CODE_GOES_HERE $body $code body
         }
-        regsub -all \& $code ` code
-        regsub ${target}_CODE_GOES_HERE $body $code body
+        regsub VOS_FORMULA $body $::VOS_FORMULA body
+        regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
+        regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
+        regsub GLOBAL_POINTER_INIT_GO_HERE $body $global_pointer_init body
+        regsub LOCAL_BUFFER_INIT_GOES_HERE $body $local_buffer_init_goes_here body
+        regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
+        regsub -all `_ $body {P_} body
+        regsub -all ` $body {\&} body
+        set ::C::O [open /tmp/gamma_source.ignore.c w]
+        ::C::tcl_preprocessor $body
+        close $::C::O
     }
-    regsub VOS_FORMULA $body $::VOS_FORMULA body
-    regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
-    regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
-    regsub GLOBAL_POINTER_INIT_GO_HERE $body $global_pointer_init body
-    regsub LOCAL_BUFFER_INIT_GOES_HERE $body $local_buffer_init_goes_here body
-    regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
-    regsub -all `_ $body {P_} body
-    regsub -all ` $body {\&} body
-    set ::C::O [open /tmp/gamma_source.ignore.c w]
-    ::C::tcl_preprocessor $body
-    close $::C::O
-    
     set find_lib_stub [glob -nocomplain /usr/*/libtclstub*]
     if {$find_lib_stub=={}} {
         Error: This system has no tclstub library and therefore can't compile code on the fly.
@@ -771,7 +782,7 @@ proc code_target {name} {
     set ::C::target $name
 }
 proc *c {args} {
-    Dinfo: CCC $args
+    Info: CCC $args
     set body $args
     if {[llength $body]!=1} {
         append ::C::code($::C::target) "$body;\n"

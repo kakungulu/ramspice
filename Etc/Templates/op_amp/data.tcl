@@ -26,32 +26,20 @@ define_sizers {
     iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]
-set ::topologies(diffpair_output_nmos,schematic) {
+set ::topologies(op_amp,schematic) {
 NewFormat	
-vdd	       	blank		blank		vdd	       	blank		blank			blank			blank			vdd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	vdd 		    blank		    blank	    vdd 	    nl  		    
-pmos/fr	       	twire		terminal(Vn)/r 	pmos/fr	       	twire		line/r  		line/r  		line/r  		pmos/rrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	pmos/fr		    twire		    line/r	    pmos/rrr	    nl
-twire/rrr      	corner/rrr	blank		twire/rrr      	corner/rrr	blank			blank			corner/r		twire/rr		corner/rr     blank	    blank		blank		  blank 	    corner/r	    line/r	    	twire/r		    line		    corner/r	    twire/r	    nl
-line	       	blank		blank		line	       	blank		blank			corner/r		pmos/rrr		blank			pmos/fr       corner/rr     blank		blank		  blank 	    line	    terminal(Vp)/rrr    pmos_linethrough/fr     crosswire		    crosswire	    pmos/rrr	    nl
-line		blank		blank		line		blank		blank			line			line			blank			corner        crosswire     line/r		corner/rr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rrr	    corner/rrr      line	    nl
-line	       	blank		blank		line	       	blank		blank			line			corner  		line/r  		line/r        crosswire     line/r		double_corner/rr  cross_corner/rrr  double_corner/r line/r	    	crosswire		    corner/rrr  	    blank	    line	    nl
-line		blank		blank		line		blank		terminal(inn)/rrr	twire/r 		blank			blank			blank	      twire/rrr     terminal(inp)/r	cross_corner/rr   quad_corner/rr    cross_corner    blank	    	line		    blank		    blank	    twire/rrr	    terminal(outp)/r			    nl
-line	       	blank		blank		line	       	blank		blank			line			corner/r		line/r  		line/r        crosswire     line/r		double_corner/rrr cross_corner/r    double_corner   line/r	    	crosswire		    corner/rr		    blank	    line		    nl
-twire/rrr      	corner/rr	blank		twire/rrr      	corner/rr	blank			line			line			blank			corner/r      crosswire     line/r		corner/rrr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rr	    corner/rr	    line	    nl
-nmos/r	       	corner/rrr 	blank		nmos/r	       	corner/rrr 	blank			corner  		nmos/frrr		blank			nmos/r        corner/rrr    blank		blank		  blank 	    line	    terminal(Vn)/rrr    nmos_linethrough/r      crosswire		    crosswire	    nmos/frrr	    nl
-twire/rrr      	corner/rr	blank		twire/rrr      	corner/rr	blank			blank			corner  		twire			corner/rrr    blank	    blank		blank		  blank 	    corner	    line/r	    	twire/r		    line		    corner	    twire/r	    nl
-nmos/r	       	twire/rr 	terminal(Vp)/r 	nmos/r	       	twire/rr 	line/r  		line/r  		line/r  		nmos/frrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	nmos/r		    twire/rr		    line/r	    nmos/frrr	    nl
-gnd	       	blank		blank		gnd	       	blank		blank			blank			blank			gnd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	gnd 		    blank		    blank	    gnd 	    nl
+blank			blank			blank			vdd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	vdd 		    blank		    blank	    vdd 	    nl  		    
+blank			terminal(Vb1)/rrr	line/r  		pmos/rrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	pmos/fr		    twire		    line/r	    pmos/rrr	    nl
+blank			blank			corner/r		twire/rr		corner/rr     blank	    blank		blank		  blank 	    corner/r	    line/r	    	twire/r		    line		    corner/r	    twire/r	    nl
+blank			corner/r		pmos/rrr		blank			pmos/fr       corner/rr     blank		blank		  blank 	    line	    terminal(Vb2)/rrr    pmos_linethrough/fr     crosswire		    crosswire	    pmos/rrr	    nl
+blank			line			line			blank			corner        crosswire     line/r		corner/rr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rrr	    corner/rrr      line	    nl
+blank			line			corner  		line/r  		line/r        crosswire     line/r		double_corner/rr  cross_corner/rrr  double_corner/r line/r	    	crosswire		    corner/rrr  	    blank	    line	    nl
+terminal(inn)/rrr	twire/r 		blank			blank			blank	      twire/rrr     terminal(inp)/r	cross_corner/rr   quad_corner/rr    cross_corner    blank	    	line		    blank		    blank	    twire/rrr	    terminal(outp)/r			    nl
+blank			line			corner/r		line/r  		line/r        crosswire     line/r		double_corner/rrr cross_corner/r    double_corner   line/r	    	crosswire		    corner/rr		    blank	    line		    nl
+blank			line			line			blank			corner/r      crosswire     line/r		corner/rrr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rr	    corner/rr	    line	    nl
+blank			corner  		nmos/frrr		blank			nmos/r        corner/rrr    blank		blank		  blank 	    line	    terminal(Vb3)/rrr    nmos_linethrough/r      crosswire		    crosswire	    nmos/frrr	    nl
+blank			blank			corner  		twire			corner/rrr    blank	    blank		blank		  blank 	    corner	    line/r	    	twire/r		    line		    corner	    twire/r	    nl
+blank			terminal(Vb4)/rrr	line/r  		nmos/frrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	nmos/r		    twire/rr		    line/r	    nmos/frrr	    nl
+blank			blank			blank			gnd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	gnd 		    blank		    blank	    gnd 	    nl
 end
 }
-return
-blank		vdd(vdd)		blank				vdd(vdd)			blank			blank		vdd(vdd)					nl
-	blank		vdd(vdd)		blank				vdd(vdd)			blank			blank		vdd(vdd)					nl
-blank		pmos(p_1)/fr		twire(outm)			pmos(p_2)/rrr			corner(midoutp)/r	line(midoutp)/r	pmos(p_out)/rrr					nl
-	blank		twire(outm)/rrr		corner(outm)/rrr		twire(midoutp)/rrr		twire(midoutp)/rr	cap(midoutp)/r	crosswireconn(outp)/rrr	terminal(outp)/r	nl
-blank		nmos(nin_1)/frrr	blank	nmos(nin_2)/r		terminal(inn)/r			blank			line(outp)							nl
-	blank		corner(tail)		twire(tail)			corner(tail)/rrr		blank			blank		line(outp)					nl
-blank		line(vbias)/r		nmos_linethrough(n_tail)/frrr	line(vbias)/r			line(vbias)/r		line(vbias)/r	nmos(n_out)/frrr				nl
-	blank		blank			gnd				blank				blank			blank		gnd
-blank		line(vbias)/r		nmos_linethrough(n_tail)/frrr	line(vbias)/r			line(vbias)/r		line(vbias)/r	nmos(n_out)/frrr				nl
-	blank		blank			gnd				blank				blank			blank		gnd	nl
-blank		blank			gnd				blank				blank			blank		gnd	nl

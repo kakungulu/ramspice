@@ -63,6 +63,7 @@
         #       if {![info exists ::vdc(0,$node)]} 
         if {1} {
             *c "@$node:V=($expression($node))*@Ted;"
+	    Info: OP for $node
             *c "if (@$node:V<0) @$node:V=0;"
             *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
             if {1} {*c "if (@print_op_steps>0) printf(\"%d) $node=%g\\n\",op_it,@$node:V);"}
@@ -105,6 +106,7 @@
         *c "@property:$p=$expression($p);"
         if {$::debug_mode} {*c "printf(\"Temporary $p=%g\\n\",@property:$p);"}
 	*c "if (!isfinite(@property:$p))  return TCL_ERROR;"
+	Info: Code generated for $p
     }	
     *c "if (@print_op_steps>0) printf(\" Adc=%g\\n\",@property:Adc);"
     *c "@property:Adc=fabs(@property:Adc);"

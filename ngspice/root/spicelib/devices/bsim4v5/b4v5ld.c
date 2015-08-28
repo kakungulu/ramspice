@@ -451,7 +451,6 @@ CKTcircuit *ckt)
                     cgbhat = here->BSIM4v5Igb + here->BSIM4v5gIgbg * delvgd - here->BSIM4v5gIgbd
                     * delvds + here->BSIM4v5gIgbb * delvbd;
                 }
-                
                 Isestot = here->BSIM4v5gstot * (*(ckt->CKTstate0 + here->BSIM4v5vses));
                 cseshat = Isestot + here->BSIM4v5gstot * delvses
                 + here->BSIM4v5gstotd * delvds + here->BSIM4v5gstotg * delvgs
@@ -1919,7 +1918,8 @@ CKTcircuit *ckt)
             + Vdseff * tmp2) * dVbseff_dVb;
             
             cdrain = Ids * Vdseff;
-            
+            // #Info: "%s Id=%g" here->BSIM4v5name Ids
+
             /* Source End Velocity Limit  */
             if((model->BSIM4v5vtlGiven) && (model->BSIM4v5vtl > 0.0) ) {
                 T12 = 1.0 / Leff / CoxeffWovL;

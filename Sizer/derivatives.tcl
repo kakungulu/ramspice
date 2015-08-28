@@ -139,7 +139,7 @@ proc expr/ {X Y} {
     return $retval
 }
 proc analyse_expr {{expression {}}} {
-    #Info: [.] Analyzing $expression
+    Info: [.] Analyzing $expression
     incr ::Gamma_expression_counter
     # Protect negative constants
     while {[regexp {^(.*)([\*\/\+\-])(\-[0-9]+\.?[0-9]*e?[\+\-]?[0-9]*)(.*)$} $expression -> pre op const post]} {

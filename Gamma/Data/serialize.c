@@ -162,6 +162,7 @@ void read_string(char *new_string) {
 
 void open_to_read(char *i_filename) {
     OpenFileForReading=fopen(i_filename,"r");
+    #Info: "Loading File: %s" i_filename
     if (OpenFileForReading==NULL) {
         #Error: "Couldn't open file %s" i_filename
         exit(1);

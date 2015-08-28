@@ -31,6 +31,18 @@ typedef struct {
             ,float c$j
 	}
     );
+    float positive_gamma_gcc_interpolate_$i(
+        void *i_a
+        #For: {set j 0} {$j<$i} {incr j} {
+            ,float c$j
+	}
+    );
+    float negative_gamma_gcc_interpolate_$i(
+        void *i_a
+        #For: {set j 0} {$j<$i} {incr j} {
+            ,float c$j
+	}
+    );
     float gamma_gcc_interpolateg_$i(
         void *i_a
         #For: {set j 0} {$j<$i} {incr j} {

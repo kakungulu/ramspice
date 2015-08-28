@@ -526,7 +526,7 @@ foreach type [split $device :] {
 	Info: Saving Arrays
         @ /look_up_tables/$type/Vt save $vt_db_file
         @ /look_up_tables/$type/Va save $va_db_file
-        set minVt 0.3
+        set minVt 0
         Info: minVt=$minVt
         set MVT [open $min_vt_file w]
         puts $MVT [list set minVt [set minVt]]
@@ -544,7 +544,7 @@ foreach type [split $device :] {
         constrain "
         Vgs  $minVt         $max_supply            $::vgs_rez
         Vds  0              $max_supply            $::vds_rez
-        Vbs  [expr -$max_supply/6]           0     $::vbs_rez
+        Vbs  [expr -$max_supply/2]           0     $::vbs_rez
         L    [set ::global_${p}lmin] [set ::global_${p}lmax] $::l_rez
         "
         set ::fork_limit 8

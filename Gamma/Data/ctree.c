@@ -3329,7 +3329,116 @@ void pat_stars(PAT *p) {
 	delete_entry_vector_pointer_PAT_entry(p->content,i--);
     }	
 }
+char *expr2polish(char *expr_in,int toplevel) {
+    int i=0;
+    char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
+    for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
+    expr[i]=0;
+    int brace_count;
+    int weakest_degree=3;
+    int weakest=-1;
+    int peelme=1;
+    while (peelme) {
+        brace_count=0;
+        for (i=0;expr[i];i++) {
+            if (expr[i]=='(') brace_count++;
+            if (brace_count==0) peelme=0;
+            if (expr[i]==')') brace_count--;
+        }
+        if (peelme) {
+            expr[i-1]=0;
+            expr=&(expr[1]);   
+        }
+    }
+    brace_count=0;
+    for (i=0;expr[i];i++) {
+        if (expr[i]=='(') brace_count++;
+        if (brace_count==0) {
+            if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
+                weakest_degree=1;
+                weakest=i;
+            }
+            if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
+                weakest_degree=2;
+                weakest=i;
+            }
+        }
+        if (expr[i]==')') brace_count--;
+    }
+    if (weakest==-1) {
+        return(expr);
+    }
+    if (weakest==0) {
+        char op=expr[weakest];
+        char *post=expr2polish(&(expr[weakest+1]),0);
+        //free(expr);
+        char *result=(char *)malloc(sizeof(char)*(9+strlen(post)));
+	if (toplevel) {
+            if ((op=='-')||(op=='+')) sprintf(result,"%c 0 %s",op,post);
+            if ((op=='/')||(op=='*')) sprintf(result,"%c 1 %s",op,post);
+	} else {
+            if ((op=='-')||(op=='+')) sprintf(result,"{%c 0 %s}",op,post);
+            if ((op=='/')||(op=='*')) sprintf(result,"{%c 1 %s}",op,post);
+	}
+        return(result);
+    }
+    char op=expr[weakest];
+    expr[weakest]=0;
+    char *pre=expr2polish(expr,0);
+    char *post=expr2polish(&(expr[weakest+1]),0);
+    // free(expr);
+    char *result=(char *)malloc(sizeof(char)*(9+strlen(pre)+strlen(post)));
+    if (toplevel) {
+        sprintf(result,"%c %s %s",op,pre,post);
+    } else {
+        sprintf(result,"{%c %s %s}",op,pre,post);
+    }	
+    return(result);
+}
+char *peel(char *expr_in,int toplevel) {
+    int i=0;
+    char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
+    for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
+    expr[i]=0;
+    int brace_count;
+    int weakest_degree=3;
+    int weakest=-1;
+    int peelme=1;
+    while (peelme) {
+        brace_count=0;
+        for (i=0;expr[i];i++) {
+            if (expr[i]=='(') brace_count++;
+            if (brace_count==0) peelme=0;
+            if (expr[i]==')') brace_count--;
+        }
+        if (peelme) {
+            expr[i-1]=0;
+            expr=&(expr[1]);   
+        }
+    }
+    return(expr);
+}
 
+static int
+tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=2) {
+        #Error: "%s requires a no-spaces expression"
+	return TCL_ERROR;
+    }
+    Tcl_ResetResult(interp);
+    Tcl_AppendElement(interp,expr2polish(argv[1],1));
+    return TCL_OK;	
+}
+static int
+tcl_peel (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=2) {
+        #Error: "%s requires a no-spaces expression"
+	return TCL_ERROR;
+    }
+    Tcl_ResetResult(interp);
+    Tcl_AppendElement(interp,peel(argv[1],1));
+    return TCL_OK;	
+}
 
 static int
 tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -5026,6 +5135,8 @@ int register_tcl_functions(Tcl_Interp *interp) {
     ctree->ctype=ctype_string;
     //context=ctree;
     context_stack_pointer=0;
+    Tcl_CreateCommand(interp, "polish", tcl_polish, NULL, NULL);
+    Tcl_CreateCommand(interp, "peel", tcl_peel, NULL, NULL);
     Tcl_CreateCommand(interp, "fork", tcl_fork, NULL, NULL);
     Tcl_CreateCommand(interp, "array_set", array_set, NULL, NULL);
     Tcl_CreateCommand(interp, "array_get", array_get, NULL, NULL);

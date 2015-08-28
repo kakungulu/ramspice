@@ -280,7 +280,9 @@ static int get_Ids(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[
 static int LUT2hit(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_enable_hit(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_list_hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
+static int tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 float Ids_estimation(float Va,float Vt,float Vgs,float Vds,float WbyL,float temp);
+char *expr2polish(char *expr_in,int toplevel);
 
 int register_tcl_functions(Tcl_Interp *interp);
 node *ctree; 
