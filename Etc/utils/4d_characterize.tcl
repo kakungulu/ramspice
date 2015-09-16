@@ -250,7 +250,7 @@ foreach var {vgs vds vbs l} {
     set rez [expr pow(2,$bits)+1]
     set size_estimate [expr $size_estimate*$rez]
 }
-textbox "Size estimate for dominant views is [eng $size_estimate B]"
+textbox "Size estimate for dominant views is [eng $size_estimate B]\nResolution: Vgs=$vgs_rez Vds=$vds_rez Vbs=$vbs_rez L=$l_rez"
 load_tech
 set ::rez [join [list $vgs_rez $vds_rez $vbs_rez $l_rez] :]
 if {![file exists $::env(RAMSPICE)/Etc/Tech_DB]} {
@@ -407,6 +407,7 @@ foreach type [split $device :] {
     set ids_mis_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids_mis.db
     if {[file exists $vt_db_file]&&[file exists $min_vt_file]&&[file exists $va_db_file]} {
         source $min_vt_file
+	Info: LUT exists for type=$type $vt_db_file $min_vt_file $va_db_file
     } else {
         textbox    "Characterizing Vt and Va for $type"    
         constrain "

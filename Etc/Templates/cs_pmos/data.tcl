@@ -14,8 +14,8 @@ define_properties {
     Power Power W 0 1000 -1
 }
 define_sizers {
-    L p 40e-9 10e6 m
-    W p 40e-9 10e6 m
+    L p 40e-9 10e-6 m
+    W p 40e-9 10e-6 m
     iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]

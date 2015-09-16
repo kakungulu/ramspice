@@ -1,9 +1,26 @@
 array set ::SESSION {
-ajax_cmd update_selected
-arg 37233
-circuit_list {}
+Adc {}
+Area {}
+BW {}
+CMRR {}
+Nt {}
+PSRR {}
+Power {}
+Rout {}
+Vos {}
+ajax_cmd generate_heat_map
+circuit_list 451
 deselect {}
+fc {}
+focus_circuit 10084
 ip {}
-selcircuit_37233 1
+selcircuit_ 0
+selcircuit_459 0
+selected_axes Lp%2CWp%2CAdc
 selected_circuits_tags {}
+selected_g {}
+selected_tech tsmc040
+selected_topology diffpair_nmos
+spice_netlist /net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice/../../2.sn
+ts {}
 }

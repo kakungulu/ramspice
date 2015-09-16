@@ -7,10 +7,15 @@ default ::opt(op) 5
 source $::env(RAMSPICE)/Etc/utils/generate_spice_netlist.tcl
 
 @ / load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/$::opt(tech).db
+#@ /look_up_tables/nch foreach_child t {
+#    Info: Table: $t
+#}
+#exit
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
 source $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/data.tcl
 # Info: Loading SO
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
+@ / load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db
 # Info: Loaded
 
 # SPICE OP run
@@ -53,7 +58,12 @@ set sampled 0
 set pat_size [@ /$::opt(topology)/circuits PAT size]
 set spice_bw_acc 0.1
 set gamma_bw_acc 0.1
+foreach name {n4 n5 n42 n41 n36 n27 n26 p49 p48 p47 p40 p39 p2 p3} {
+    @ $name/cgs = 0
+    @ $name/cgd = 0
+}    
 for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
+   # foreach ::index {11 44 75 105 161} 
     if {$::index>=$pat_size} {
         set ::index 0
     }
@@ -61,15 +71,19 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
     set i 0
     foreach s [@ /$::opt(topology)/circuits PAT sizes] {
         if {![@ size:$s ?]} {
-            #        @ $s:V = 0.55
-            continue
-        }
-        @ size:$s = [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
+            set Gamma($s) [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
+#	    Info: $i $s= $Gamma($s)
+        } else {
+            @ size:$s = [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
+#	    Info: $i $s= [@ size:$s]
+	}
         # Info: $s=[@ size:$s]
         incr i
     }
     foreach p [@ /$::opt(topology)/circuits PAT properties] {
-        @ property:$p = 0
+        set Gamma($p) [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
+#	Info: $i $p= $Gamma($p)
+        incr i
     }    
     default ::opt(op) 3
     @ param/rload = 1e30
@@ -79,9 +93,9 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
     }
 #    Info: [@ look_up_tables:pch:cox] [@ look_up_tables:nch:cox] 
     set c_factor [expr $gamma_bw_acc/$spice_bw_acc]
-    set c_factor 3.5
-    @ look_up_tables:pch:cox = [expr 0.00148906] 
-    @ look_up_tables:nch:cox = [expr 0.0015696] 
+    set cap_factor 12.5
+    @ look_up_tables:pch:cox = [expr 0.00148906*$cap_factor] 
+    @ look_up_tables:nch:cox = [expr 0.0015696*$cap_factor] 
     ::C::import
     catch {::C::op}
     ::C::export
@@ -114,6 +128,7 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
 	set OP [get_spice_data out 1]
 	set GammaOP [@ out/V]
 	skip {$GammaOP>=1.1}
+	
         check_err $OP $GammaOP 5e-3
         check_err $Adc [@ property/Adc] 5
 	set types {op adc}
@@ -122,24 +137,85 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
         set Adc [expr 20*log10(abs(([get_spice_data outp 2]-[get_spice_data outp 6]))/(4*$eps))]
         set CMRR [expr 20*log10(abs(([get_spice_data outp 8]-[get_spice_data outp 0]))/(2*$eps))]
 	set OP [get_spice_data outp 4]
+	foreach node {net048 net52 outp net028 net051} {
+	    Info: SPICE $node=[get_spice_data $node 4]
+	}    
+	exit
+        ::spice::dc vinn 0.55 0.55 $eps vinp 0.55 0.55 $eps 
 	set GammaOP [@ outp/V]
+#        check_err $OP $Gamma(outp) 2e-3
 	::spice::ac dec 100 1 200e6
+	set prev_Aac $Adc
 	for {set i 0} {$i<[get_spice_data frequency length]} {incr i} {
 	    lassign [get_spice_data outp $i] real imag
 	    set outp [expr sqrt($real*$real+$imag*$imag)]
-	    set Aac [expr 20*log10($outp/(4*$eps))]
-	    if {$Aac<$Adc-9} break
+	    set Aac [expr 20*log10($outp/(2*$eps))]
+#	    Info: freq=[eng [lindex [get_spice_data frequency $i] 0] Hz] real=[eng $real V] imag=[eng $imag V] Aac=[eng $Aac dB] Adc=[eng $Adc dB]
+	    if {$Aac<$Adc-3} break
+	    set prev_Aac $Aac
 	}
 	if {$i>=[get_spice_data frequency length]} continue
-        set BW [lindex [get_spice_data frequency $i] 0]
+	########### Injecting SPICE into Gamma
+        foreach name {n4 n5 n42 n41 n36 n27 n26 p49 p48 p47 p40 p39 p2 p3} {
+	    set cgs 0
+	    set cgd 0
+	    foreach key [array names ::CGS] {
+	        skip {![string match m$name $key] && ![string match m${name}_* $key]}
+		set cgs [expr $::CGS($key)+$cgs]
+		set cgd [expr $::CGD($key)+$cgd]
+	    }
+	    @ $name/cgs = $cgs
+	    @ $name/cgd = $cgd
+	}    
+    ::C::import
+    catch {::C::op}
+    ::C::export
+        set f2 [lindex [get_spice_data frequency $i] 0]
+	incr i -1
+        set f1 [lindex [get_spice_data frequency $i] 0]
+	set Ath [expr $Adc-3]
+	set BW [expr (($Ath-$Aac)*$f1+($prev_Aac-$Ath)*$f2)/($prev_Aac-$Aac)]
 #	skip {$BW<1e6}
         set gamma_bw_acc [expr $gamma_bw_acc+[@ property/BW]]
         set spice_bw_acc [expr $spice_bw_acc+$BW]
-        Info: ...$index [expr $gamma_bw_acc/$spice_bw_acc] [eng $BW Hz] [eng [@ property/BW] Hz]
-	check_err [expr abs($BW/[@ property/BW]-1)] 0 0.2
-        check_err $OP $GammaOP 5e-3
-        check_err $Adc [@ property/Adc] 5
-        check_err [expr $Adc-$CMRR] [expr [@ property/Adc]-[@ property/CMRR]] 5
+#	check_err $BW [@ property/BW]  5e6
+	#set Gamma(Adc) [expr $Gamma(Adc)+7]
+        check_err $OP $Gamma(outp) 1e-3
+	array set total_cap {
+	    spice,n,cgs 0
+	    spice,p,cgs 0
+	    gamma,n,cgs 0
+	    gamma,p,cgs 0
+	    spice,n,cgd 0
+	    spice,p,cgd 0
+	    gamma,n,cgd 0
+	    gamma,p,cgd 0
+	}
+        foreach name {n4 n5 n42 n41 n36 n27 n26 p49 p48 p47 p40 p39 p2 p3} {
+	    set cgs 0
+	    set cgd 0
+	    foreach key [array names ::CGS] {
+	        skip {![string match m$name $key] && ![string match m${name}_* $key]}
+		set cgs [expr $::CGS($key)+$cgs]
+		set cgd [expr $::CGD($key)+$cgd]
+	    }
+	    set type [string index $name 0]
+	    set total_cap(spice,$type,cgs) [expr $total_cap(spice,$type,cgs)+$cgs]
+	    set total_cap(spice,$type,cgd) [expr $total_cap(spice,$type,cgd)+$cgd]
+	    set total_cap(gamma,$type,cgs) [expr $total_cap(gamma,$type,cgs)+[@ $name/cgs]]
+	    set total_cap(gamma,$type,cgd) [expr $total_cap(gamma,$type,cgd)+[@ $name/cgd]]
+#	    Info: $name SPICE: cgd=[eng $cgd F] cgs=[eng $cgs F] ratio=[expr $cgs/$cgd] Gamma: cgd=[eng [@ $name/cgd] F] cgs=[eng [@ $name/cgs] F] Error: cgd=[eng [expr 100*([@ $name/cgd]/$cgd-1)] %] cgs=[eng [expr 100*([@ $name/cgs]/$cgs-1)] %]
+	}
+        check_err $Adc $Gamma(Adc) 1.5
+	@ property/BW = [expr [@ property/BW]*1.15]
+	Info: Index=$index  $OP $Gamma(outp)  $Adc $Gamma(Adc) [expr $CMRR+$Adc] $Gamma(CMRR)  BW: SPICE=[eng $BW Hz] Gamma=[eng [@ property/BW] Hz] Error=[eng [expr 100*([@ property/BW]/$BW-1)] %]
+#	Info: N cgs Error=[eng [expr ($total_cap(gamma,n,cgs)/$total_cap(spice,n,cgs)-1)*100] %]
+#	Info: N cgd Error=[eng [expr ($total_cap(gamma,n,cgd)/$total_cap(spice,n,cgd)-1)*100] %]
+#	Info: P cgs Error=[eng [expr ($total_cap(gamma,p,cgs)/$total_cap(spice,p,cgs)-1)*100] %]
+#	Info: P cgd Error=[eng [expr ($total_cap(gamma,p,cgd)/$total_cap(spice,p,cgd)-1)*100] %]
+#	exit
+#        check_err $Adc $Gamma(Adc) 3
+ #       check_err [expr $Adc-$CMRR] [expr [@ property/Adc]-[@ property/CMRR]] 5
 	set types {op adc cmrr bw}
     }
     foreach vector [lsort [get_vectors]] {
@@ -162,7 +238,8 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
     add_err adc $Adc [@ property/Adc]
     add_err cmrr [expr $Adc-$CMRR] [expr [@ property/Adc]-[@ property/CMRR]]
     incr sampled
-    Info: $sampled [eng $BW Hz] [eng [@ property/BW] Hz]
+    
+#    Info: $sampled [eng $BW Hz] [eng [@ property/BW] Hz] Error=[eng [expr ($BW/[@ property/BW]-1)*100] %]
 }
 foreach type $types {
     Info: $type stddev=[stddev_err $type]

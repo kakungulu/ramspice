@@ -180,6 +180,8 @@ puts $::HTML {
     var selected_tech="none";
     var selected_topology="none";
     var axes=["X","Y","Z"];
+    var X_is_sizer=0;
+    var Y_is_sizer=0;
     //      var selected=["none","none","none"];
     var selected_g=[];
     var selected_circuits=[];

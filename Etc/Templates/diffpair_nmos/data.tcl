@@ -15,12 +15,12 @@ define_properties {
     Power Power W 0 1000 -1
 }
 define_sizers {
-    Lp {p_1 p_2} $::global_nlmin 10e6 m
-    Wp {p_1 p_2} $::global_nlmin 10e6 m
-    Ln {nin_1 nin_2} $::global_nlmin 10e6 m
-    Wn {nin_1 nin_2} $::global_nlmin 10e6 m
-    Ls {n_ref n_tail} $::global_nlmin 10e6 m
-    Ws {n_ref n_tail} $::global_nlmin 10e6 m
+    Lp {p_1 p_2} $::global_nlmin 10e-6 m
+    Wp {p_1 p_2} $::global_nlmin 10e-6 m
+    Ln {nin_1 nin_2} $::global_nlmin 10e-6 m
+    Wn {nin_1 nin_2} $::global_nlmin 10e-6 m
+    Ls {n_ref n_tail} $::global_nlmin 10e-6 m
+    Ws {n_ref n_tail} $::global_nlmin 10e-6 m
     iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]

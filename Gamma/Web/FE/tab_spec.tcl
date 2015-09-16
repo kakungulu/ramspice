@@ -29,7 +29,7 @@ foreach topology $topology_list {
     foreach key [array names ::properties] {
         set ::topologies($topology,$key) $::properties($key)
     }
-    append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax_cmd=generate_map&selected_tech=\" + escape(selected_tech) + \"&selected_axes=\" + escape(selected) + \"&selected_g=\" + escape(selected_g) + \"&selected_topology=\" + escape(selected_topology)"
+    append ::ajax_send_code "\nif (selected_topology==\"$topology\") \{\n    url = \"?ajax_cmd=generate_front&focus_circuit=\" + escape(focus_circuit) + \"&selected_tech=\" + escape(selected_tech) + \"&selected_axes=\" + escape(selected) + \"&selected_g=\" + escape(selected_g) + \"&selected_topology=\" + escape(selected_topology)"
     set i 0
     foreach property $::property_list {
         set color [lindex {yellow orange} [expr $i%2]] 
@@ -46,7 +46,7 @@ regsub -all {""} $tech_list {","} tech_list
 regsub -all {""} $topology_js_list {","} topology_js_list
 puts $::HTML "var tech_array = \[$tech_list\]\;"
 puts $::HTML "var topology_array = \[$topology_js_list\]\;"
-function toggle_axis(dim,id) {
+function toggle_axis_property(dim,id) {
     var D=axes[dim];
     var inst=document.getElementById(D+"_"+ id);
     var selected_inst=document.getElementById(D+"_"+selected[dim]);
@@ -56,41 +56,57 @@ function toggle_axis(dim,id) {
     var i;
     for (i=0;i<selected.length;i++) {
         if (i==dim) continue;
-        if (id==selected[i]) toggle_axis(i,id);
-    }
-    if (id==selected[dim]) {
-        inst.innerHTML="<font color='#f0f0f0'>"+D+"</font>";
-        selected[dim]="none";
-    } else {
-        if (selected[dim]!="none") {
-            selected_inst.innerHTML="<font color='#f0f0f0'>"+dim+"</font>";
-        }
-        inst.innerHTML="<font color='#000000'>"+D+"</font>";
-        selected[dim]=id;
-    }
-    SendSpecToServer("","");
-}
-function toggle_axis2(dim,id) {
-    var D=axes[dim];
-    var inst=document.getElementById(D+"_"+ id);
-    var selected_inst=document.getElementById(D+"_"+selected[dim]);
-    if (!selected_inst) {
-        selected[dim]="none";
-    }
-    var i;
-    for (i=0;i<selected.length;i++) {
-        if (i==dim) continue;
-        if (id==selected[i]) toggle_axis2(i,id);
+        if (id==selected[i]) {
+	    var Dold=axes[i];
+	    var inst_old=document.getElementById(Dold+"_"+ id);
+            inst_old.innerHTML="<font color='#808080'>"+Dold+"</font>";
+            selected[i]="none";
+	    eval(Dold+"_is_sizer=0;");
+	}
     }
     if (id==selected[dim]) {
         inst.innerHTML="<font color='#808080'>"+D+"</font>";
         selected[dim]="none";
     } else {
         if (selected[dim]!="none") {
-            selected_inst.innerHTML="<font color='#808080'>"+dim+"</font>";
+            selected_inst.innerHTML="<font color='#808080'>"+D+"</font>";
+        }
+        inst.innerHTML="<font color='#000000'><b>"+D+"</b></font>";
+	eval(D+"_is_sizer=0;");
+        selected[dim]=id;
+    }
+    SendSpecToServer("","");
+}
+function toggle_axis_sizer(dim,id) {
+    if (focus_circuit=='none') return;
+    var D=axes[dim];
+    var inst=document.getElementById(D+"_"+ id);
+    var selected_inst=document.getElementById(D+"_"+selected[dim]);
+    if (!selected_inst) {
+        selected[dim]="none";
+    }
+    var i;
+    for (i=0;i<selected.length;i++) {
+        if (i==dim) continue;
+        if (id==selected[i]) {
+	    var Dold=axes[i];
+	    var inst_old=document.getElementById(Dold+"_"+ id);
+            inst_old.innerHTML="<font color='#808080'>"+Dold+"</font>";
+            selected[i]="none";
+	    eval(Dold+"_is_sizer=0;");
+	}
+    }
+    if (id==selected[dim]) {
+        inst.innerHTML="<font color='#808080'>"+D+"</font>";
+        selected[dim]="none";
+	eval(D+"_is_sizer=0;");
+    } else {
+        if (selected[dim]!="none") {
+            selected_inst.innerHTML="<font color='#808080'>"+D+"</font>";
         }
         inst.innerHTML="<font color='#000000'><b>"+D+"</b></font>";
         selected[dim]=id;
+	eval(D+"_is_sizer=1;");
     }
     SendSpecToServer("","");
 }
@@ -179,12 +195,30 @@ function DefinePropertySpec(property,old_value) {
     var url = "";
     $::ajax_send_code
     var value=prompt("Please enter a new value for "+property,old_value);
+    if (value=="null") {
+        value="";
+    } 
     eval(property+"='"+value+"'");
     SendSpecToServer(property,value);
 }
 function SendSpecToServer(property,value) { 
+    if ((X_is_sizer==0)&&(Y_is_sizer==0)) SendSpecToServer_Front("","");
+    if (X_is_sizer&&Y_is_sizer) SendSpecToServer_Map("","");
+}    
+function SendSpecToServer_Front(property,value) { 
     var url = "";
     $::ajax_send_code
+    if (property!="") {
+        url += "&"+property+"="+escape(value);
+    }
+    xhr.open ("GET", url, true); 
+    xhr.onreadystatechange = PopMap; 
+    xhr.send(null); 
+} 
+regsub -all generate_front $::ajax_send_code generate_heat_map ::cmd
+function SendSpecToServer_Map(property,value) { 
+    var url = "";
+    $::cmd
     if (property!="") {
         url += "&"+property+"="+escape(value);
     }

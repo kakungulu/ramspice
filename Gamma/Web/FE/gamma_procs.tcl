@@ -62,6 +62,7 @@ proc SVG::graph_pareto_front {args} {
         pallet {}
         z {}
     }
+    
     foreach {param value} $args {
         set opt($param) $value
     }
@@ -322,4 +323,195 @@ proc ::GEN_SPICE::transistor {name d g s b L W {corner ss}} {
     }
     return $retval
 }
+proc sort_front {a b} {
+    set xa [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $a] $::x_index]
+    set xb [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $b] $::x_index]
+    if {$xb>$xa} {
+        return 0
+    }
+    return 1
+}
 
+proc generate_table_code {x y z} {
+    set ::table_code ""
+    set entry_offset [llength [@ /$::SESSION(selected_topology)/circuits PAT sizes]]
+    append ::table_code "table+=\"<tr bgcolor='$::colors(bg)'><td></td><td></td>"
+    set ::num_of_columns 1
+    foreach property $::property_list {
+        incr ::num_of_columns
+        if {[catch {expr $::opt($property)+0}]} {
+            set ::opt($property) {}
+        }
+        set property_color($property) gray
+        foreach axis {x y z} {
+            skip {[set $axis]!=$property}
+            set property_color($property) black
+        }
+        if {$::opt($property)!={}} {
+            set property_color($property) black
+        }
+        if {[lsearch $::selected_g $property]!=-1} {
+            set property_color($property) black
+        }
+        append ::table_code "<td align='center'><table><tr><td onclick=\\\"DefinePropertySpec('$property','$::opt($property)')\\\">$::config_icon</td>"
+        if {$x==$property} {
+            append ::table_code "<td id='X_$property' onclick=\\\"toggle_axis_property(0,'$property')\\\"><font color=\\\"#000000\\\"><b>X</b></font></td>"
+        } else {
+            append ::table_code "<td id='X_$property' onclick=\\\"toggle_axis_property(0,'$property')\\\"><font color=\\\"#808080\\\">X</font></td>"
+        }
+        if {$y==$property} {
+            append ::table_code "<td id='Y_$property' onclick=\\\"toggle_axis_property(1,'$property')\\\"><font color=\\\"#000000\\\"><b>Y</b></font></td>"
+        } else {
+            append ::table_code "<td id='Y_$property' onclick=\\\"toggle_axis_property(1,'$property')\\\"><font color=\\\"#808080\\\">Y</font></td>"
+        }
+        if {$z==$property} {
+            append ::table_code "<td id='Z_$property' onclick=\\\"toggle_axis_property(2,'$property')\\\"><font color=\\\"#000000\\\"><b>Z</b></font></td>"
+        } else {
+            append ::table_code "<td id='Z_$property' onclick=\\\"toggle_axis_property(2,'$property')\\\"><font color=\\\"#808080\\\">Z</font></td>"
+        }
+        if {[lsearch $::selected_g $property]==-1} {
+            append ::table_code "<td id='G_$property' onclick=\\\"toggle_g2('$property')\\\">$::goal_icon_gray2</td>"
+        } else {
+            append ::table_code "<td id='G_$property' onclick=\\\"toggle_g2('$property')\\\">$::goal_icon_black2</td>"
+        }
+        append ::table_code "<tr></tr><td colspan='4' align='center'><font color='$property_color($property)'><b>$property</b></font></td></tr></table></td>"
+    }
+    append ::table_code "<td bgcolor='black'> </td>"
+    foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+        skip {![@ size:$size ?]}
+        incr ::num_of_columns
+        if {[catch {expr $::opt($size)+0}]} {
+            set ::opt($size) {}
+        }
+        set property_color($size) gray
+        foreach axis {x y z} {
+            skip {[set $axis]!=$size}
+            set property_color($size) black
+        }
+        if {$::opt($size)!={}} {
+            set property_color($size) black
+        }
+        if {[lsearch $::selected_g $size]!=-1} {
+            set property_color($size) black
+        }
+        append ::table_code "<td align='center'><table><tr>"
+        if {$x==$size} {
+            append ::table_code "<td id='X_$size' onclick=\\\"toggle_axis_sizer(0,'$size')\\\"><font color=\\\"#000000\\\"><b>X</b></font></td>"
+        } else {
+            append ::table_code "<td id='X_$size' onclick=\\\"toggle_axis_sizer(0,'$size')\\\"><font color=\\\"#808080\\\">X</font></td>"
+        }
+        if {$y==$size} {
+            append ::table_code "<td id='Y_$size' onclick=\\\"toggle_axis_sizer(1,'$size')\\\"><font color=\\\"#000000\\\"><b>Y</b></font></td>"
+        } else {
+            append ::table_code "<td id='Y_$size' onclick=\\\"toggle_axis_sizer(1,'$size')\\\"><font color=\\\"#808080\\\">Y</font></td>"
+        }
+        append ::table_code "<tr></tr><td colspan='4' align='center'><font color='black'><b>$size</b></font></td></tr></table></td>"
+    }
+    append ::table_code "<td id='SelectedCircuitID'></td></tr>\"\;\n"
+    append ::table_code "table+=\"<tr bgcolor=$::colors(bg)><td></td><td><b>Spec:</b></td><td></td>"
+    foreach property $::property_list {
+        set value {}
+        if {$::opt($property)!={}} {
+            if {$::properties($property,step)>0} {
+                append value " >"
+            } else {
+                append value " <"
+            }
+            append value [eng $::opt($property) $::properties($property,unit)]
+        }
+        append ::table_code "<td align='center'><b>$value</b></td>"
+    }
+    foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+        skip {![@ size:$size ?]}
+        append ::table_code "<td></td>"
+    }
+    append ::table_code "<td onclick='SendSpecToServer(\\\"\\\",\\\"\\\")'>$::refresh_icon</td></tr>\"\;\n"
+    set j 0
+    foreach circuit $::circuit_ids index $::circuit_list {
+        set color green
+        foreach property $::property_list  {
+            if {$::opt($property)!={}} {
+                set entry [lsearch $::ref_list $property]
+                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                if {$::properties($property,step)>0} {
+                    if {$value<$::opt($property)} {
+                        set color red
+                    }
+                } else {
+                    if {$value>$::opt($property)} {
+                        set color red
+                    }
+                }
+                
+            }   
+        }
+        default ::SESSION(selcircuit_$circuit) 0
+        if {$::SESSION(selcircuit_$circuit)} {
+            lappend selected_circuits_ids $circuit
+        }
+        set tag [lsearch $::SESSION(selected_circuits_tags) $circuit]
+        set bgcolor [lindex {yellow orange} [expr $j%2]] 
+        set bgcolor $::colors($bgcolor)
+        foreach operator {== !=} {
+            append ::table_code "    if ((selected_circuits.lastIndexOf($circuit)!=-1)&&(focus_circuit$operator'$circuit')) \{\n        table+=\"<tr bgcolor=$::colors(bg)><td><button onclick='DeSelect($circuit)'>X</button></td><td bgcolor=$bgcolor><font color='$color'><b>$tag</b></font></td>"
+            incr j
+            foreach property $::property_list {
+                set entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT properties] $property]
+                incr entry $entry_offset
+                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set font_color $property_color($property)
+                if {$::opt($property)!={}} {
+                    if {$::properties($property,step)>0} {
+                        if {$value>=$::opt($property)} {
+                            set font_color green
+                        } else {
+                            set font_color red
+                        }
+                    } else {
+                        if {$value>=$::opt($property)} {
+                            set font_color red
+                        } else {
+                            set font_color green
+                        }
+                    }
+                }
+                if {$operator=="=="} {
+                    set bgcolor $::colors(bg)
+                } else {
+                    set bgcolor [lindex {yellow orange} [expr $j%2]] 
+                    set bgcolor $::colors($bgcolor)
+                }   
+                set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::properties($property,unit)]
+                if {[regexp {^(\S+)\.(.)..(\S+)$}  $value -> a b c]} {
+                    set value "$a.$b$c"
+                }
+                append ::table_code "<td bgcolor=$bgcolor><font color='$font_color'> $value </font></td>"
+              #  append ::table_code "<td bgcolor=$bgcolor><font color='$font_color'> [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::properties($property,unit)] </font></td>"
+                incr j
+            }
+            append ::table_code "<td bgcolor='black'> </td>"
+            foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+                skip {![@ size:$size ?]}
+                set entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT sizes] $size]
+                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set font_color black
+                if {$operator=="=="} {
+                    set bgcolor $::colors(bg)
+                } else {
+                    set bgcolor [lindex {yellow orange} [expr $j%2]] 
+                    set bgcolor $::colors($bgcolor)
+                }   
+                set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::sizers($size,unit)]
+                if {[regexp {^(\S+)\.(.)..(\S+)$}  $value -> a b c]} {
+                    set value "$a.$b$c"
+                }
+                append ::table_code "<td bgcolor=$bgcolor><font color='$font_color'> $value </font></td>"
+                incr j
+            }
+            append ::table_code "<td><button onclick='FocusOn($circuit)'>$::focus_icon</button></td></tr>\"\;\n    \}\n"
+        }
+    }
+    set T [open $::env(RAMSPICE)/table.js w]
+    puts $T $::table_code
+    close $T
+} 

@@ -15,14 +15,14 @@ define_properties {
     Power Power W 0 1000 -1
 }
 define_sizers {
-    Lp {p_1 p_2} 40e-9 10e6 m
-    Wp {p_1 p_2} 40e-9 10e6 m
-    Ln {n_1 n_2} 40e-9 10e6 m
-    Wn {n_1 n_2} 40e-9 10e6 m
-    Ls {p_ref p_tail n_out} 40e-9 10e6 m
-    Ws {p_ref p_tail n_out} 40e-9 10e6 m
-    Lo p_out 40e-9 10e6 m
-    Wo p_out 40e-9 10e6 m
+    Lp {p_1 p_2} 40e-9 10e-6 m
+    Wp {p_1 p_2} 40e-9 10e-6 m
+    Ln {n_1 n_2} 40e-9 10e-6 m
+    Wn {n_1 n_2} 40e-9 10e-6 m
+    Ls {p_ref p_tail n_out} 40e-9 10e-6 m
+    Ws {p_ref p_tail n_out} 40e-9 10e-6 m
+    Lo p_out 40e-9 10e-6 m
+    Wo p_out 40e-9 10e-6 m
     iref cbias 0 100e-6 A
 }
 set name [file tail [file dirname [info script]]]

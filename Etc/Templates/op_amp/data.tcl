@@ -15,15 +15,27 @@ define_properties {
     Power Power W 0 1000 -1
 }
 define_sizers {
-    Lp {p_1 p_2} 40e-9 10e6 m
-    Wp {p_1 p_2} 40e-9 10e6 m
-    Ln {n_1 n_2} 40e-9 10e6 m
-    Wn {n_1 n_2} 40e-9 10e6 m
-    Ls {p_ref p_tail n_out} 40e-9 10e6 m
-    Ws {p_ref p_tail n_out} 40e-9 10e6 m
-    Lo p_out 40e-9 10e6 m
-    Wo p_out 40e-9 10e6 m
-    iref cbias 0 100e-6 A
+    Lcp1 {p48 p49} 40e-9 10e-6 m
+    Wcp1 {p48 p49} 40e-9 10e-6 m
+    Lcp2 {p2 p3} 40e-9 10e-6 m
+    Wcp2 {p2 p3} 40e-9 10e-6 m
+    Lcn1 {n4 n5} 40e-9 10e-6 m
+    Wcn1 {n4 n5} 40e-9 10e-6 m
+    Lcn2 {n27 n26} 40e-9 10e-6 m
+    Wcn2 {n27 n26} 40e-9 10e-6 m
+
+    Ldp1 {p47} 40e-9 10e-6 m
+    Wdp1 {p47} 40e-9 10e-6 m
+    Ldp2 {p39 p40} 40e-9 10e-6 m
+    Wdp2 {p39 p40} 40e-9 10e-6 m
+    Ldn1 {n42 n41} 40e-9 10e-6 m
+    Wdn1 {n42 n41} 40e-9 10e-6 m
+    Ldn2 {n36} 40e-9 10e-6 m
+    Wdn2 {n36} 40e-9 10e-6 m
+    Vref1 {} 0 1.1 V
+    Vref2 {} 0 1.1 V
+    Vref3 {} 0 1.1 V
+    Vref4 {} 0 1.1 V
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies(op_amp,schematic) {

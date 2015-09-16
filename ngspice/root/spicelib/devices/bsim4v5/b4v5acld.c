@@ -70,7 +70,6 @@ CKTcircuit *ckt)
             Csd = -(here->BSIM4v5cddb + here->BSIM4v5cgdb + here->BSIM4v5cbdb);
             Csg = -(here->BSIM4v5cdgb + here->BSIM4v5cggb + here->BSIM4v5cbgb);
             Css = -(here->BSIM4v5cdsb + here->BSIM4v5cgsb + here->BSIM4v5cbsb);
-            
             if (here->BSIM4v5acnqsMod)
             {   T0 = omega * here->BSIM4v5taunet;
                 T1 = T0 * T0;
@@ -116,7 +115,7 @@ CKTcircuit *ckt)
                 Cgsi = -(Cdsi + Cssi);
                 Cgbi = -(Cgdi + Cggi + Cgsi);
             }
-            else /* QS */
+            else /* QS */  
             {   gmr = here->BSIM4v5gm;
                 gmbsr = here->BSIM4v5gmbs;
                 gdsr = here->BSIM4v5gds;
@@ -453,6 +452,15 @@ CKTcircuit *ckt)
             */
             
             m = here->BSIM4v5m;
+	    char cmd[256];
+	    sprintf(cmd,"set ::CGD(%s) %g",here->BSIM4v5name,m*xcgdbr/omega);
+	    Tcl_Eval(interp,cmd);
+	    sprintf(cmd,"set ::CDG(%s) %g",here->BSIM4v5name,m*xcdgbr/omega);
+	    Tcl_Eval(interp,cmd);
+	    sprintf(cmd,"set ::CGS(%s) %g",here->BSIM4v5name,m*xcgsbr/omega);
+	    Tcl_Eval(interp,cmd);
+	    sprintf(cmd,"set ::CSG(%s) %g",here->BSIM4v5name,m*xcsgbr/omega);
+	    Tcl_Eval(interp,cmd);
             
             if (!model->BSIM4v5rdsMod)
             {   gdpr = here->BSIM4v5drainConductance;

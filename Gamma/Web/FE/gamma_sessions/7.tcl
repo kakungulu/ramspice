@@ -8,20 +8,21 @@ PSRR {}
 Power {}
 Rout {}
 Vos {}
-ajax_cmd generate_map
-circuit_list {6493 9195 9795}
+ajax_cmd generate_heat_map
+circuit_list {}
 deselect {}
 fc {}
-focus_circuit 55921
+focus_circuit 10084
 ip {}
-selcircuit_10933 0
-selcircuit_14033 0
-selcircuit_14704 0
-selected_axes Adc%2CRout%2Cnone
-selected_circuits_tags {14033 10933 14704}
+selcircuit_ 0
+selcircuit_1349 0
+selcircuit_459 0
+selcircuit_4845 0
+selected_axes Ln%2CWn%2Cnone
+selected_circuits_tags {}
 selected_g {}
 selected_tech tsmc040
-selected_topology op_amp
-spice_netlist /net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice/../../7.sn
+selected_topology diffpair_nmos
+spice_netlist /net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice/../../2.sn
 ts {}
 }

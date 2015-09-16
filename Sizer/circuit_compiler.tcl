@@ -40,6 +40,8 @@ foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     @ /look_up_tables/$dev/flicker_noise/ !
     @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
     @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
+    @ /look_up_tables/$dev/cgs/ load $::opt(source)/$::opt(tech)_${dev}_ss_cgs.db
+    @ /look_up_tables/$dev/cgd/ load $::opt(source)/$::opt(tech)_${dev}_ss_cds.db
 }
 
 set ::all_transistors {}
@@ -186,7 +188,7 @@ source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
 @ param/unique = 0
 .compile_circuit
 if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db]} {
-    exit
+#    exit
 }
 # Prepare some defaults in the skeleton db file
 set pareto_properties {}

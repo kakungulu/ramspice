@@ -3331,6 +3331,9 @@ void pat_stars(PAT *p) {
 }
 char *expr2polish(char *expr_in,int toplevel) {
     int i=0;
+    if (expr_in[0]==0) {
+        #Error: "Empty expression!"
+    }
     char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
     for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
     expr[i]=0;
@@ -3372,7 +3375,7 @@ char *expr2polish(char *expr_in,int toplevel) {
         char op=expr[weakest];
         char *post=expr2polish(&(expr[weakest+1]),0);
         //free(expr);
-        char *result=(char *)malloc(sizeof(char)*(9+strlen(post)));
+        char *result=(char *)malloc(sizeof(char)*(16+strlen(post)));
 	if (toplevel) {
             if ((op=='-')||(op=='+')) sprintf(result,"%c 0 %s",op,post);
             if ((op=='/')||(op=='*')) sprintf(result,"%c 1 %s",op,post);
@@ -3387,7 +3390,7 @@ char *expr2polish(char *expr_in,int toplevel) {
     char *pre=expr2polish(expr,0);
     char *post=expr2polish(&(expr[weakest+1]),0);
     // free(expr);
-    char *result=(char *)malloc(sizeof(char)*(9+strlen(pre)+strlen(post)));
+    char *result=(char *)malloc(sizeof(char)*(16+strlen(pre)+strlen(post)));
     if (toplevel) {
         sprintf(result,"%c %s %s",op,pre,post);
     } else {

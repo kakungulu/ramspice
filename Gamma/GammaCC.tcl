@@ -197,6 +197,7 @@ proc .prep_mna {mode} {
             set G Gds_${m}_${p}
             set ::sensitivity(Gds_${m}_${p},$::all_resistors($res_nodes)) -1.0/($::all_resistors($res_nodes)*$::all_resistors($res_nodes))
         }
+	Info: Adding Resistor! m=$m p=$p
         add_mna $m $m $G
         add_mna $p $p $G
         add_mna $p $m -$G
@@ -262,11 +263,15 @@ proc .prep_mna {mode} {
         @ $name:go:$L = 0
         $name:go:$L=>(@$name:dro_dl*@$L/@$W-@$L/@$name:go)*@$name:go*@$name:go
         if {$mode=="ac" || $mode=="noise"} {
-            add_mna $s $g "+@$name:cgs*@s"
+            add_mna $s $s "+@$name:cgs*@s"
+            add_mna $s $g "-@$name:cgs*@s"
             add_mna $g $s "-@$name:cgs*@s"
+            add_mna $g $g "+@$name:cgs*@s"
             if {$g!=$d} {
-                add_mna $d $g "+@$name:cgd*@s"
+                add_mna $d $d "+@$name:cgd*@s"
+                add_mna $d $g "-@$name:cgd*@s"
                 add_mna $g $d "-@$name:cgd*@s"
+                add_mna $g $g "+@$name:cgd*@s"
             }
             set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
             set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
@@ -336,6 +341,8 @@ proc .prep_mna {mode} {
     }
     set dim [llength $::MNAy]
     set ::MNA(dim) $dim	
+    set NEWDETy [open ~/mnay_$mode w]
+    set NEWDET [open ~/mna_$mode w]
     if {$::C::target=="OP"} {
         if {$mode=="dc"} {
             set ::HTML [open /tmp/MNA.html w]
@@ -378,12 +385,25 @@ proc .prep_mna {mode} {
                 puts $::HTML <td>
                 if {[info exists ::MNA($i,$j)]} {
                     puts $::HTML $::MNA($i,$j)
+		    puts -nonewline $NEWDET $::MNA($i,$j)
                 } else {
                     puts $::HTML 0
+		    puts -nonewline $NEWDET 0
                 }
                 puts $::HTML </td>
+		if {$j<$dim-1} {
+		    puts -nonewline $NEWDET ,
+		} else {
+		    puts -nonewline $NEWDET \;
+		}
             }
             puts $::HTML <td>
+	    puts -nonewline $NEWDETy [lindex $::independent_nodes $i],
+	    if {[lindex $::MNAy $i]=={}} {
+	        puts -nonewline $NEWDETy 0,
+	    } else {
+	        puts -nonewline $NEWDETy [lindex $::MNAy $i],
+	    }
             puts $::HTML [lindex $::MNAy $i]
             puts $::HTML </td>
             puts $::HTML </tr>
@@ -397,6 +417,8 @@ proc .prep_mna {mode} {
             close $::HTML
         }
     }
+    close $NEWDET
+    close $NEWDETy
     array unset ::vdc
     array set ::vdc $vdc_orig
     array unset ::idc
@@ -481,6 +503,11 @@ proc .compile_circuit {args} {
         @ property/$p = 0
     }
     regsub {:V} $::output_net {} output_expr
+    # Debug - Erase the lines up to exit
+    set ::HTML [open ~/mna.html w]
+    .prep_mna ac
+    close $::HTML
+    exit
     .prep_mna dc
     set dim $::MNA(dim)
     @ op_iterations = $::opt(op_limit)

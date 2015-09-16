@@ -10,66 +10,66 @@ proc args {args_var} {
 proc define_properties {table} {
     set ::property_list {}
     foreach {name html unit min max step} $table {
-	lappend ::property_list $name
+        lappend ::property_list $name
         foreach field {html unit min max step} {
-	    set ::properties($name,$field) [set $field]
-	}
+            set ::properties($name,$field) [set $field]
+        }
     }
 }
 proc define_sizers {table} {
     set ::sizer_list {}
     foreach {name id_list min max unit} $table {
-	lappend ::sizer_list $name
+        lappend ::sizer_list $name
         foreach field {id_list min max unit} {
-	    set ::sizers($name,$field) [set $field]
-	}
+            set ::sizers($name,$field) [set $field]
+        }
     }
 }
 proc html {cmd args} {
     switch $cmd {
         open {
-	    if {[llength $args]!=1} {
-	        Error: html start requires only file name
-		exit
-	    }
-	    if {[info exists ::HTML]} {
-	        Error: html file still open when attempting to redirect to $args
-		exit
-	    }
-	    set ::HTML [open [lindex $args 0] w]
-	    set ::web_output 1
-	    return
-	}
-	continue {
-	    if {[llength $args]!=1} {
-	        Error: html continue requires only file name
-		exit
-	    }
-	    if {[info exists ::HTML]} {
-	        Error: html file still open when attempting to redirect to $args
-		exit
-	    }
-	    set ::HTML [open [lindex $args 0] a]
-	    set ::web_output 1
-	    return
-	}
-	close {
-	    if {[llength $args]!=0} {
-	        Error: html stop requires no arguments
-		exit
-	    }
-	    if {![info exists ::HTML]} {
-	        Error: html file wasn't open when attempting to stop
-		exit
-	    }
-	    close $::HTML
-	    unset ::HTML
-	    unset ::web_output
-	}
+            if {[llength $args]!=1} {
+                Error: html start requires only file name
+                exit
+            }
+            if {[info exists ::HTML]} {
+                Error: html file still open when attempting to redirect to $args
+                exit
+            }
+            set ::HTML [open [lindex $args 0] w]
+            set ::web_output 1
+            return
+        }
+        continue {
+            if {[llength $args]!=1} {
+                Error: html continue requires only file name
+                exit
+            }
+            if {[info exists ::HTML]} {
+                Error: html file still open when attempting to redirect to $args
+                exit
+            }
+            set ::HTML [open [lindex $args 0] a]
+            set ::web_output 1
+            return
+        }
+        close {
+            if {[llength $args]!=0} {
+                Error: html stop requires no arguments
+                exit
+            }
+            if {![info exists ::HTML]} {
+                Error: html file wasn't open when attempting to stop
+                exit
+            }
+            close $::HTML
+            unset ::HTML
+            unset ::web_output
+        }
     }
 }
 proc netbatch_header {code} {
-     Info: HEADER! $code
+    Info: HEADER! $code
     if {![info exists ::netbatch_signal_file]} {
         return
     }
@@ -90,11 +90,11 @@ proc netbatch {code args} {
     set start_time [clock seconds]
     foreach ping_file [glob -nocomplain $process_path/ping_*] {
         skip {$start_time-[file mtime $ping_file]>5}
-	lappend active_machines [regsub {.*ping_} $ping_file {}]
+        lappend active_machines [regsub {.*ping_} $ping_file {}]
     }
     if {[llength $active_machines]==0} {
         Error: No active machine found in path $process_path. Code in $rand_name did not execute.
-	return
+        return
     }
     set machine [lindex $active_machines [expr int(rand()*[llength $active_machines])]]
     Info: machine=$machine
@@ -225,7 +225,7 @@ proc ladd {listname item} {
     upvar $listname list
     if {![info exists list]} {
         set list $item
-	return
+        return
     }
     if {[lsearch $list $item]!=-1} return
     lappend list $item
@@ -519,13 +519,13 @@ proc update_netlist {} {
     foreach param [array names ::netlist_parameters] {
         regsub -all "@$param\(\[\\s\$\]\)" $::final_netlist "$::netlist_parameters($param)\\1" ::final_netlist
     }
-    set O [open temp[pid].sn w]
+    set O [open ~/tmp/temp[pid].sn w]
     puts $O "* Generated from [pid] $::env(USER) $::env(HOSTNAME)"
     puts $O $::final_netlist
     close $O
-    ::spice::source temp[pid].sn
-    file copy -force temp[pid].sn temp.sn
-    file delete temp[pid].sn
+    ::spice::source ~/tmp/temp[pid].sn
+    file copy -force ~/tmp/temp[pid].sn temp.sn
+    file delete ~/tmp/temp[pid].sn
     set ::template_netlist {}
 }
 proc range {iterator_name} {
@@ -641,8 +641,8 @@ proc evaluate {args} {
         upvar $varname var_$i
         if {![catch {set retval [expr 1.0*[set var_$i]]} msg]} {
             set var_$i $retval
-	}
-	incr i
+        }
+        incr i
     }
 }
 proc ::SPICE::process_line_buf {} {
@@ -673,21 +673,21 @@ proc ::SPICE::include {filename} {
     close $I
 }
 ### set unknown {
-###     if {[regexp {^[A-Za-z][0-9_]+\s} $args]} {
-###         return [uplevel [concat add_instance $args]]
-###     }
-###     if {[regexp {^[A-Za-z]_\S+\s} $args]} {
-###         return [uplevel [concat add_instance $args]]
-###     }
-###     if {[regexp {^\.(.*)$} $args -> code]} {
-###         if {![catch {set retval [uplevel "::SPICE::$code"]}]} {
-###             return $retval
-###         }
-###         return [uplevel $code]
-###     }
-###     if {[regexp {^\s*([^\s=]+)\s*=\s*(.*)$} $args -> var expression]} {
-###         return [uplevel "set $var \[expr \{$expression\}\]"]
-###     }
+    ###     if {[regexp {^[A-Za-z][0-9_]+\s} $args]} {
+        ###         return [uplevel [concat add_instance $args]]
+    ###     }
+    ###     if {[regexp {^[A-Za-z]_\S+\s} $args]} {
+        ###         return [uplevel [concat add_instance $args]]
+    ###     }
+    ###     if {[regexp {^\.(.*)$} $args -> code]} {
+        ###         if {![catch {set retval [uplevel "::SPICE::$code"]}]} {
+            ###             return $retval
+        ###         }
+        ###         return [uplevel $code]
+    ###     }
+    ###     if {[regexp {^\s*([^\s=]+)\s*=\s*(.*)$} $args -> var expression]} {
+        ###         return [uplevel "set $var \[expr \{$expression\}\]"]
+    ###     }
 ### }
 ### append unknown [info body unknown]
 ### proc unknown args $unknown
@@ -886,6 +886,30 @@ proc eng {value {unit {}} } {
     }
     if {$value>1.0 && $value<$kilo} {
         regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} $value {\1} value
+        # Butifying very close fractions
+        if {[regexp {^([0-9]+)\.0*$} $value -> integer]} {
+            set value $integer
+        }
+        if {[regexp {^([0-9]+)\.9+$} $value -> integer]} {
+            set value $integer
+            incr value
+        }
+#    if {[regexp {^([0-9]+)\.([0-9]+)9+} $value -> integer zeros]} {
+#	regsub -all {.} [string range $zeros 0 end-1] 0 leading 
+#	Info: Value=$value integer=$integer zeros=$zeros leading=$leading
+#        set value [expr $integer.$zeros+0.${leading}1]
+#	Info: Final Value=$value 
+#    }
+        if {[regexp {^([0-9]+)\.0(0*)9+$} $value -> integer zeros]} {
+            set value $integer.${zeros}1
+        }
+        if {[regexp {^\-([0-9]+)\.0*$} $value -> integer]} {
+            set value -$integer
+        }
+        if {[regexp {^\-([0-9]+)\.9+$} $value -> integer]} {
+            set value -$integer
+            incr value -1
+        }
         return $sign$value$unit
     }
     if {$unit=="%"} {    
@@ -905,6 +929,27 @@ proc eng {value {unit {}} } {
         set value [expr round($value)]
     } else {
         regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} $value {\1} value
+    }
+    # Butifying numbers
+    if {[regexp {^([0-9]+)\.0*$} $value -> integer]} {
+        set value $integer
+    }
+    if {[regexp {^([0-9]+)\.9+$} $value -> integer]} {
+        set value $integer
+        incr value
+    }
+#    if {[regexp {^([0-9]+)\.([0-9]+)9+} $value -> integer zeros]} {
+#	regsub -all {.} [string range $zeros 0 end-1] 0 leading 
+#	Info: Value=$value integer=$integer zeros=$zeros leading=$leading
+#        set value [expr $integer.$zeros+0.${leading}1]
+#	Info: Final Value=$value 
+#    }
+    if {[regexp {^\-([0-9]+)\.0*$} $value -> integer]} {
+        set value -$integer
+    }
+    if {[regexp {^\-([0-9]+)\.9+$} $value -> integer]} {
+        set value -$integer
+        incr value -1
     }
     append value $mag_qual 
     return $sign$value$unit
@@ -932,18 +977,18 @@ proc default {varname {val {}}} {
 }
 proc get_opts {args} {
     if {[info level]!=1} {
-      upvar opt uopt
-      upvar args uargs
-      array set uopt $args
-      foreach arg $uargs {
-           if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
-               set key $found_key
-               set $key {}
-               continue
-           }
-           set uopt($key) $arg
-      }
-      return 
+        upvar opt uopt
+        upvar args uargs
+        array set uopt $args
+        foreach arg $uargs {
+            if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
+                set key $found_key
+                set $key {}
+                continue
+            }
+            set uopt($key) $arg
+        }
+        return 
     } 
     array set ::opt $args
     foreach arg [lrange $::argv 2 end] {

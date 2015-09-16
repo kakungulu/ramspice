@@ -1827,8 +1827,8 @@ CKTcircuit *ckt)
             here->BSIM4v5SswgTempRevSatCur = T5 * T10 * model->BSIM4v5jtsswgs;
             here->BSIM4v5DswgTempRevSatCur = T6 * T10 * model->BSIM4v5jtsswgd;
             
-            Captured_Cgs=here->BSIM4v5cgso;
-            Captured_Cgd=here->BSIM4v5cgdo;
+            Captured_Cgs=here->BSIM4v5cgsb-here->BSIM4v5cgso;
+            Captured_Cgd=here->BSIM4v5cgdb-here->BSIM4v5cgdo;
             
             if (BSIM4v5checkModel(model, here, ckt))
             {   IFuid namarray[2];

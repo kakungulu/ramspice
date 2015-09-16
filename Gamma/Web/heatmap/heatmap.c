@@ -40,7 +40,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
     // Scale input
     for (i=0;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - xmin)/(xmax-xmin))*(HEATMAP_RESOLUTION-1));
     for (i=1;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - ymin)/(ymax-ymin))*(HEATMAP_RESOLUTION-1));
-    for (i=2;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - zmin)/(zmax-zmin))*(HEATMAP_Z_RESOLUTION-1));
+    for (i=2;i<count*3;i+=3) if (input[i]==-1) input_scaled[i]=-1; else input_scaled[i]=(int)(((input[i] - zmin)/(zmax-zmin))*(HEATMAP_Z_RESOLUTION-1));
     
     float z_map[HEATMAP_AREA];
     for (i=0;i<HEATMAP_RESOLUTION;i++){
@@ -51,6 +51,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
             float weight_sum=0.0;
             float weighted_sum=0.0;
             for (k=0;k<count*3;k+=3) { //loop through the scalled inputs and calculate xdelta and ydelta
+	        if (input_scaled[k+2]==-1) continue;
                 float weight=1.0/(HEATMAP_BLUR+(i-(input_scaled[k]))*(i-(input_scaled[k]))+(j-(input_scaled[k+1]))*(j-(input_scaled[k+1]))); // Square-Euclidean distance (round contures)
 		weight*=weight;
                 weight_sum+=weight;
@@ -143,7 +144,7 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
         }//endof j
     }//endof i
     // Draw given pixels
-    for (i=0;i<count*3;i=i+3) set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0xFFFFFF);	
+    for (i=0;i<count*3;i=i+3) if (input_scaled[i+2]==-1) set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0x000000); else set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0xFFFFFF);	
     FILE *O=fopen(filename,"w+");
     save_BMP(O,bmp);
     fclose(O);
