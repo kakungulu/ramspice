@@ -53,7 +53,7 @@ typedef struct {
 	}
     );
 }
-
+void composite_gamma_gcc_interpolate_4(void *i_a_ids,void *i_a_gm,void *i_a_ro,float *gm, float *go, float *Ids,float c0,float c1,float c2,float c3, float c4);
 float feasibility(
 #Foreach: input $::sizer_inputs {
     float $input, 

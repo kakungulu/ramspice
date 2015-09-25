@@ -519,13 +519,13 @@ proc update_netlist {} {
     foreach param [array names ::netlist_parameters] {
         regsub -all "@$param\(\[\\s\$\]\)" $::final_netlist "$::netlist_parameters($param)\\1" ::final_netlist
     }
-    set O [open ~/tmp/temp[pid].sn w]
+    set O [open ~/temp/temp[pid].sn w]
     puts $O "* Generated from [pid] $::env(USER) $::env(HOSTNAME)"
     puts $O $::final_netlist
     close $O
-    ::spice::source ~/tmp/temp[pid].sn
-    file copy -force ~/tmp/temp[pid].sn temp.sn
-    file delete ~/tmp/temp[pid].sn
+    ::spice::source ~/temp/temp[pid].sn
+    file copy -force ~/temp/temp[pid].sn temp.sn
+    file delete ~/temp/temp[pid].sn
     set ::template_netlist {}
 }
 proc range {iterator_name} {

@@ -17,6 +17,18 @@ source $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/data.tcl
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
 @ / load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db
 # Info: Loaded
+set DATA [open ~/temp/adc.log w]
+puts $DATA [list # [clock format [clock seconds]]]
+close $DATA
+set DATA [open ~/temp/bw.log w]
+puts $DATA [list # [clock format [clock seconds]]]
+close $DATA
+set DATA [open ~/temp/bw.1.2.log w]
+puts $DATA [list # [clock format [clock seconds]]]
+close $DATA
+set DATA [open ~/temp/bw.2.log w]
+puts $DATA [list # [clock format [clock seconds]]]
+close $DATA
 
 # SPICE OP run
 set eps 1e-4
@@ -62,7 +74,7 @@ foreach name {n4 n5 n42 n41 n36 n27 n26 p49 p48 p47 p40 p39 p2 p3} {
     @ $name/cgs = 0
     @ $name/cgd = 0
 }    
-for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
+for {set ::index 191} {$sampled<[@ /$::opt(topology)/circuits PAT size]} {incr index} {
    # foreach ::index {11 44 75 105 161} 
     if {$::index>=$pat_size} {
         set ::index 0
@@ -72,14 +84,18 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
     foreach s [@ /$::opt(topology)/circuits PAT sizes] {
         if {![@ size:$s ?]} {
             set Gamma($s) [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
-#	    Info: $i $s= $Gamma($s)
         } else {
             @ size:$s = [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
-#	    Info: $i $s= [@ size:$s]
+	    if {[regexp {^W} $s]} {
+	        @ size:$s = [expr 16*[@ size:$s]]
+	    }
 	}
         # Info: $s=[@ size:$s]
         incr i
     }
+ #    @ size:Vref2 = 0.52
+ #    @ size:Vref3 = 0.1
+#     @ size:Wdn2 = 200e-9
     foreach p [@ /$::opt(topology)/circuits PAT properties] {
         set Gamma($p) [lindex [@ /$::opt(topology)/circuits PAT index $::index] $i]
 #	Info: $i $p= $Gamma($p)
@@ -103,7 +119,7 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
 #    skip {[@ property/BW]<1e6}
      set eps 0.00001
     skip {[generate_spice_netlist $::opt(tech) $::opt(topology) 0.00001]==0} 
-    ::spice::source $::env(RAMSPICE)/../../original.sn
+    ::spice::source ~/temp/temp.sn
 #    ::spice::op
      ##########################################Testing AC
 ###        ::spice::dc vinn [expr 0.55-$eps] [expr 0.55+$eps] $eps vinp [expr 0.55-$eps] [expr 0.55+$eps] $eps 
@@ -123,7 +139,7 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
      ##########################################Testing AC
     if {[regexp ^cs $::opt(topology)]} {
 	::spice::dc vin [expr 0.55-$eps] [expr 0.55+$eps] $eps 
-        set Adc [expr 20*log10(abs(([get_spice_data out 2]-[get_spice_data out 0]))/(2*$eps))]
+        set Adc [expr 20*log10(abs(([get_spice_data out 2]-[get_spice_data out 0]))/(4*$eps))]
 	set CMRR 0
 	set OP [get_spice_data out 1]
 	set GammaOP [@ out/V]
@@ -135,12 +151,22 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
     } else {
         ::spice::dc vinn [expr 0.55-$eps] [expr 0.55+$eps] $eps vinp [expr 0.55-$eps] [expr 0.55+$eps] $eps 
         set Adc [expr 20*log10(abs(([get_spice_data outp 2]-[get_spice_data outp 6]))/(4*$eps))]
-        set CMRR [expr 20*log10(abs(([get_spice_data outp 8]-[get_spice_data outp 0]))/(2*$eps))]
-	set OP [get_spice_data outp 4]
-	foreach node {net048 net52 outp net028 net051} {
-	    Info: SPICE $node=[get_spice_data $node 4]
-	}    
-	exit
+	if {abs([@ property/Adc]-$Adc)>2.1} {
+	    @ /$::opt(topology)/circuits PAT delete $::index
+	    incr ::index -1
+	    continue 
+	}
+	Info: $::index/[@ /$::opt(topology)/circuits PAT size]  SPICE=$Adc Gamma=[@ property/Adc]  Err=[eng [expr [@ property/Adc]-$Adc] dB]
+	
+	set DATA [open ~/temp/adc.log a]
+	puts $DATA [list $Adc [@ property/Adc] [expr [@ property/Adc]-$Adc]]
+	close $DATA
+#        set CMRR [expr 20*log10(abs(([get_spice_data outp 8]-[get_spice_data outp 0]))/(2*$eps))]
+#	set OP [get_spice_data outp 4]
+#	foreach node {net048 net52 outp net028 net051} {
+#	    Info: $node SPICE=[eng [get_spice_data $node 4] V] Gamma=[eng [@ $node/V] V] Err=[eng [expr [@ $node/V]-[get_spice_data $node 4]] V]
+#	}    
+#	continue
         ::spice::dc vinn 0.55 0.55 $eps vinp 0.55 0.55 $eps 
 	set GammaOP [@ outp/V]
 #        check_err $OP $Gamma(outp) 2e-3
@@ -167,9 +193,11 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
 	    @ $name/cgs = $cgs
 	    @ $name/cgd = $cgd
 	}    
-    ::C::import
-    catch {::C::op}
-    ::C::export
+        ::C::import
+        if {[catch {::C::op}]} {
+	     Info: Gamma returned error
+	}
+        ::C::export
         set f2 [lindex [get_spice_data frequency $i] 0]
 	incr i -1
         set f1 [lindex [get_spice_data frequency $i] 0]
@@ -180,7 +208,7 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
         set spice_bw_acc [expr $spice_bw_acc+$BW]
 #	check_err $BW [@ property/BW]  5e6
 	#set Gamma(Adc) [expr $Gamma(Adc)+7]
-        check_err $OP $Gamma(outp) 1e-3
+ #       check_err $OP $Gamma(outp) 1e-3
 	array set total_cap {
 	    spice,n,cgs 0
 	    spice,p,cgs 0
@@ -206,9 +234,32 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
 	    set total_cap(gamma,$type,cgd) [expr $total_cap(gamma,$type,cgd)+[@ $name/cgd]]
 #	    Info: $name SPICE: cgd=[eng $cgd F] cgs=[eng $cgs F] ratio=[expr $cgs/$cgd] Gamma: cgd=[eng [@ $name/cgd] F] cgs=[eng [@ $name/cgs] F] Error: cgd=[eng [expr 100*([@ $name/cgd]/$cgd-1)] %] cgs=[eng [expr 100*([@ $name/cgs]/$cgs-1)] %]
 	}
-        check_err $Adc $Gamma(Adc) 1.5
-	@ property/BW = [expr [@ property/BW]*1.15]
-	Info: Index=$index  $OP $Gamma(outp)  $Adc $Gamma(Adc) [expr $CMRR+$Adc] $Gamma(CMRR)  BW: SPICE=[eng $BW Hz] Gamma=[eng [@ property/BW] Hz] Error=[eng [expr 100*([@ property/BW]/$BW-1)] %]
+#        check_err $Adc $Gamma(Adc) 1.5
+#	@ property/BW = [expr [@ property/BW]*1.15]
+        set err [expr 100*([@ property/BW]/$BW-1)]
+	Info: Index=$index  $Adc $Gamma(Adc) BW: SPICE=[eng $BW Hz] Gamma=[eng [@ property/BW] Hz] Error=[eng $err %]
+	if {abs($err)<14.9} {
+	    set DATA [open ~/temp/bw.log a]
+	    puts $DATA "\{$BW [@ property/BW]\}"
+	    close $DATA
+	    continue
+	} 
+	set BW [expr 1.221*$BW]
+        set err [expr 100*([@ property/BW]/$BW-1)]
+	if {abs($err)<14.9} {
+	    set DATA [open ~/temp/bw.1.2.log a]
+	    puts $DATA "\{$BW [@ property/BW]\}"
+	    close $DATA
+	    continue
+	} 
+	set BW [expr 2*$BW/1.221]
+        set err [expr 100*([@ property/BW]/$BW-1)]
+	if {abs($err)<14.9} {
+	    set DATA [open ~/temp/bw.2.log a]
+	    puts $DATA "\{$BW [@ property/BW]\}"
+	    close $DATA
+	    continue
+	} 
 #	Info: N cgs Error=[eng [expr ($total_cap(gamma,n,cgs)/$total_cap(spice,n,cgs)-1)*100] %]
 #	Info: N cgd Error=[eng [expr ($total_cap(gamma,n,cgd)/$total_cap(spice,n,cgd)-1)*100] %]
 #	Info: P cgs Error=[eng [expr ($total_cap(gamma,p,cgs)/$total_cap(spice,p,cgs)-1)*100] %]
@@ -234,9 +285,9 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
         }
     }
     add_err bw $BW [@ property/BW]
-    add_err op $OP $GammaOP
+#    add_err op $OP $GammaOP
     add_err adc $Adc [@ property/Adc]
-    add_err cmrr [expr $Adc-$CMRR] [expr [@ property/Adc]-[@ property/CMRR]]
+#    add_err cmrr [expr $Adc-$CMRR] [expr [@ property/Adc]-[@ property/CMRR]]
     incr sampled
     
 #    Info: $sampled [eng $BW Hz] [eng [@ property/BW] Hz] Error=[eng [expr ($BW/[@ property/BW]-1)*100] %]
@@ -244,12 +295,12 @@ for {set ::index 0} {$sampled<$::opt(size)} {incr index} {
 foreach type $types {
     Info: $type stddev=[stddev_err $type]
 }
-set O [open /tmp/results.tcl w]
+set O [open ~/temp/results.tcl w]
 foreach type $types {
     puts $O [list set ${type}_errors [set ${type}_errors]]
     puts $O [list set ${type}_xy [set ${type}_xy]]
 }
 close $O
-
+@ / save $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/xmodels_$::opt(tech).db
 exit
 

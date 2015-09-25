@@ -21,7 +21,7 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
                 set L [@ $L]
                 set W [@ $W]
                 default corner ss
-                set n [expr int(ceil($W/(10*$L)))]
+                set n [expr int(ceil($W/(5*$L)))]
                 set W [expr $W/$n]
                 for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
                     skip {$::bin($type,$i,lmax)<$L}
@@ -85,7 +85,7 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
     regsub {\.tcl} $::env(RAMSPICE)/../../$::active_session.sn {} ::SESSION(spice_netlist)
     default ::SESSION(focus_circuit) original
     # Info: Generating $::SESSION(spice_netlist)
-    set O [open $::SESSION(spice_netlist) w]
+    set O [open ~/temp/temp.sn w]
     puts $O "* $selected_topology Instance: $::SESSION(focus_circuit) $selected_tech"
     set I [open $::env(RAMSPICE)/Etc/Tech_DB/$selected_tech/$selected_tech.sp r]
     set copy_line 0

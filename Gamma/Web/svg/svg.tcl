@@ -220,15 +220,12 @@ proc SVG::graph_data {args} {
     }
     set xstep [get_step $min_x $max_x]
     set ystep [get_step $min_y $max_y]
-    Info: xstep=$xstep ystep=$ystep
     set ::x_value [expr int($min_x/$xstep)*$xstep]
     if {$::x_value<$min_x} {
         set ::x_value [expr $::x_value+$xstep]
     }
-    Info: x_value=$::x_value min_x=$min_x max_x=$max_x
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
-        Info: x_coord=$x_coord
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
         SVG::text x $x_coord y $y3_coord font-size 18 {
             print [eng $::x_value $opt(x_unit)]
@@ -249,7 +246,6 @@ proc SVG::graph_data {args} {
     }
     while {$::y_value<=$max_y} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
-        Info: y_coord=$y_coord
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
         SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
             print [eng $::y_value $opt(y_unit)]
@@ -263,7 +259,6 @@ proc SVG::graph_data {args} {
         set radius [lindex $marker 0]
         set x_coord [expr int($opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x))]
         set y_coord [expr int($opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y))]
-	Info: radius=$radius x_coord=$x_coord y_coord=$y_coord
         puts $::HTML "<circle cx=\"$x_coord\" cy=\"$y_coord\" r=\"2\"/>"
         if {[regexp {[nN]} $x_coord]} continue;
         if {[regexp {[nN]} $y_coord]} continue;
@@ -422,15 +417,12 @@ proc SVG::graph_hist {args} {
     }
     set xstep [get_step $min_x $max_x]
     set ystep [get_step $min_y $max_y]
-    Info: xstep=$xstep ystep=$ystep
     set ::x_value [expr int($min_x/$xstep)*$xstep]
     if {$::x_value<$min_x} {
         set ::x_value [expr $::x_value+$xstep]
     }
-    Info: x_value=$::x_value min_x=$min_x max_x=$max_x
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
-        Info: x_coord=$x_coord
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
         SVG::text x $x_coord y $y3_coord font-size 18 {
             print [eng $::x_value $opt(x_unit)]
@@ -451,7 +443,6 @@ proc SVG::graph_hist {args} {
     }
     while {$::y_value<=$max_y} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
-        Info: y_coord=$y_coord
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
         SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
             print [eng $::y_value $opt(y_unit)]
@@ -461,11 +452,21 @@ proc SVG::graph_hist {args} {
     }
     set width [expr int($opt(width)*([lindex $opt(data) 2]-[lindex $opt(data) 0])/($max_x-$min_x))]
     set std_colors {black blue green red black}
+    set abs_data_list {}
+    foreach datum $opt(data) {
+        lappend abs_data_list [expr abs($datum-$opt(average))]
+    }
+    set abs_data_list [lsort -real $abs_data_list]
+    set th {0}
+    lappend th [lindex $abs_data_list [expr int([llength $abs_data_list]*0.5)]]
+    lappend th [lindex $abs_data_list [expr int([llength $abs_data_list]*0.90)]]
+    lappend th [lindex $abs_data_list [expr int([llength $abs_data_list]*0.99)]]
+    Info: $opt(title) $th
     foreach $order $opt(data) {
         set x_coord [expr int($opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x))]
         set y_coord [expr int($opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y))]
 	for {set s 3} {$s>=0} {incr s -1} {
-	    skip {abs($x-$opt(average))<$s*$opt(stdev)}
+	    skip {abs($x-$opt(average))<[lindex $th $s]}
 	    incr s
 	    set color [lindex $std_colors $s]
 	    break
@@ -476,9 +477,9 @@ proc SVG::graph_hist {args} {
     }
     for {set s 0} {$s<=3} {incr s} {
         set color [lindex $std_colors $s]
-	set x_coord [expr int($opt(x)+$opt(width)*($opt(average)+$s*$opt(stdev)-$min_x)/($max_x-$min_x))]
+	set x_coord [expr int($opt(x)+$opt(width)*($opt(average)+[lindex $th $s]-$min_x)/($max_x-$min_x))]
 	SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke $color stroke-width 2 
-	set x_coord [expr int($opt(x)+$opt(width)*($opt(average)-$s*$opt(stdev)-$min_x)/($max_x-$min_x))]
+	set x_coord [expr int($opt(x)+$opt(width)*($opt(average)-[lindex $th $s]-$min_x)/($max_x-$min_x))]
 	SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke $color stroke-width 2 
     }
 }

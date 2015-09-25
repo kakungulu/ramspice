@@ -188,7 +188,7 @@ source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
 @ param/unique = 0
 .compile_circuit
 if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db]} {
-#    exit
+    exit
 }
 # Prepare some defaults in the skeleton db file
 set pareto_properties {}
