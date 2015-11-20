@@ -19,13 +19,13 @@ proc .param {name = value {min {}} {max {}}} {
         @ param/$name/max = $max
     }
 }
-proc .size {name = value {min {}} {max {}} {step {}} } {
+proc .size {name = value {min {}} {max {}} {step {}} {dependence {}}} {
     if {[catch {set evaluated_value [expr $value]}]} {
         @ size/$name = $value
     } else {
         @ size/$name = $evaluated_value
     }
-    foreach field {min max step} {
+    foreach field {min max step dependence} {
         if {[catch {set evaluated_value [expr [set $field]]}]} {
             set ::sizing_code($name,$field) [set $field]
         } else {
@@ -77,6 +77,11 @@ proc .property {name args} {
         }
     }
     set ::DERMODE $original_der_mode
+}
+proc .dependence {args} {
+    regsub -all {\s} $args {} expr
+    lassign [split $expr =] net dep
+    set ::DESIGN_DEPENDENCES($net) $dep
 }
 proc .spec {name op value} {
     if {![info exists ::properties($name,expression)]} {
@@ -262,22 +267,55 @@ proc .prep_mna {mode} {
         set ::sensitivity($name:go,$L) @$name:go:$L
         @ $name:go:$L = 0
         $name:go:$L=>(@$name:dro_dl*@$L/@$W-@$L/@$name:go)*@$name:go*@$name:go
-        if {$mode=="ac" || $mode=="noise"} {
-            add_mna $s $s "+@$name:cgs*@s"
-            add_mna $s $g "-@$name:cgs*@s"
-            add_mna $g $s "-@$name:cgs*@s"
-            add_mna $g $g "+@$name:cgs*@s"
-            if {$g!=$d} {
-                add_mna $d $d "+@$name:cgd*@s"
-                add_mna $d $g "-@$name:cgd*@s"
-                add_mna $g $d "-@$name:cgd*@s"
-                add_mna $g $g "+@$name:cgd*@s"
-            }
-            set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
-            set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
-            @ $name:cgd = 0
-            @ $name:cgs = 0
-        }
+	set ac_s $s
+	if {$s=="0"} {
+	    set ac_s vdd
+	}
+	set ac_d $d
+	if {$d=="0"} {
+	    set ac_d vdd
+	}
+###	if {$mode=="ac" || $mode=="noise"} {
+###	    add_mna $ac_s $ac_s "+@$name:cgs*@s"
+###	    add_mna $ac_s $g "-@$name:cgs*@s"
+###	    add_mna $g $ac_s "-@$name:cgs*@s"
+###	    add_mna $g $g "+@$name:cgs*@s"
+###	    if {$g!=$ac_d} {
+###		add_mna $ac_d $ac_d "+@$name:cgd*@s"
+###		add_mna $ac_d $g "-@$name:cgd*@s"
+###		add_mna $g $ac_d "-@$name:cgd*@s"
+###		add_mna $g $g "+@$name:cgd*@s"
+###	    }
+###	    set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
+###	    set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
+###	    @ $name:cgd = 0
+###	    @ $name:cgs = 0
+###	}
+	if {$mode=="ac" || $mode=="noise"} {
+	    add_mna vdd vdd "+@$name:cgs*@s"
+	    add_mna vdd $g "-@$name:cgs*@s"
+	    add_mna $g vdd "-@$name:cgs*@s"
+	    add_mna $g $g "+@$name:cgs*@s"
+
+	    add_mna $ac_s $ac_s "+@$name:cgs_out*@s"
+	    add_mna $ac_s vdd "-@$name:cgs_out*@s"
+	    add_mna vdd $ac_s "-@$name:cgs_out*@s"
+	    add_mna vdd vdd "+@$name:cgs_out*@s"
+	    if {$g!=$ac_d} {
+		add_mna vdd vdd "+@$name:cgd*@s"
+		add_mna vdd $g "-@$name:cgd*@s"
+		add_mna $g vdd "-@$name:cgd*@s"
+		add_mna $g $g "+@$name:cgd*@s"
+                add_mna $ac_d $ac_d "+@$name:cgd_out*@s"
+	        add_mna $ac_d vdd "-@$name:cgd_out*@s"
+	        add_mna vdd $ac_d "-@$name:cgd_out*@s"
+	        add_mna vdd vdd "+@$name:cgd_out*@s"
+	    }
+	    set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
+	    set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
+	    @ $name:cgd = 0
+	    @ $name:cgs = 0
+	}
     }
     if {$mode!="zout"} {
         foreach idc_pair [array names ::idc] {
@@ -341,11 +379,26 @@ proc .prep_mna {mode} {
     }
     set dim [llength $::MNAy]
     set ::MNA(dim) $dim	
-    set NEWDETy [open ~/mnay_$mode w]
-    set NEWDET [open ~/mna_$mode w]
+    foreach entry [array names ::MNA] {
+        set expr $::MNA($entry)
+        regsub -all {\+\-} $expr {-} expr
+        regsub -all {\-\+} $expr {-} expr
+        regsub -all {\-\-} $expr {+} expr
+        regsub -all {\+}   $expr {+} expr
+	set ::MNA($entry) $expr
+    }
+    set old_y $::MNAy
+    set ::MNAy {}
+    foreach expr $old_y {
+        regsub -all {\+\-} $expr {-} expr
+        regsub -all {\-\+} $expr {-} expr
+        regsub -all {\-\-} $expr {+} expr
+        regsub -all {\+}   $expr {+} expr
+	lappend ::MNAy $expr
+    }
     if {$::C::target=="OP"} {
         if {$mode=="dc"} {
-            set ::HTML [open /tmp/MNA.html w]
+            set ::HTML [open $::env(RAMSPICE)/tmp/$::opt(topology)_MNA.html w]
             puts $::HTML <html>
             puts $::HTML <head>
             puts $::HTML {<style type="text/css">
@@ -384,27 +437,22 @@ proc .prep_mna {mode} {
             for {set j 0} {$j<$dim} {incr j} {
                 puts $::HTML <td>
                 if {[info exists ::MNA($i,$j)]} {
-                    puts $::HTML $::MNA($i,$j)
-		    puts -nonewline $NEWDET $::MNA($i,$j)
+		    set td $::MNA($i,$j)
+		    regsub -all @ $td {} td
+		    regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+                    puts $::HTML $td
                 } else {
                     puts $::HTML 0
-		    puts -nonewline $NEWDET 0
                 }
                 puts $::HTML </td>
-		if {$j<$dim-1} {
-		    puts -nonewline $NEWDET ,
-		} else {
-		    puts -nonewline $NEWDET \;
-		}
             }
             puts $::HTML <td>
-	    puts -nonewline $NEWDETy [lindex $::independent_nodes $i],
-	    if {[lindex $::MNAy $i]=={}} {
-	        puts -nonewline $NEWDETy 0,
-	    } else {
-	        puts -nonewline $NEWDETy [lindex $::MNAy $i],
-	    }
-            puts $::HTML [lindex $::MNAy $i]
+	    set td [lindex $::MNAy $i]
+	    regsub -all @ $td {} td
+	    regsub -all param: $td {} td
+	    regsub -all size: $td {} td
+	    regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+            puts $::HTML $td
             puts $::HTML </td>
             puts $::HTML </tr>
         }
@@ -417,12 +465,22 @@ proc .prep_mna {mode} {
             close $::HTML
         }
     }
-    close $NEWDET
-    close $NEWDETy
     array unset ::vdc
     array set ::vdc $vdc_orig
     array unset ::idc
     array set ::idc $idc_orig
+    for {set i 0} {$i<$::MNA(dim)} {incr i} {
+	    set all_zeroes 1
+	    for {set j 0} {$j<$::MNA(dim)} {incr j} {
+		    skip {![info exists ::MNA($i,$j)]}
+		    skip {$::MNA($i,$j)==0}
+		    set all_zeroes 0
+		    break
+	    }
+	    skip {$all_zeroes==0}
+	    Error: Node [lindex $::independent_nodes $i] is dangling. Add path to ground or a voltage source.
+	    exit
+    }
 }
 #proc .circuit {name} {
     #    set ::opt(topology) $name
@@ -434,11 +492,8 @@ proc .compile_circuit {args} {
 	return
     }
     get_opts outp {} out {} outn {} in {} inn {} inp {} vdd {} name {}
-    set ::debug_mode 0
-    if {[ginfo target]=="debug"} {
-        set ::debug_mode 1
-    }
-    set ::debug_mode 0
+    default ::opt(debug) 0
+    set ::debug_mode $::opt(debug)
     foreach possible_ports {out outp outn inn inp in vdd} {
         skip {$opt($possible_ports)!={}}
         if {[@ param:$possible_ports ?]} {
@@ -478,18 +533,16 @@ proc .compile_circuit {args} {
             exit
         }
         if {$opt(inp)!={} && $opt(inn)!={}} {
-            if {![@ property/Adc ?]} {
-                .property Adc -expression 0.5*(derive($::output_net,$opt(inp))-derive($::output_net,$opt(inn))) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
-            }
+	        set expr 0.5*([DERIVE $opt(inp) $::output_net]-[DERIVE $opt(inn) $::output_net])
         } elseif {$opt(in)!={}} {
-            if {![@ property/Adc ?]} {
-                .property Adc -expression derive($::output_net,$opt(in)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
-            }
+	        set expr [DERIVE $opt(in) $::output_net]
         }
+	Info: Adc expr=$expr ($::output_net)
+        .property Adc -expression $expr -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         if {$opt(inp)!={} && $opt(inn)!={}} {
-            if {![@ property/CMRR ?]} {
                 .property CMRR -expression derive($::output_net,$opt(inp))+derive($::output_net,$opt(inn)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
-            }
+        } elseif {$opt(in)!={}} {
+                .property CMRR -expression 0 -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         }
         if {![@ property/PSRR ?]} {
             if {$opt(vdd)=={}} {
@@ -503,11 +556,6 @@ proc .compile_circuit {args} {
         @ property/$p = 0
     }
     regsub {:V} $::output_net {} output_expr
-    # Debug - Erase the lines up to exit
-    set ::HTML [open ~/mna.html w]
-    .prep_mna ac
-    close $::HTML
-    exit
     .prep_mna dc
     set dim $::MNA(dim)
     @ op_iterations = $::opt(op_limit)
@@ -775,6 +823,7 @@ proc gcc {name {preprocess 1}} {
         regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
         regsub -all `_ $body {P_} body
         regsub -all ` $body {\&} body
+	regsub -all {\&look_up} $body {Plook_up} body
         set ::C::O [open /tmp/gamma_source.ignore.c w]
         ::C::tcl_preprocessor $body
         close $::C::O

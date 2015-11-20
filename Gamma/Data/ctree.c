@@ -822,6 +822,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
             for (i=0;i<d->v_length;i++) {
                 w=d->v_realdata[i]*factor;
                 write_float(O,w);
+//		#Info: "%s) Ids(%d)=%g" d->v_name i w
             }	
         }
         /*
@@ -1321,7 +1322,7 @@ void context_load(context *c,int level) {
                 a->legend[j]=(ordinal *)malloc(sizeof(ordinal)*a->size[j]);
                 volume*=a->size[j];
             }
-            #Info: "Loading array ./%s [eng %ld B]" name volume*BYTES_PER_FLOAT
+            #Info: "Loading array ./%s(%d) [eng %ld B]" name a->dim volume*BYTES_PER_FLOAT
             for (j=0;j<a->dim;j++) {
                 for (k=0;k<a->size[j];k++) {
                     a->legend[j][k]=read_float();
@@ -1403,6 +1404,29 @@ LUT_save (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     if (argc==4) if (strcmp(argv[3],"append")==0) append_mode=1;
     LUT *a=get_LUT(argv[1]);
     return(array_save(a,argv[2],append_mode));
+}
+static int
+tcl_composite_interpolate (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+{
+    if (argc!=9) {
+        #Error: "usage: %s <gm array> <go array> <Ids array>  <vgs> <vds> <vbs> <L> <W>" argv[0]
+        return TCL_ERROR;
+    }
+    LUT *Ids_LUT=get_LUT(argv[3]);
+    LUT *gm_LUT=get_LUT(argv[1]);
+    LUT *go_LUT=get_LUT(argv[2]);
+    float vgs=atof(argv[4]);
+    float vds=atof(argv[5]);
+    float vbs=atof(argv[6]);
+    float L=atof(argv[7]);
+    float W=atof(argv[8]);
+    Tcl_ResetResult(interp);
+    float Ids,gm,go;
+    composite_gamma_gcc_interpolate_4(Ids_LUT,gm_LUT,go_LUT,&gm,&go,&Ids,vgs,vds,vbs,L,W);
+    tcl_append_float(interp,gm);
+    tcl_append_float(interp,go);
+    tcl_append_float(interp,Ids);
+    return(TCL_OK);
 }
 int array_load(char *filename) {
     open_to_read(filename);
@@ -3118,7 +3142,7 @@ ordinal add_pat_array(PAT *p,float *sizes,float *properties) {
 	    if (!(dominated||dominates)) break;
         }
         if (dominated) {
-            return(-1);
+            return(i);
         }    
         // If this older entry is dominated by the new one, delete it. Deleting an entry puts the last one in its place. 
         // Don't move on until you cleared the last entry that was put in place, hence the i--.
@@ -3135,7 +3159,22 @@ ordinal add_pat_array(PAT *p,float *sizes,float *properties) {
     pe->properties=new_vector_float();
     for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(pe->properties,properties[i]);
     add_entry_vector_pointer_PAT_entry(p->content,pe);
-    return(p->content->num_of);
+    return(p->content->num_of-1);
+}
+ordinal force_pat_array(PAT *p,float *sizes,float *properties) {
+    ordinal i,j;
+    // Negate all properties that are "less is better"
+    for (i=0;i<p->properties->num_of;i++) properties[i]=p->factors->content[i]*properties[i];
+ 
+    PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
+    pe->id=p->id_counter++;
+    pe->flags=0;
+    pe->sizes=new_vector_float();
+    for (i=0;i<p->sizes->num_of;i++) add_entry_vector_float(pe->sizes,sizes[i]);
+    pe->properties=new_vector_float();
+    for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(pe->properties,properties[i]);
+    add_entry_vector_pointer_PAT_entry(p->content,pe);
+    return(p->content->num_of-1);
 }
 float calc_POLY(POLY *p) {
     ordinal i=0;
@@ -3329,32 +3368,209 @@ void pat_stars(PAT *p) {
 	delete_entry_vector_pointer_PAT_entry(p->content,i--);
     }	
 }
-char *expr2polish(char *expr_in,int toplevel) {
-    int i=0;
-    if (expr_in[0]==0) {
-        #Error: "Empty expression!"
+
+
+int polish2expr(char *expr,int start,int end) {
+    int i,brace_count,flag1,flag2;
+    int atom=1;
+    for (i=start;i<=end;i++) if (expr[i]==' ') {
+        atom=0;
+	break;
     }
-    char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
-    for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
-    expr[i]=0;
+    if (atom) {
+        for (i=start;i<=end;i++) result_buffer[result_position++]=expr[i];
+        char atomic_string[256];
+	for (i=start;i<=end;i++) atomic_string[i-start]=expr[i];
+	atomic_string[i-start]=0;
+	if (strcmp(atomic_string,"0")==0) return(0);
+	if (strcmp(atomic_string,"1")==0) return(1);
+	return(-1);
+    }
+    int peelme=1;
+    int i_start=start;
+    int i_end=end;
+    while (peelme) {
+        brace_count=0;
+        for (i=i_start;i<=i_end;i++) {
+            if (expr[i]=='{') brace_count++;
+            if (brace_count==0) peelme=0;
+            if (expr[i]=='}') brace_count--;
+        }
+        if (peelme) {
+            i_end--;
+            i_start++;   
+        }
+    }
+    char op=expr[i_start];
+    for (i=i_start+1;expr[i]==' ';i++);
+    int start_arg1=i;
+    if (expr[i]=='{') {
+        brace_count=1;
+        for (i++;brace_count;i++) {
+            if (expr[i]=='{') brace_count++;
+            if (expr[i]=='}') brace_count--;
+        }
+	i--;
+    } else {
+        for (;expr[i]!=' ';i++);
+	i--;
+    }
+    int end_arg1=i;
+    i++;
+    for (;expr[i]==' ';i++);
+    int start_arg2=i;
+    if (expr[i]=='{') {
+        brace_count=1;
+        for (i++;brace_count;i++) {
+            if (expr[i]=='{') brace_count++;
+            if (expr[i]=='}') brace_count--;
+        }
+	i--;
+    } else {
+        i=i_end;
+    }
+    int end_arg2=i;
+    int backtrack=result_position;
+    result_buffer[result_position]=0;
+    if (op=='*') {
+        flag1=polish2expr(expr,start_arg1,end_arg1);
+        if (flag1==0) {
+	    result_position=backtrack;
+	    result_buffer[result_position++]='0';
+	    return(0);
+	}
+        result_buffer[result_position++]='*';
+	flag2=polish2expr(expr,start_arg2,end_arg2);
+        if (flag2==0) {
+	    result_position=backtrack;
+	    result_buffer[result_position++]='0';
+	    return(0);
+	}
+        if (flag1==1) {
+	    result_position=backtrack;
+	    return(polish2expr(expr,start_arg2,end_arg2));
+	}
+        if (flag2==1) {
+	    result_position=backtrack;
+	    return(polish2expr(expr,start_arg1,end_arg1));
+	}
+    }
+    if (op=='+') {
+        result_buffer[result_position++]='(';
+        flag1=polish2expr(expr,start_arg1,end_arg1);
+        if (flag1==0) {
+	    result_position=backtrack;
+	    return(polish2expr(expr,start_arg2,end_arg2));
+	}
+        result_buffer[result_position++]='+';
+	flag2=polish2expr(expr,start_arg2,end_arg2);
+        if (flag2==0) {
+	    result_position=backtrack;
+	    return(polish2expr(expr,start_arg1,end_arg1));
+	}
+        result_buffer[result_position++]=')';
+    }
+    if (op=='-') {
+        result_buffer[result_position++]='(';
+        flag1=polish2expr(expr,start_arg1,end_arg1);
+        if (flag1==0) {
+	    result_position=backtrack;
+            result_buffer[result_position++]='(';
+            result_buffer[result_position++]='-';
+	    flag2=polish2expr(expr,start_arg2,end_arg2);
+            result_buffer[result_position++]=')';
+	    return(flag2);
+	}
+        result_buffer[result_position++]='-';
+	flag2=polish2expr(expr,start_arg2,end_arg2);
+        if (flag2==0) {
+	    result_position=backtrack;
+	    return(polish2expr(expr,start_arg1,end_arg1));
+	}
+        result_buffer[result_position++]=')';
+    }
+    return(-1);
+}
+void expr2polish(char *expr,int start,int end) {
+    int i=0;
+    if (expr[start]==0) {
+        result_buffer[result_position++]='0';
+        return;
+    }
     int brace_count;
     int weakest_degree=3;
     int weakest=-1;
     int peelme=1;
+    int i_start=start;
+    int i_end=end;
     while (peelme) {
         brace_count=0;
-        for (i=0;expr[i];i++) {
+        for (i=i_start;i<=i_end;i++) {
             if (expr[i]=='(') brace_count++;
             if (brace_count==0) peelme=0;
             if (expr[i]==')') brace_count--;
         }
         if (peelme) {
-            expr[i-1]=0;
-            expr=&(expr[1]);   
+            i_end--;
+            i_start++;   
         }
     }
     brace_count=0;
-    for (i=0;expr[i];i++) {
+    for (i=i_start;i<=i_end;i++) {
+        if (expr[i]=='(') brace_count++;
+        if (brace_count==0) {
+            if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
+                weakest_degree=1;
+                weakest=i;
+            }
+            if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
+                weakest_degree=2;
+                weakest=i;
+            }
+        }
+        if (expr[i]==')') brace_count--;
+    }
+    char *expr_start=&(expr[i_start]);
+    if (weakest==-1) {
+        for (i=i_start;i<=i_end;i++) result_buffer[result_position++]=expr[i];
+        return;
+    }
+    char op=expr[weakest];
+    result_buffer[result_position++]='{';
+    result_buffer[result_position++]=op;
+    result_buffer[result_position++]=' ';
+    if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+    result_buffer[result_position++]=' ';
+    expr2polish(expr,weakest+1,i_end);
+    result_buffer[result_position++]='}';
+}
+
+void expr2derive(char *by,char *expr,int start,int end) {
+    int i=0;
+    if (expr[start]==0) {
+        result_buffer[result_position++]='0';
+        return;
+    }
+    int brace_count;
+    int weakest_degree=3;
+    int weakest=-1;
+    int peelme=1;
+    int i_start=start;
+    int i_end=end;
+    while (peelme) {
+        brace_count=0;
+        for (i=i_start;i<=i_end;i++) {
+            if (expr[i]=='(') brace_count++;
+            if (brace_count==0) peelme=0;
+            if (expr[i]==')') brace_count--;
+        }
+        if (peelme) {
+            i_end--;
+            i_start++;   
+        }
+    }
+    brace_count=0;
+    for (i=i_start;i<=i_end;i++) {
         if (expr[i]=='(') brace_count++;
         if (brace_count==0) {
             if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
@@ -3369,34 +3585,47 @@ char *expr2polish(char *expr_in,int toplevel) {
         if (expr[i]==')') brace_count--;
     }
     if (weakest==-1) {
-        return(expr);
-    }
-    if (weakest==0) {
-        char op=expr[weakest];
-        char *post=expr2polish(&(expr[weakest+1]),0);
-        //free(expr);
-        char *result=(char *)malloc(sizeof(char)*(16+strlen(post)));
-	if (toplevel) {
-            if ((op=='-')||(op=='+')) sprintf(result,"%c 0 %s",op,post);
-            if ((op=='/')||(op=='*')) sprintf(result,"%c 1 %s",op,post);
+        char atom_buffer[256];
+	for (i=i_start;i<=i_end;i++) atom_buffer[i-i_start]=expr[i];
+	atom_buffer[i-i_start]=0;
+        if (strcmp(atom_buffer,by)==0) {
+	    result_buffer[result_position++]='1';
 	} else {
-            if ((op=='-')||(op=='+')) sprintf(result,"{%c 0 %s}",op,post);
-            if ((op=='/')||(op=='*')) sprintf(result,"{%c 1 %s}",op,post);
+	    result_buffer[result_position++]='0';
 	}
-        return(result);
+	return;
     }
     char op=expr[weakest];
-    expr[weakest]=0;
-    char *pre=expr2polish(expr,0);
-    char *post=expr2polish(&(expr[weakest+1]),0);
-    // free(expr);
-    char *result=(char *)malloc(sizeof(char)*(16+strlen(pre)+strlen(post)));
-    if (toplevel) {
-        sprintf(result,"%c %s %s",op,pre,post);
-    } else {
-        sprintf(result,"{%c %s %s}",op,pre,post);
-    }	
-    return(result);
+    if (op=='*') {
+        result_buffer[result_position++]='{';
+        result_buffer[result_position++]='+';
+        result_buffer[result_position++]=' ';
+        result_buffer[result_position++]='{';
+        result_buffer[result_position++]='*';
+        result_buffer[result_position++]=' ';
+        if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+        result_buffer[result_position++]=' ';
+        expr2polish(expr,weakest+1,i_end);
+        result_buffer[result_position++]='}';
+        result_buffer[result_position++]=' ';
+        result_buffer[result_position++]='{';
+        result_buffer[result_position++]='*';
+        result_buffer[result_position++]=' ';
+        if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+        result_buffer[result_position++]=' ';
+        expr2derive(by,expr,weakest+1,i_end);
+        result_buffer[result_position++]='}';
+        result_buffer[result_position++]='}';
+        return;
+    }
+    result_buffer[result_position++]='{';
+    result_buffer[result_position++]=op;
+    result_buffer[result_position++]=' ';
+    if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+    result_buffer[result_position++]=' ';
+    expr2derive(by,expr,weakest+1,i_end);
+    result_buffer[result_position++]='}';
+    return;
 }
 char *peel(char *expr_in,int toplevel) {
     int i=0;
@@ -3421,15 +3650,167 @@ char *peel(char *expr_in,int toplevel) {
     }
     return(expr);
 }
+int det_calc(int dim,int row_num,int replacement_col,int level) {
+    int sign=0;
+    int i;
+    int notfirst=0;
+    int this_is_zero=1;
+//    #Info: "DET %d start" level
+    for (i=0;i<dim;i++) {
+        if (det_calc_avoid_cols[i]) continue;
+        sign=1-sign;
+	char *term=det_calc_M[row_num][i];
+	if (i==replacement_col) {
+	    term=det_calc_y[row_num];
+	}
+        if (term==NULL) continue;
+//	#Info: "term(%d,%d)=%s" row_num i term
+        if (term[0]==0) continue;
+        if (strcmp(term,"0")==0) continue;
+        int subposition=result_position;
+        if (sign) result_buffer[result_position++]='+'; else result_buffer[result_position++]='-';
+        int j=0;
+        result_buffer[result_position++]='(';
+        for (j=0;term[j];j++) result_buffer[result_position++]=term[j];
+        result_buffer[result_position++]=')';
+        int sub_is_zero=0;
+        if (row_num<dim-1) {
+            result_buffer[result_position++]='*';
+            result_buffer[result_position++]='(';
+	    int detect_empty=result_position;
+            det_calc_avoid_cols[i]=1;
+            sub_is_zero=det_calc(dim,row_num+1,replacement_col,level+1);
+            det_calc_avoid_cols[i]=0;
+	    if (detect_empty==result_position) sub_is_zero=1;
+            result_buffer[result_position++]=')';
+        }
+        if (sub_is_zero) result_position=subposition; else this_is_zero=0;
+        result_buffer[result_position]=0;
+    }
+    result_buffer[result_position]=0;
+//    #Info: "DET %d end" level
+    return(this_is_zero);
+}
+
 
 static int
-tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+tcl_det (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if ((argc!=2)&&(argc!=4)) {
+        #Error: "%s requires a tcl array that expresses a matrix" argv[0]
+	return TCL_ERROR;
+    }
+    result_position=0;
+    #Info: "Matrix %s " argv[1]
+    char *dim_string=Tcl_GetVar2(interp,argv[1],"dim",0);
+    #Info: "Matrix %s " argv[1]
+    if (dim_string==NULL) {
+    	#Error: "matrix %s contains no dim field" argv[1]
+    	return TCL_ERROR;
+    }
+    int dim=atoi(dim_string);
+    #Info: "Matrix %s is of %d dim" argv[1] dim
+    int i,j;
+    for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
+        char key[256];
+	sprintf(key,"%d,%d",i,j);
+	char *entry_string=Tcl_GetVar2(interp,argv[1],key,0);
+	if (entry_string==NULL) {
+	    det_calc_M[i][j]=NULL;
+	} else {    
+	    det_calc_M[i][j]=strdup(entry_string);
+	    #Info: "%s(%d,%d)=%s" argv[1] i j det_calc_M[i][j]
+	}    
+    } 
+    if (argc==4) {
+	char *y=Tcl_GetVar2(interp,argv[2],NULL,0);
+	if (y==NULL) {
+            #Error: "%s requires a y vector for an Mx=y system" argv[0]
+	    return TCL_ERROR;
+	}
+	int ARGC;
+	char **ARGV;
+        Tcl_SplitList(interp,y,&ARGC,&ARGV);
+	if (ARGC!=dim) {
+            #Error: "%s y vector is not of length %d" argv[0] dim
+	    return TCL_ERROR;
+	}
+	for (i=0;i<dim;i++) det_calc_y[i]=strdup(ARGV[i]);
+	det_calc(dim,0,atoi(argv[3]),1);
+    } else {
+	det_calc(dim,0,-1,1);
+    }
+    #Info: "DET initial result(%d)=%s" result_position result_buffer
+    char *temp_result=strdup(result_buffer);
+    result_position=0;
+    expr2polish(temp_result,0,strlen(temp_result)-1);
+    free(temp_result);
+    result_buffer[result_position]=0;
+    
+    char *polish_result=strdup(result_buffer);
+    printf("DET polish result(%d)=%s\n",result_position,polish_result);
+    fflush(stdout);
+    result_position=0;
+    polish2expr(polish_result,0,strlen(polish_result)-1);
+    free(polish_result);
+    result_buffer[result_position]=0;
+    Tcl_SetVar(interp,"::det_calc_result",result_buffer,0);
+    Tcl_ResetResult(interp);
+    #Info: "DET simplified result(%d)=%s" result_position result_buffer
+    for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
+        if (det_calc_M[i][j]==NULL) continue;
+	free(det_calc_M[i][j]);
+    }
+    return TCL_OK;
+}
+
+static int
+tcl_polish2expr (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     if (argc!=2) {
-        #Error: "%s requires a no-spaces expression"
+        #Error: "%s requires a no-spaces expression" argv[0]
 	return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
-    Tcl_AppendElement(interp,expr2polish(argv[1],1));
+    result_position=0;
+    int i;
+    for (i=0;argv[1][i];i++) {
+        printf("Expression %d %c\n",i,argv[1][i]);
+    }
+    polish2expr(argv[1],0,strlen(argv[1])-1);
+    result_buffer[result_position]=0;
+    Tcl_AppendElement(interp,result_buffer);
+    return TCL_OK;	
+}
+static int
+tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=2) {
+        #Error: "%s requires a no-spaces expression" argv[0]
+	return TCL_ERROR;
+    }
+    Tcl_ResetResult(interp);
+    result_position=0;
+    expr2polish(argv[1],0,strlen(argv[1])-1);
+    result_buffer[result_position]=0;
+    Tcl_AppendElement(interp,result_buffer);
+    return TCL_OK;	
+}
+static int
+tcl_derive (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=3) {
+        #Error: "%s requires a no-spaces expression" argv[0]
+	return TCL_ERROR;
+    }
+    Tcl_ResetResult(interp);
+    result_position=0;
+    expr2derive(argv[1],argv[2],0,strlen(argv[2])-1);
+    result_buffer[result_position]=0;
+    printf("polish derivative=%s\n",result_buffer);
+    char *polish=strdup(result_buffer);
+    result_position=0;
+    polish2expr(polish,0,strlen(polish)-1);
+    result_buffer[result_position]=0;
+    printf("simplified derivative=%s\n",result_buffer);
+    free(polish);
+    Tcl_AppendElement(interp,result_buffer);
     return TCL_OK;	
 }
 static int
@@ -3688,6 +4069,17 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 	    tcl_append_int(interp,p->content->content[atoi(argv[4])]->id);
             return TCL_OK;
         }
+        if (strcmp(argv[3],"id2index")==0) {
+            if (argc!=5) {
+                #Error: "(ctree) The PAT id sub-command requires an index"
+                return TCL_ERROR;
+            }
+	    int id=atoi(argv[4]);
+	    int i;
+	    for (i=0;i<p->content->num_of;i++) if (p->content->content[i]->id==id) break;
+	    if (i==p->content->num_of) tcl_append_int(interp,-1); else tcl_append_int(interp,i);
+            return TCL_OK;
+        }
         if (strcmp(argv[3],"graph")==0) {
             if (argc!=7) {
                 #Error: "(ctree) The PAT graph sub-command requires an output file, x and y axes"
@@ -3857,7 +4249,7 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
         context *d=c->parent;
         int i=0,j=0;
         for (i=0;i<d->num_of_children;i++) {
-            if (d->children[i]=c) j++;
+            if (d->children[i]==c) j++;
             if (j>=d->num_of_children) break;
             d->children[i]=d->children[j];
             j++;
@@ -5138,6 +5530,9 @@ int register_tcl_functions(Tcl_Interp *interp) {
     ctree->ctype=ctype_string;
     //context=ctree;
     context_stack_pointer=0;
+    Tcl_CreateCommand(interp, "DET", tcl_det, NULL, NULL);
+    Tcl_CreateCommand(interp, "DERIVE", tcl_derive, NULL, NULL);
+    Tcl_CreateCommand(interp, "polish2expr", tcl_polish2expr, NULL, NULL);
     Tcl_CreateCommand(interp, "polish", tcl_polish, NULL, NULL);
     Tcl_CreateCommand(interp, "peel", tcl_peel, NULL, NULL);
     Tcl_CreateCommand(interp, "fork", tcl_fork, NULL, NULL);
@@ -5166,6 +5561,7 @@ int register_tcl_functions(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "network_task_done", network_task_done, NULL, NULL);
     Tcl_CreateCommand(interp, "usage",tcl_resource_usage , NULL, NULL);
     Tcl_CreateCommand(interp, "array_save", LUT_save, NULL, NULL);
+    Tcl_CreateCommand(interp, "comp_interpolate", tcl_composite_interpolate, NULL, NULL);
     Tcl_CreateCommand(interp, "array_load", LUT_load, NULL, NULL);
     #ifdef SPICE_COMPILATION
     Tcl_CreateCommand(interp, "dc_analysis", tcl_dc_analysis, NULL, NULL);

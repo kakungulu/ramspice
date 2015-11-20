@@ -24,11 +24,37 @@ set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
 default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/$::opt(rez)/
+source $::env(RAMSPICE)/Sizer/simplify.tcl
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
 source $::env(RAMSPICE)/Sizer/polynomials.tcl
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
-
+proc derive_by_polish {by expr} {
+    if {[llength $expr]==1} {
+        set expr [lindex $expr 0]
+    }
+    if {[llength $expr]==1} {
+        if {$expr==$by} {
+	    return 1
+	}
+	return 0
+    }
+    lassign $expr op X Y
+    switch $op {
+        + {
+	    return [list $op [derive_by_polish $by $X] [derive_by_polish $by $Y]]
+	}
+	- {
+	    return [list $op [derive_by_polish $by $X] [derive_by_polish $by $Y]]
+	}
+	* {
+	    return [list + [list $op $X [derive_by_polish $by $Y]] [list $op [derive_by_polish $by $X] $Y]]
+	}
+    }
+}
+proc derive_expression {by expr} {
+    return [DERIVE $by $expr]
+}
 foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     set toxp [expr $toxe-$dtox]
     @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
@@ -55,8 +81,13 @@ proc add_idc {name m p value} {
 set ::dependent_nodes(0) 1
 proc add_vdc {name m p value} {
     set init_value $value
-    if {[@ $value ?]} {
-        set init_value [@ $value]
+    while {[regexp {^(.*)@([a-zA-Z0-9_:]+)(.*)$} $init_value -> pre c post]} {
+        set init_value $pre
+	append init_value [@ $c]
+	append init_value $post
+    }
+    if {[@ $init_value ?]} {
+        set init_value [@ $init_value]
     }
     if {[catch {expr $value}]} {
         set ::vdc($m,$p) @$value
@@ -134,6 +165,15 @@ proc add_mna {i j element} {
     set i [lsearch $::independent_nodes $i]
     set j [lsearch $::independent_nodes $j]
     default ::MNA($i,$j)
+    default ::MNA(dim) 0
+    if {$::MNA(dim)<=$i} {
+        set ::MNA(dim) $i
+	incr ::MNA(dim)
+    }
+    if {$::MNA(dim)<=$j} {
+        set ::MNA(dim) $j
+	incr ::MNA(dim)
+    }
     append ::MNA($i,$j) $element
     regsub {^\++} $::MNA($i,$j)  {} ::MNA($i,$j)
     regsub {^\+\-} $::MNA($i,$j)  {-} ::MNA($i,$j)
@@ -186,6 +226,37 @@ proc add_transistor {name d g s b type args} {
 default ::opt(iref) 50e-6
 source $::env(RAMSPICE)/Etc/Topologies/$::opt(topology).gsp
 @ param/unique = 0
+
+foreach {p unit formula step_factor} {
+    Adc    dB 20*log10(abs(@)) 1e-16
+    CMRR    dB 20*log10(abs(@)) 1e-13
+    PSRR    dB 20*log10(abs(@)) -1e-11
+    Rout    Ohm @ -1e-19
+    BW    Hz @ 7e-23
+    PM    deg @ 1
+    Cin   F @ -1e-15
+    ts    sec @ -1e-6
+    Nt    V^2/Hz @ -1e-9
+    Nf    V^2/Hz @ -1e-14
+    TotalNoise V @ -1e-14
+    fc     Hz @ -1e-17
+    Vos   V @ -1e-6
+    Area m^2 @ -1e-12
+    Power W @ -1e-7
+} {
+    @ /property/$p = 0
+    @ /property/$p/unit = string $unit
+    @ /property/$p/formula = string $formula
+    @ /property/$p/step_factor = $step_factor
+    if {$step_factor<0} {
+        lappend pareto_properties -$p
+    } else {
+        lappend pareto_properties $p
+    }
+    @ /size foreach_child s {
+        @ /property/$p/$s = 0
+    }
+}
 .compile_circuit
 if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/models_$::opt(tech).db]} {
     exit
@@ -211,33 +282,6 @@ foreach node $::all_nodes {
 }
 @ vdd:V = $::opt(topv)
 @ param/vdd = $::opt(topv)
-foreach {p unit formula step_factor} {
-    Adc    dB 20*log10(abs(@)) 1e-16
-    CMRR    dB 20*log10(abs(@)) 1e-13
-    PSRR    dB 20*log10(abs(@)) -1e-11
-    Rout    Ohm @ -1e-19
-    BW    Hz @ 7e-23
-    ts    sec @ -1e-6
-    Nt    V^2/Hz @ -1e-9
-    Nf    V^2/Hz @ -1e-14
-    fc     Hz @ -1e-17
-    Vos   V @ -1e-6
-    Area m^2 @ -1e-12
-    Power W @ -1e-7
-} {
-    @ /property/$p = 0
-    @ /property/$p/unit = string $unit
-    @ /property/$p/formula = string $formula
-    @ /property/$p/step_factor = $step_factor
-    if {$step_factor<0} {
-        lappend pareto_properties -$p
-    } else {
-        lappend pareto_properties $p
-    }
-    @ /size foreach_child s {
-        @ /property/$p/$s = 0
-    }
-}
 @ p1 = 0
 @ p2 = 0
 @ op_iterations = 10

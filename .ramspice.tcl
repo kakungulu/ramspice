@@ -104,6 +104,13 @@ proc netbatch {code args} {
     }
     exec mv $process_path/$rand_name $process_path/gamma_${machine}_$i.tcl
 }
+proc list_tree {c {pre ""}} {
+    regsub -all {/+} $pre/$c / path
+    Info: [.] $path
+    @ $c foreach_child ch {
+       list_tree $ch $pre/$c
+    }
+}
 
 proc foreach_fork {args} {
     set ::main_process 1
@@ -514,18 +521,18 @@ proc netlist {netlist} {
 proc clear_netlist {} {
     set ::template_netlist ""
 }
-proc update_netlist {} {
+proc update_netlist {args} {
+    set name temp
+    append name [join $args _]
     set ::final_netlist $::template_netlist
     foreach param [array names ::netlist_parameters] {
         regsub -all "@$param\(\[\\s\$\]\)" $::final_netlist "$::netlist_parameters($param)\\1" ::final_netlist
     }
-    set O [open ~/temp/temp[pid].sn w]
+    set O [open ~/temp/$name.sn w]
     puts $O "* Generated from [pid] $::env(USER) $::env(HOSTNAME)"
     puts $O $::final_netlist
     close $O
-    ::spice::source ~/temp/temp[pid].sn
-    file copy -force ~/temp/temp[pid].sn temp.sn
-    file delete ~/temp/temp[pid].sn
+    ::spice::source ~/temp/$name.sn
     set ::template_netlist {}
 }
 proc range {iterator_name} {
@@ -737,29 +744,19 @@ proc constrain {body} {
         set ::constraints($varname,index_range) [expr 1+int(pow(2,$::constraints($varname,depth)))]
     }
 }
-proc find_mosfet_bin {type l w} {
-    foreach dim {l w} {
-        foreach side {min max} op {< >} {
-            if "[set $dim]$op[set ::global_$type$dim$side]" {
-                set $dim [set ::global_$type$dim$side]
-            }
-        }
+proc find_mosfet_bin {type L W} {
+    for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
+        skip {$::bin($type,$i,lmax)<$L}
+        skip {$::bin($type,$i,lmin)>$L}
+        skip {$::bin($type,$i,wmax)<$W}
+        skip {$::bin($type,$i,wmin)>$W}
+        break
     }
-    foreach key [array names ::bin $type,*,lmin] {
-        set section [lindex [split $key ,] 1]
-        set hit 1
-        foreach dim {l w} {
-            foreach side {min max} op {< >} {
-                if "[set $dim] $op $::bin($type,$section,$dim$side)" {
-                    set hit 0
-                }
-            }
-        }
-        if {$hit} {
-            return $section
-        }
+    if {![info exists ::bin($type,$i,lmax)]} {
+        Error: Transistor dimensions L=$L and W=$W (n=$n) do not correspond to any bin
+        return 0
     }
-    return -1
+    return $i
 }
 ### if {![info exists ::env(RAMSPICE_BSIM)]} {
     ###     puts "Warning: RAMSPICE_BSIM is not set. Chosing the default 3v32"
@@ -992,7 +989,7 @@ proc get_opts {args} {
     } 
     array set ::opt $args
     foreach arg [lrange $::argv 2 end] {
-        if {[regexp {^\-([A-Za-z][a-z_0-9]*)$} $arg -> found_key]} {
+        if {[regexp {^\-([A-Za-z][A-Za-z_0-9:]*)$} $arg -> found_key]} {
             set key $found_key
             set $key {}
             continue

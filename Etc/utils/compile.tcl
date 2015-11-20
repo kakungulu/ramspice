@@ -11,6 +11,8 @@ array set ::opt {
     bins {ramspice gamma}
     targets {regular silent debug}
 }
+set ::opt(bins) ramspice
+set ::opt(targets) regular
 array set ::bin2flag {
     ramspice SPICE_COMPILATION gamma GAMMA_COMPILATION
 }

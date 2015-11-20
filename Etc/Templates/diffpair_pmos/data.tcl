@@ -8,6 +8,8 @@ define_properties {
     Vos V<sub>OS</sub> V 0 1 -0.001
     Rout R<sub>OUT</sub> &#8486\; 0 1e12 -1
     BW BW Hz 0 1e12 1
+    PM PM deg 0 360 1
+    Cin C<sub>in</sub> F 0 1e-3 -1
     ts t<sub>S</sub> sec 0 1 -1e-9
     Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 -1e-17
     fc f<sub>corner</sub> Hz 0 1e9 -1

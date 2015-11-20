@@ -29,4 +29,5 @@ set id $::opt(arg)
 default ::SESSION(selcircuit_$id) 0
 set ::SESSION(selcircuit_$id) [expr 1-$::SESSION(selcircuit_$id)]
 save_session
+Info: [array get ::SESSION selcircuit_*]
 return

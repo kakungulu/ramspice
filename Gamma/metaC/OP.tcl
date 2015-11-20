@@ -1,3 +1,9 @@
+    #####################################################################################################
+    ############
+    ############   Initial Conditions
+    ############
+    #####################################################################################################
+    *c "if (@mode:freash_op) \{"
     @ / foreach_child n {
         skip {![@ $n:V ?]}
         skip {$n=="vdd"}
@@ -8,184 +14,257 @@
             *c "@$n:V=@vdd:V/2;"
         }
     }	 
+    *c "\}"
+    *c "@status:index=0;"
+    @ size foreach_child c {
+            if {$::debug_mode} {*c "printf(\"$c=%g\\n\",@size:$c);"}
+	    *c "if(@config:size:$c!=0) @size:$c=@config:size:$c;"
+            if {$::debug_mode} {*c "printf(\"$c=%g\\n\",@size:$c);"}
+    }
+    #####################################################################################################
+    ############
+    ############   Operating Point
+    ############
+    #####################################################################################################
     *c "@vdd:V=$::opt(topv);"
     *c "@0:V=0;"
     *c "// Calculating circuit operating point:"
     *c "int op_it=0;"
+    *c "@status:fail=-1;"
+    *c "@design_feedback=1000;"
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
-    if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@op_iterations);"}
+    if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@config:op_iterations);"}
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
-    *c "for (op_it=0;(op_it<@op_iterations);op_it++) \{"
-    *c "if (op_it>100) return TCL_ERROR;"
+    if {$::debug_mode} {*c "fflush(stdout);"}
+    *c "@leak=1e3;"
+#    *c "@size:iref=50e-6;"
+    *c "float node_step=0;"
+    *c "for (op_it=0;(op_it<@config:op_iterations)&&((@leak>@config:kcl_th)||(@design_feedback>@config:design_feedback_th));op_it++) \{"
     *c "float previous_out_dc=@$::output_net:V;"
     if {$::debug_mode} {*c "    printf(\"========================= op_it=%d =========================\\n\",op_it);"}
     foreach transistor $::all_transistors {
-        set L $::transistors($transistor,L)
-        set W $::transistors($transistor,W)
-        if {[info exists ::gm_equations($transistor)]} {
-            *c "@$transistor:gm=$::gm_equations($transistor);"
-	    *c "if (@print_op_steps>0) printf(\"%d) $transistor:gm=%g\\n\",op_it,@$transistor:gm);"
-            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
-            *c "@$transistor:go=$::go_equations($transistor);"
-	    *c "if (@print_op_steps>0) printf(\"%d) $transistor:go=%g\\n\",op_it,@$transistor:go);"
-            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
-        } else {
-            *c "@$transistor:g=$::g_equations($transistor);"
-        }
-        *c "@$transistor:Ideq=$::Ids_equations($transistor);"
-	*c "if (@print_op_steps>0) printf(\"%d) $transistor:Ideq=%g\\n\",op_it,@$transistor:Ideq);"
-        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
+        foreach key [array names ::transistors $transistor,*] {
+	    set field [regsub {.*,} $key {}]
+	    set $field $::transistors($key)
+	}    
+        *c "composite_gamma_gcc_interpolate_4(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:ro:ss:LUT,&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
+	if {$type=="pch"} {
+	    *c "@$transistor:Ids=-@$transistor:Ids;"
+	}
+        if {$::debug_mode} {*c "printf(\"%d) $transistor L=%g W=%g Ids=%g gm=%g go=%g\\n\",op_it,@$L,@$W,@$transistor:Ids,@$transistor:gm,@$transistor:go);"}
+        if {$::debug_mode} {*c "fflush(stdout);"}
     }
     foreach name [array names ::G_equations] {
         *c "@Gds_$name=$::G_equations($name);"
         .default Gds_$name 1e+0
     }
-    set expression(Det) [DET ::MNA]
+    DET ::MNA
+    set expression(Det) $::det_calc_result
     foreach transistor $::all_transistors {
         if {[info exists ::gm_equations($transistor)]} {
-            if {$::debug_mode} {*c "printf(\"@$transistor:gm=%g\\n\",@$transistor:gm);"}
             *c "if (@$transistor:gm==0) @$transistor:gm=1e-6;"
-            if {$::debug_mode} {*c "printf(\"@$transistor:go=%g\\n\",@$transistor:go);"}
             *c "if (@$transistor:go==0) @$transistor:go=1e-6;"
         }    
-        
-        if {$::debug_mode} {*c "printf(\"@$transistor:Ideq=%g\\n\",@$transistor:Ideq);"}
     }
-    *c "@Det=$expression(Det);"
-    *c "@Ted=1/@Det;"
+    if {$::debug_mode} {*c "printf(\"iref=%g\\n\",@size:iref);"}
     *c "// Updating node voltages"
-    if {$::debug_mode} {*c "printf(\"Det=$expression(Det)\\n\");"}
-    if {$::debug_mode} {*c "printf(\"Det=%g Ted=%g\\n\",@Det,@Ted);"}
-    set i 0
+	*c "@leak=0;"
+	set i -1
     foreach node $::independent_nodes {
-        set expression($node) [DET ::MNA $i $::MNAy]
-        $node=>($expression($node))*@Ted
-        #       if {![info exists ::vdc(0,$node)]} 
-        if {1} {
-            *c "@$node:V=($expression($node))*@Ted;"
-	    Info: OP for $node
-            *c "if (@$node:V<0) @$node:V=0;"
-            *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
-            if {1} {*c "if (@print_op_steps>0) printf(\"%d) $node=%g\\n\",op_it,@$node:V);"}
-        }
         incr i
+        DET ::MNA ::MNAy $i
+	set expression($node) $::det_calc_result
+	Info: ===== $node =====
+	Info: $expression($node)
+        $node=>($expression($node))*@Ted
+        skip {$node=="vdd"}
+        skip {![info exists ::MNA($i,$i)]}
+	skip {$::MNA($i,$i)=="0"}
+	set total_Ids  [lindex $::MNAy $i]
+	regsub -all Ideq $total_Ids Ids total_Ids
+        if {$::debug_mode} {*c "printf(\"$node step=%g/%g=%g*%g=%g\\n\",$total_Ids,$::MNA($i,$i),($total_Ids)/($::MNA($i,$i)),@config:step,@config:step*($total_Ids)/($::MNA($i,$i)));"}
+	regsub -all {[\-\+]?@[a-z0-9A-Z_]+:gm} $::MNA($i,$i) {} point_admitance($i)
+	*c "node_step=@config:kcl_step*($total_Ids)/($point_admitance($i));"
+	*c "if (node_step<-0.02) node_step=-0.02;"
+	*c "if (node_step>0.02) node_step=0.02;"
+	*c "@$node:V+=node_step;"
+	*c "if (fabs($total_Ids)>@leak) @leak=fabs($total_Ids);"
+	Info: OP for $node
+        *c "if (@$node:V<0) @$node:V=0;"
+        *c "if (@$node:V>$::opt(topv)) @$node:V=$::opt(topv);"
+        if {$::debug_mode} {*c "printf(\"%d) $node=%g\\n\",op_it,@$node:V);"}
+        if {$::debug_mode} {*c "fflush(stdout);"}
     }
+    *c "@design_feedback=0;"
+    if {[info exists ::DESIGN_DEPENDENCES]} {
+        foreach net [array names ::DESIGN_DEPENDENCES] {
+	    *c "if (@design_feedback<fabs($::DESIGN_DEPENDENCES($net))) @design_feedback=fabs($::DESIGN_DEPENDENCES($net));"
+	    *c "if (@leak<@config:design_feedback_activate_th) $net+=0.1*($::DESIGN_DEPENDENCES($net));"
+	}
+    }
+    if {$::debug_mode} {*c "printf(\"KCL error=%g\\n\",@leak);"}
+    if {$::debug_mode} {*c "fflush(stdout);"}
     *c "\}"
-    #### Confirm Viability
-    @ / foreach_child n {
-        skip {![@ $n:V ?]}
-        skip {[@ param:$n ?]}
-        skip {$n=="vdd"}
-        skip {$n=="0"}
-        if {$::debug_mode} {*c "printf(\"$n=%g\\n\",@$n:V);"}
-        *c "if (!isfinite(@$n:V)) return TCL_ERROR;"
-        *c "if (@$n:V==0) return TCL_ERROR;"
-        *c "if (@$n:V==$::opt(topv)) return TCL_ERROR;"
-    }     
+    *c "if (op_it>=@config:op_iterations) \{@status:fail=@leak; return TCL_ERROR;\}"
     foreach transistor $::all_transistors {
         if {[string index $transistor 0]=="n" || [string index $transistor 0]=="N"} {
-            *c "if (@$::transistors($transistor,s):V>@$::transistors($transistor,d):V) return TCL_ERROR;"
+            *c "if (@$::transistors($transistor,s):V>@$::transistors($transistor,d):V) \{@status:fail=3; return TCL_ERROR;\}"
         } else {
-            *c "if (@$::transistors($transistor,s):V<@$::transistors($transistor,d):V) return TCL_ERROR;"
+            *c "if (@$::transistors($transistor,s):V<@$::transistors($transistor,d):V) \{@status:fail=4; return TCL_ERROR;\}"
         }
     }
-    
-    foreach transistor $::all_transistors {
-        set L $::transistors($transistor,L)
-        set W $::transistors($transistor,W)
-        *c "@$transistor:Nt_unit=$::Nt_equations($transistor);"
-        *c "@$transistor:Nt=@$transistor:Nt_unit*sqrt(@$transistor:gm);"
-	*c "if (!isfinite(@$transistor:Nt))  return TCL_ERROR;"
-        *c "@$transistor:Nf_unit=$::Nf_equations($transistor);"
-        *c "@$transistor:Nf=@$transistor:Nf_unit*@$transistor:gm*@$transistor:gm/(@$W*@$L);"
-	*c "if (!isfinite(@$transistor:Nf))  return TCL_ERROR;"
+    #####################################################################################################
+    ############
+    ############   DC Properties
+    ############
+    #####################################################################################################
+    *c "@Det=$expression(Det);"
+    if {$::debug_mode} {*c "printf(\"Det=%g\\n\",@Det);"}
+    *c "@Ted=1/@Det;"
+     if {$::debug_mode} {*c "printf(\"Ted=%g\\n\",@Ted);"}
+   if {[@ param:inn ?] && [@ param:inp ?]} {
+        *c "double der_p=[DERIVE @param:inp $expression(outp)];"
+        *c "double der_n=[DERIVE @param:inn $expression(outp)];"
+        if {$::debug_mode} {*c "printf(\" der=%g %g\\n\",der_p,der_n);"}
+       *c "@property:Adc=0.5*Ted*(fabs(der_p)+fabs(der_n));"
+        *c "@property:CMRR=Ted*(fabs(der_p)-fabs(der_n));"
+        *c "@property:PSRR=Ted*([DERIVE @param:vdd $expression(outp)]);"
+    } elseif {[@ param:in ?]} {
+        *c "@property:Adc=Ted*([DERIVE @param:in $expression(out)]);"
+        *c "@property:CMRR=@property:Adc;"
+        *c "@property:PSRR=Ted*([DERIVE @param:vdd $expression(out)]);"
     }
-    *c "// Calculating circuit properties:"
-    @ property foreach_child p {
-        set expression($p) [flat_expression  $::properties($p,expression)]
-        *c "@property:$p=$expression($p);"
-        if {$::debug_mode} {*c "printf(\"Temporary $p=%g\\n\",@property:$p);"}
-	*c "if (!isfinite(@property:$p))  return TCL_ERROR;"
-	Info: Code generated for $p
-    }	
-    *c "if (@print_op_steps>0) printf(\" Adc=%g\\n\",@property:Adc);"
+    if {$::debug_mode} {*c "printf(\" Adc=%g (%gdB)\\n\",@property:Adc,20*log10(fabs(@property:Adc)));"}
+    
+   # if {$::debug_mode} {*c "exit(0);"}
     *c "@property:Adc=fabs(@property:Adc);"
-    *c "if (@property:Adc<1) return TCL_ERROR;"
+    *c "if ((@property:Adc<1)&&(@config:fail_on_properties)) \{@status:fail=2; return TCL_ERROR;\}"
     @ 0:V = 0
     .prep_mna zout
-    set expression(Rout) [DET ::MNA [lsearch $::independent_nodes $::output_net] $::MNAy]
-    *c "@property:Rout=($expression(Rout))*@Ted;"
+    DET ::MNA ::MNAy [lsearch $::independent_nodes $::output_net]
+    set expression(Rout) $::det_calc_result
+    *c "@property:Rout=fabs(($expression(Rout))*@Ted);"
+    #####################################################################################################
+    ############
+    ############   AC Properties
+    ############
+    #####################################################################################################
     .prep_mna ac
-    set expression(Det_ac) [DET ::MNA]
+    DET ::MNA
+    set expression(Det_ac) $::det_calc_result
+    Info: AC
     set expression(dDet_ac) [derive_expression @s $expression(Det_ac)]
     foreach transistor $::all_transistors {
         foreach cap {cgs cgd} {
             skip {![@ $transistor:$cap ?]}
             *c "@$transistor:$cap=$::cap_equations($transistor,$cap);"
+	    *c "if (!isfinite(@$transistor:$cap))  \{@status:fail=7; return TCL_ERROR;\}"
+	    *c "@$transistor:${cap}_out=0;"
             if {$::debug_mode} {*c "printf(\"$transistor:$cap=%g\\n\",@$transistor:$cap);"}
-	    *c "if (!isfinite(@$transistor:$cap))  return TCL_ERROR;"
+	    set target_node [string index $cap end]
+	    skip {$::transistors($transistor,$target_node)=="0"}
+	    skip {$::transistors($transistor,$target_node)=="vdd"}
+	    set index [lsearch $::independent_nodes $::transistors($transistor,$target_node)]
+	    skip {$index==-1} 
+	    skip {![info exists point_admitance($index)]} 
+	    skip {$point_admitance($index)==0} 
+	    *c "// Miller Effect"
+	    *c "@$transistor:${cap}_out=@$transistor:$cap*(1+($point_admitance($index))/@$transistor:gm);"
+	    *c "@$transistor:$cap*=1+@$transistor:gm/($point_admitance($index));"
         }
     }	    
     *c "@s=-1;"
     *c "int BW_it;"
     if {$::debug_mode} {*c "printf(\"num=$expression(Det_ac)\\n\");"}
     if {$::debug_mode} {*c "printf(\"denom=$expression(dDet_ac)\\n\");"}
-    *c "for (BW_it=0;BW_it<5;BW_it++) \{"
-    *c "    @s-=($expression(Det_ac))/($expression(dDet_ac));"
-    *c "\}"
+    *c "for (BW_it=0;BW_it<5;BW_it++)  @s-=($expression(Det_ac))/($expression(dDet_ac));"
     *c "@property:BW:s=$expression(dDet_ac);"
     *c "@p1=-@s;"
-    *c "@property:BW=@p1/(2*3.141592656);"
+    *c "@property:BW=fabs(@p1/(2*3.141592656));"
     if {$::debug_mode} {*c "printf(\"BW=%g\\n\",@property:BW);"}
-    *c "if (!isfinite(@property:BW))  return TCL_ERROR;"
-    *c "if (@property:BW<0)  return TCL_ERROR;"
+    *c "if (!isfinite(@property:BW))  \{@status:fail=8; return TCL_ERROR;\}"
     # Move away from the found root 
     *c "@s-=1e3;"
     # Find next root (=pole)
-    *c "for (BW_it=0;BW_it<20;BW_it++) \{"
-    *c "    @s-=(($expression(Det_ac))*(@s+@p1-5e2))/(($expression(dDet_ac))*(@s+@p1-5e2)-($expression(Det_ac)));"
-    *c "\}"
+    *c "for (BW_it=0;BW_it<20;BW_it++)  @s-=(($expression(Det_ac))*(@s+@p1-5e2))/(($expression(dDet_ac))*(@s+@p1-5e2)-($expression(Det_ac)));"
     *c "@p2=-@s;"
     if {$::debug_mode} {*c "printf(\"Poles: %g    %g\\n\",@p1,@p2);"}
-    *c "float A1=-@p2/(-@p1+@p2);"
-    *c "float A2=-@p1/(-@p1+@p2);"
-    *c "@property:ts=0;"
-    *c "for (BW_it=0;BW_it<10;BW_it++) \{"
-    *c "    @property:ts-=(0.02+A1*exp(-@p1*@property:ts)+A2*exp(-@p2*@property:ts))/(-@p1*A1*exp(-@p1*@property:ts)-@p2*A2*exp(-@p2*@property:ts));"
+    *c "if (!isfinite(p1)) \{"
+    *c "    @property:ts=1/@property:BW;"
+    *c "\} else if (!isfinite(p2)) \{"
+    *c "    @property:ts=-log(0.02)/@p1;"
+    *c "\} else \{"
+    *c "    float A1=-@p2/(-@p1+@p2);"
+    *c "    float A2=-@p1/(-@p1+@p2);"
+    *c "    @property:ts=0;"
+    *c "    for (BW_it=0;BW_it<10;BW_it++) @property:ts-=(0.02+A1*exp(-@p1*@property:ts)+A2*exp(-@p2*@property:ts))/(-@p1*A1*exp(-@p1*@property:ts)-@p2*A2*exp(-@p2*@property:ts));"
     *c "\}"
-    if {$::debug_mode} {*c "printf(\"Settling time=%g\\n\",@property:ts);"}
+    *c "if (!isfinite(@property:ts)) \{"
+    *c "    @property:ts=1/@property:BW;"
+    *c "\}"
     foreach transistor $::all_transistors {
-        set dpoly(noise_trans_$transistor) [derive_expression @$transistor:Ideq $expression($output_expr)]
-        *c "@$transistor:noise_trans=@Ted*($dpoly(noise_trans_$transistor))/@property:Adc;"
+        skip {![regexp {^[np]in} $transistor]}
+        *c "@property:Cin=@$transistor:cgd+@$transistor:cgs;"
+        *c "@property:PM=(@property:BW/9.76e8)+(@property:Adc-21)-sqrt(@$::transistors($transistor,L)*@$::transistors($transistor,W))/5e-7-@size:iref*2.5e4;"
+        *c "@property:PM=(@property:PM*180/3.1415)/2.16+29-1.4-0.75/2;"
+	*c "while (@property:PM<0) @property:PM+=360;"
+	*c "while (fabs(@property:PM)>180) @property:PM-=360;"
+	*c "@property:PM=fabs(@property:PM);"
+	break
+    }	
+    if {$::debug_mode} {*c "printf(\"Settling time=%g\\n\",@property:ts);"}
+    
+    #####################################################################################################
+    ############
+    ############   Noise 
+    ############
+    #####################################################################################################
+    foreach transistor $::all_transistors {
+        set L $::transistors($transistor,L)
+        set W $::transistors($transistor,W)
+        *c "@$transistor:Nt_unit=$::Nt_equations($transistor);"
+        *c "@$transistor:Nt=@$transistor:Nt_unit*@$transistor:go;"
+	*c "if (!isfinite(@$transistor:Nt))  \{@status:fail=5; return TCL_ERROR;\}"
+        *c "@$transistor:Nf_unit=$::Nf_equations($transistor);"
+        *c "@$transistor:Nf=20*@$transistor:Nf_unit*@$transistor:go*@$transistor:go/(@$W*@$L);"
+	*c "if (!isfinite(@$transistor:Nf))  \{@status:fail=6; return TCL_ERROR;\}"
+	if {0} {*c "printf(\"$transistor Nt=%gA^2/Hz Nf(f=1Hz)=%gA^2/Hz\\n\",@$transistor:Nt,@$transistor:Nf);"}
+    }
+    foreach transistor $::all_transistors {
+        *c "float current_transfer_$transistor=@Ted*([DERIVE @$transistor:Ideq $expression(outp)])/@property:Adc;"
+	if {0} {*c "printf(\"$transistor:noise_trans=%gOhm\\n\",current_transfer_$transistor);"}
     } 
     foreach noise_type {t f} {   
         set chain {}
         foreach transistor $::all_transistors {
-            lappend chain @$transistor:noise_trans*@$transistor:noise_trans*@$transistor:N$noise_type
+            lappend chain current_transfer_$transistor*current_transfer_$transistor*@$transistor:N$noise_type
         }
         if {$chain=={}} {
             set chain 0
         }
-        *c "@property:N$noise_type=[join $chain +];"
-        @ size foreach_child c {
-            set chain {}
-            foreach transistor $::all_transistors {
-                lappend chain  2*@$transistor:noise_trans*@$transistor:noise_trans:$c*@$transistor:N$noise_type
-                lappend chain @$transistor:noise_trans*@$transistor:noise_trans*@$transistor:N$noise_type:$c
-            }
-            *c "@property:N$noise_type:$c=[join $chain +];"
-        }	    
+        *c "@property:N$noise_type=([join $chain +])/@property:Adc;"
     }
     foreach transistor $::all_transistors {
         if {$::debug_mode} {*c "printf(\"$transistor:  Nt=%g (%g%%)  Nf=%g (%g%%)\\n\",@$transistor:Nt,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nt/@property:Nt,@$transistor:Nf,100*@$transistor:noise_trans*@$transistor:noise_trans*@$transistor:Nf/@property:Nf);"}
     }
     *c "@property:fc=@property:Nf/@property:Nt;"
+    *c "@property:TotalNoise=(log(2*@property:BW)*@property:Nf+2*@property:BW*@property:Nt);"
+    if {[@ param:inn ?] && [@ param:inp ?]} {
+        *c "@property:TotalNoise/=2;"
+    }	
+    if {0} {*c "printf(\"Adc=%gdB BW=%gHz fc=%g Nf(f=1Hz)=%gV^2/Hz Nt=%gV^2/Hz TN=%gV^2\\n\",20*log10(@property:Adc),@property:BW,@property:fc,@property:Nf,@property:Nt,@property:TotalNoise); if (@property:Adc>600) exit(0);"}
     if {$::debug_mode} {*c "printf(\"Corner=%g\\n\",@property:fc);"}
+
+    #####################################################################################################
+    ############
+    ############   Area, Power, etc. 
+    ############
+    #####################################################################################################
     set chain {}
     foreach transistor $::all_transistors {
         set l  $::transistors($transistor,L)
         set w  $::transistors($transistor,W)
-        lappend chain "@$w*(@$l+@param:area_spacing)"
+        lappend chain "@$w*@$l"
         if {$::debug_mode} {*c "printf(\"Transistor $transistor contributes %g*(%g+%g)=%g\\n\",@$w,@$l,@area_spacing,@$w*(@$l+@area_spacing));"}
     }
     *c "@property:Area=1e12*([join $chain +]);"	
@@ -194,20 +273,38 @@
     *c "@property:Vos=0;"
     foreach transistor $::all_transistors {
         skip {![regexp {^in} $::transistors($transistor,g)]}
-        *c "single_transistor_vos=vos((@$transistor:Ideq+(@$::transistors($transistor,g):V-@$::transistors($transistor,s):V)*@$transistor:gm+(@$::transistors($transistor,d):V-@$::transistors($transistor,s):V)*@$transistor:go)*@$::transistors($transistor,L)/@$::transistors($transistor,W));"
+	if {$::transistors($transistor,type)=="pch"} {
+            *c "single_transistor_vos=vos(-@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W));"
+	} else {
+            *c "single_transistor_vos=vos(@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W));"
+	}
         *c "@property:Vos+=single_transistor_vos*single_transistor_vos;"
     }	
-    *c "@property:Vos=sqrt(@property:Vos);"
-    *c "@property:Power=@size:iref*@vdd:V*@param:power_factor;"
+    *c "@property:Vos=1e-3*sqrt(@property:Vos);"
+    *c "@property:Power=0;"
+    foreach transistor $::all_transistors {
+        foreach key [array names ::transistors $transistor,*] {
+	    set field [regsub {.*,} $key {}]
+	    set $field $::transistors($key)
+	}    
+        *c "@property:Power+=fabs(@$transistor:Ids*((@$d:V)-(@$s:V)));"
+    }
     @ property foreach_child p {
         if {[lsearch {Adc CMRR PSRR} $p]!=-1} {
             *c "@property:$p=20*log10(fabs(@property:$p));"
+	    if {$p!="Adc"} {
+                *c "@property:$p=@property:Adc-@property:$p;"
+	    }
         }
         if {$::debug_mode} {*c "printf(\"Final $p=%g\\n\",@property:$p);"}
     }
     
     *c "if (@max_Adc<@property:Adc) @max_Adc=@property:Adc;"
-    ####################### Add circuit to the PAT
+    #####################################################################################################
+    ############
+    ############   PAT 
+    ############
+    #####################################################################################################
     *c "PAT *p=(PAT *)&@$::opt(topology):circuits:PAT;"
     set index 0
     @ size foreach_child s {
@@ -241,8 +338,10 @@
     *c "float properties\[$index\];"
     set index 0
     @ property foreach_child p {
+        *c "if ((@config:factor:$p!=0)||(@config:shift:$p!=0)) @property:$p=@property:$p*@config:factor:$p+@config:shift:$p;"
         *c "properties\[$index\]=@property:$p;"
 	incr index
     }	
-    *c "add_pat_array(p,sizes,properties);"
+    *c "@status:fail=op_it;"
+    *c "@status:index=add_pat_array(p,sizes,properties);"
     if {$::debug_mode} {*c "printf(\"PAT contains %d entries\\n\",p->content->num_of);"}

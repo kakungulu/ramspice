@@ -8,8 +8,12 @@ define_properties {
     Vos V<sub>OS</sub> V 0 1 -0.001
     Rout R<sub>OUT</sub> &#8486\; 0 1e12 -1
     BW BW Hz 0 1e12 1
+    PM PM deg 0 360 1
+    Cin C<sub>in</sub> F 0 1e-3 -1
     ts t<sub>S</sub> sec 0 1 -1e-9
-    Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 -1e-17
+    Nt N<sub>T</sub> V<sup>2</sup>/Hz 0 1 -1e-17
+    Nf N<sub>F</sub> V<sup>2</sup>/Hz 0 1 -1e-17
+    TotalNoise N<sub>Total</sub> V<sup>2</sup> 0 1 -1e-17
     fc f<sub>corner</sub> Hz 0 1e9 -1
     Area Area (&#956\;m)<sup>2</sup> 0 1e9 -1
     Power Power W 0 1000 -1
@@ -20,7 +24,6 @@ define_sizers {
     Ln {n_1 n_2} 40e-9 10e-6 m
     Wn {n_1 n_2} 40e-9 10e-6 m
     Ls {p_ref p_tail n_out} 40e-9 10e-6 m
-    Ws {p_ref p_tail n_out} 40e-9 10e-6 m
     Lo p_out 40e-9 10e-6 m
     Wo p_out 40e-9 10e-6 m
     iref cbias 0 100e-6 A

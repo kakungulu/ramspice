@@ -100,6 +100,7 @@ proc SVG::graph_data {args} {
         x_type lin
         y_type lin
         title {}
+	font 24
         connect_pattern 2,5
         connect_width 1
         script {}
@@ -121,7 +122,7 @@ proc SVG::graph_data {args} {
     } else {
         set order {x y m}
     }
-    SVG::text x [expr $opt(x)+$opt(width)/3-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size 24  {
+    SVG::text x [expr $opt(x)+$opt(width)/4-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size $opt(font)  {
         print $opt(title)
     }
     set min_x 1e90
@@ -180,6 +181,7 @@ proc SVG::graph_data {args} {
             set max_y $y
         }
     }
+    Info: min_x=$min_x min_y=$min_y
     set x_min [expr $min_x-0.05*($max_x-$min_x)]
     set x_max [expr $max_x+0.05*($max_x-$min_x)]
     set y_min [expr $min_y-0.05*($max_y-$min_y)]
@@ -257,9 +259,10 @@ proc SVG::graph_data {args} {
         default m 0
         set marker [split [lindex $opt(markers) $m] :]
         set radius [lindex $marker 0]
+        set color [lindex $marker 1]
         set x_coord [expr int($opt(x)+$opt(width)*($x-$min_x)/($max_x-$min_x))]
         set y_coord [expr int($opt(y)+$opt(height)-$opt(height)*($y-$min_y)/($max_y-$min_y))]
-        puts $::HTML "<circle cx=\"$x_coord\" cy=\"$y_coord\" r=\"2\"/>"
+        puts $::HTML "<circle cx=\"$x_coord\" cy=\"$y_coord\" r=\"$radius\" stroke=\"$color\"/>"
         if {[regexp {[nN]} $x_coord]} continue;
         if {[regexp {[nN]} $y_coord]} continue;
     }

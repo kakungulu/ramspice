@@ -19,11 +19,14 @@ proc ::func::derive {expression var} {
 }
 proc flat_expression {equation} {
     set PN [lindex [analyse_expr $equation] 0]
+    Info: PN=$PN
     regsub -all {(^|\{)([\-\+\*\/,])} $PN "\\1expr\\2" PN
     #    set PN [lindex $PN 0]
     regsub -all {\{} $PN "\[" PN
     regsub -all {\}} $PN "\]" PN
+    Info: PN=$PN
     set equation [uplevel $PN]
+    Info: equation=$equation
     return $equation
 }    
 

@@ -1,0 +1,53 @@
+20uA
+
+Info: n4 SPICE: cgd=-121.922aF cgs=-1.569fF ratio=12.876347172782598 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=48.306% cgs=-4.018% 
+Info: n5 SPICE: cgd=-121.922aF cgs=-1.569fF ratio=12.876347172782598 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=48.306% cgs=-4.018% 
+Info: n42 SPICE: cgd=-751.358aF cgs=-7.994fF ratio=10.63950872952707 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.490% cgs=41.368% 
+Info: n41 SPICE: cgd=-751.358aF cgs=-7.994fF ratio=10.63950872952707 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.490% cgs=41.368% 
+Info: n36 SPICE: cgd=-1.835fF cgs=-17.274fF ratio=9.410357958043024 Gamma: cgd=-2.712fF cgs=-22.602fF Error: cgd=47.752% cgs=30.841% 
+Info: n27 SPICE: cgd=-279.031aF cgs=-3.077fF ratio=11.028702903978411 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=29.604% cgs=-2.070% 
+Info: n26 SPICE: cgd=-279.031aF cgs=-3.077fF ratio=11.028702903978411 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=29.604% cgs=-2.070% 
+Info: p49 SPICE: cgd=-1.434fF cgs=-10.270fF ratio=7.161654266409132 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-4.308% cgs=11.346% 
+Info: p48 SPICE: cgd=-1.434fF cgs=-10.270fF ratio=7.161654266409132 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-4.308% cgs=11.346% 
+Info: p47 SPICE: cgd=-2.793fF cgs=-22.283fF ratio=7.9758896421387195 Gamma: cgd=-4.288fF cgs=-35.737fF Error: cgd=53.499% cgs=60.378% 
+Info: p40 SPICE: cgd=-1.136fF cgs=-10.313fF ratio=9.071733298148393 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=88.613% cgs=73.260% 
+Info: p39 SPICE: cgd=-1.136fF cgs=-10.313fF ratio=9.071733298148393 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=88.613% cgs=73.260% 
+Info: p2 SPICE: cgd=-194.49aF cgs=-2.899fF ratio=14.90621625790529 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=76.399% cgs=-1.383% 
+Info: p3 SPICE: cgd=-194.49aF cgs=-2.899fF ratio=14.90621625790529 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=76.399% cgs=-1.383% 
+Info: Index=0 F=18741650876.788837 SPICE=34.236dB Gamma=34.691dB BW: SPICE=363.915MHz Gamma=216.064MHz Error=-40.627% 
+
+
+10uA 
+
+Info: n4 SPICE: cgd=-119.017aF cgs=-1.592fF ratio=13.38002134148903 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=51.926% cgs=-5.377% 
+Info: n5 SPICE: cgd=-119.017aF cgs=-1.592fF ratio=13.38002134148903 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=51.926% cgs=-5.377% 
+Info: n42 SPICE: cgd=-751.242aF cgs=-7.045fF ratio=9.378948461348008 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.518% cgs=60.393% 
+Info: n41 SPICE: cgd=-751.242aF cgs=-7.045fF ratio=9.378948461348008 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.518% cgs=60.393% 
+Info: n36 SPICE: cgd=-1.644fF cgs=-15.478fF ratio=9.414387290233503 Gamma: cgd=-2.712fF cgs=-22.602fF Error: cgd=64.970% cgs=46.026% 
+Info: n27 SPICE: cgd=-315.650aF cgs=-3.065fF ratio=9.712435569663965 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=14.568% cgs=-1.699% 
+Info: n26 SPICE: cgd=-315.650aF cgs=-3.065fF ratio=9.712435569663965 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=14.568% cgs=-1.699% 
+Info: p49 SPICE: cgd=-1.601fF cgs=-10.205fF ratio=6.372082568463641 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-14.314% cgs=12.058% 
+Info: p48 SPICE: cgd=-1.601fF cgs=-10.205fF ratio=6.372082568463641 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-14.314% cgs=12.058% 
+Info: p47 SPICE: cgd=-2.587fF cgs=-18.192fF ratio=7.030351511778891 Gamma: cgd=-4.288fF cgs=-35.737fF Error: cgd=65.727% cgs=96.442% 
+Info: p40 SPICE: cgd=-1.145fF cgs=-8.351fF ratio=7.289855451974443 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=87.166% cgs=113.956% 
+Info: p39 SPICE: cgd=-1.145fF cgs=-8.351fF ratio=7.289855451974443 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=87.166% cgs=113.956% 
+Info: p2 SPICE: cgd=-194.798aF cgs=-2.946fF ratio=15.123358556042671 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=76.120% cgs=-2.953% 
+Info: p3 SPICE: cgd=-194.798aF cgs=-2.946fF ratio=15.123358556042671 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=76.120% cgs=-2.953% 
+Info: Index=0 F=10172044151.14024 SPICE=27.915dB Gamma=28.487dB BW: SPICE=408.926MHz Gamma=147.208MHz Error=-64.001% 
+	
+Done!!! Iref=5e-06
+Info: n4 SPICE: cgd=-117.080aF cgs=-1.603fF ratio=13.69513413790453 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=54.438% cgs=-6.025% 
+Info: n5 SPICE: cgd=-117.080aF cgs=-1.603fF ratio=13.69513413790453 Gamma: cgd=-180.817aF cgs=-1.506fF Error: cgd=54.438% cgs=-6.025% 
+Info: n42 SPICE: cgd=-751.242aF cgs=-6.087fF ratio=8.103327556233543 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.518% cgs=85.642% 
+Info: n41 SPICE: cgd=-751.242aF cgs=-6.087fF ratio=8.103327556233543 Gamma: cgd=-1.356fF cgs=-11.301fF Error: cgd=80.518% cgs=85.642% 
+Info: n36 SPICE: cgd=-1.573fF cgs=-13.565fF ratio=8.620696229076906 Gamma: cgd=-2.712fF cgs=-22.602fF Error: cgd=72.358% cgs=66.612% 
+Info: n27 SPICE: cgd=-350.174aF cgs=-3.056fF ratio=8.727803891779516 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=3.273% cgs=-1.394% 
+Info: n26 SPICE: cgd=-350.174aF cgs=-3.056fF ratio=8.727803891779516 Gamma: cgd=-361.635aF cgs=-3.013fF Error: cgd=3.273% cgs=-1.394% 
+Info: p49 SPICE: cgd=-1.645fF cgs=-10.178fF ratio=6.186678661301499 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-16.585% cgs=12.357% 
+Info: p48 SPICE: cgd=-1.645fF cgs=-10.178fF ratio=6.186678661301499 Gamma: cgd=-1.372fF cgs=-11.436fF Error: cgd=-16.585% cgs=12.357% 
+Info: p47 SPICE: cgd=-2.539fF cgs=-14.269fF ratio=5.61944480543774 Gamma: cgd=-4.288fF cgs=-35.737fF Error: cgd=68.885% cgs=150.447% 
+Info: p40 SPICE: cgd=-1.155fF cgs=-6.492fF ratio=5.618025268258913 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=85.552% cgs=175.233% 
+Info: p39 SPICE: cgd=-1.155fF cgs=-6.492fF ratio=5.618025268258913 Gamma: cgd=-2.144fF cgs=-17.868fF Error: cgd=85.552% cgs=175.233% 
+Info: p2 SPICE: cgd=-195.225aF cgs=-2.968fF ratio=15.20399538993469 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=75.735% cgs=-3.678% 
+Info: p3 SPICE: cgd=-195.225aF cgs=-2.968fF ratio=15.20399538993469 Gamma: cgd=-343.078aF cgs=-2.859fF Error: cgd=75.735% cgs=-3.678% 
+Info: Index=0 F=5498193343.555856 SPICE=21.938dB Gamma=22.315dB BW: SPICE=439.855MHz Gamma=91.739MHz Error=-79.143% 

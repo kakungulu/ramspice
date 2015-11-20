@@ -6,18 +6,8 @@ set ::goal_icon_black2 {<svg enable-background='new 0 0 200 200' height='18px'  
 set ::focus_icon {<svg height='18px' viewBox='0 0 48 48' width='18px' xmlns='http://www.w3.org/2000/svg'><path d='M31 28h-1.59l-.55-.55c1.96-2.27 3.14-5.22 3.14-8.45 0-7.18-5.82-13-13-13s-13 5.82-13 13 5.82 13 13 13c3.23 0 6.18-1.18 8.45-3.13l.55.55v1.58l10 9.98 2.98-2.98-9.98-10zm-12 0c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z'/><path d='M0 0h48v48h-48z' fill='none'/></svg>}
 set ::refresh_icon {<svg enable-background='new 0 0 32 32' height='18px' id='Layer_1' version='1.1' viewBox='0 0 32 32' width='18px' xml:space='preserve' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d='M25.444,4.291c0,0-1.325,1.293-2.243,2.201C18.514,3.068,11.909,3.456,7.676,7.689   c-2.47,2.47-3.623,5.747-3.484,8.983h4C8.051,14.46,8.81,12.205,10.5,10.514c2.663-2.663,6.735-3.043,9.812-1.162   c-1.042,1.032-2.245,2.238-2.245,2.238c-0.841,1.009,0.104,1.592,0.584,1.577l5.624-0.001c0.297,0,0.539,0.001,0.539,0.001   s0.245,0,0.543,0h1.092c0.298,0,0.54-0.243,0.54-0.541V4.895C27.023,4.188,26.247,3.502,25.444,4.291z' fill='#515151'/><path d='M6.555,27.709c0,0,1.326-1.293,2.243-2.201c4.688,3.424,11.292,3.036,15.526-1.197   c2.47-2.471,3.622-5.747,3.484-8.983h-4.001c0.142,2.211-0.617,4.467-2.308,6.159c-2.663,2.662-6.735,3.043-9.812,1.161   c1.042-1.032,2.245-2.238,2.245-2.238c0.841-1.01-0.104-1.592-0.584-1.577l-5.624,0.002c-0.297,0-0.54-0.002-0.54-0.002   s-0.245,0-0.543,0H5.551c-0.298,0-0.54,0.242-0.541,0.541v7.732C4.977,27.812,5.753,28.498,6.555,27.709z' fill='#515151'/></g></svg>}
 default ::SESSION(selected_circuits_tags) {}
-Info: [array get ::SESSION selcircuit_*]
 default ::SESSION(circuit_list) {}
-default ::opt(selected_circuit) {}
-foreach id $::opt(selected_circuit) {
-    default ::SESSION(selcircuit_$id) 0
-    set ::SESSION(selcircuit_$id) 1
-}
 default ::opt(deselect) {}
-foreach id $::opt(deselect) {
-    set ::SESSION(selcircuit_$id) 0
-}
-Info: [array get ::SESSION selcircuit_*]
 Info: QUERY_STRING=$::env(QUERY_STRING)
 foreach key [array names ::opt] {
     skip {$key=="launch"}
@@ -40,6 +30,7 @@ if {$use_original_pat} {
 } else {
     @ / load $work_pat_file
 }
+Info: GENERATING HEAT!
 @ param/area_spacing = 0.160e-6
 
 # Recover topology name in case the PAT is a stand-in from another topology
@@ -91,10 +82,10 @@ foreach p [@ /$::SESSION(selected_topology)/circuits PAT properties] {
 }
 
 
-@ /$::SESSION(selected_topology)/circuits >>> $spec_list
+#@ /$::SESSION(selected_topology)/circuits >>> $spec_list
 ::SVG::out
-set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $axes_list]
-set ::SESSION(circuit_list) $::circuit_list
+#set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $axes_list]
+#set ::SESSION(circuit_list) $::circuit_list
 set retval {}
 set ::ref_list [concat [@ /$::SESSION(selected_topology)/circuits PAT sizes] [@ /$::SESSION(selected_topology)/circuits PAT properties]]
 set entries {}
@@ -102,87 +93,259 @@ foreach axis {x y z} {
     skip {[set $axis]=="none"}
     lappend entries [lsearch $::ref_list [set $axis]]
 }    
-Info: [array get ::opt]
-Info: [array get ::SESSION selcircuit_*]
-Info: spec_list=$spec_list
-Info: axes_list=$axes_list
-Info: circuit_list=$circuit_list
-Info: entries=$entries
-proc sort_front {a b} {
-    set xa [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $a] $::x_index]
-    set xb [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $b] $::x_index]
-    if {$xb>$xa} {
-        return 0
-    }
-    return 1
-}
 set ::x_index [lindex $entries 0]
-set ::circuit_list [lsort -command sort_front $::circuit_list]
-set ::circuit_ids {}
-foreach circuit $::circuit_list {
-    lappend ::circuit_ids  [@ /$::SESSION(selected_topology)/circuits PAT id $circuit]
-}
+### set ::circuit_list [lsort -command sort_front $::circuit_list]
+### set ::circuit_ids {}
+### foreach circuit $::circuit_list {
+    ###     lappend ::circuit_ids  [@ /$::SESSION(selected_topology)/circuits PAT id $circuit]
+### }
 set pixels {}
-
-for {set index 0} {$index<[@ /$::SESSION(selected_topology)/circuits PAT size]} {incr index} {
-    if {[@ /$::SESSION(selected_topology)/circuits PAT id $index]==$opt(focus_circuit)} break
-} 
-if {$index>=[@ /$::SESSION(selected_topology)/circuits PAT size]} {
-    Error: Focus circuit not specified or no longer in PAT
+set ::circuit_list {}
+set ::circuit_ids {}
+set id $::SESSION(focus_circuit)
+set index [@ /$::SESSION(selected_topology)/circuits PAT id2index $id]
+if {![info exists ::CIRC($id)]} {
+    Error: Focus circuit not specified or no longer in session
     return
 }
 set i 0
+set id $opt(focus_circuit)
 foreach s [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
-    skip {![@ size:$s ?]}
-    @  size:$s = [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $i]
+    if {![@ size:$s ?]} {
+        incr i
+        continue
+    }
+    @  size:$s = [lindex $::CIRC($id) $i]
+    Info: Focus $s= [@ size:$s]
+    @ config:size:$s = 0
     incr i
 }
-set low_factor [expr [@ size:$x]/$::sizers($x,min)]
-set high_factor [expr $::sizers($x,max)/[@ size:$x]]
-set x_factor $low_factor
-if {$high_factor<$low_factor} {
-    set x_factor $high_factor
+foreach s [@ /$::SESSION(selected_topology)/circuits PAT properties] {
+    if {![@ property:$s ?]} {
+        incr i
+        continue
+    }
+    @  property:$s = [lindex $::CIRC($id) $i]
+    Info: Focus $s= [@ property:$s]
+    incr i
 }
-set min_x [expr [@ size:$x]/$x_factor]
-set max_x [expr [@ size:$x]*$x_factor]
-
-set x_step [expr pow($x_factor,1.0/15)]
-
-set low_factor [expr [@ size:$y]/$::sizers($y,min)]
-set high_factor [expr $::sizers($y,max)/[@ size:$y]]
-set y_factor $low_factor
-if {$high_factor<$low_factor} {
-    set y_factor $high_factor
+set span 4
+set min_x $::sizers($x,min)
+if {[@ size:$x]/$span>$min_x} {
+    set min_x [expr [@ size:$x]/$span]
 }
-set min_y [expr [@ size:$y]/$y_factor]
-set max_y [expr [@ size:$y]*$y_factor]
-set y_step [expr pow($y_factor,1.0/15)]
-
+set max_x $::sizers($x,max)
+if {[@ size:$x]*$span>$max_x} {
+    set max_x [expr [@ size:$x]*$span]
+}
+set min_y $::sizers($y,min)
+if {[@ size:$y]/$span>$min_y} {
+    set min_y [expr [@ size:$y]/$span]
+}
+set max_y $::sizers($y,max)
+if {[@ size:$y]*$span>$max_y} {
+    set max_y [expr [@ size:$y]*$span]
+}
 for {set xcoord $min_x} {$xcoord<=$max_x} {set xcoord [expr $xcoord+($max_x-$min_x)/31]} {
     for {set ycoord $min_y} {$ycoord<=$max_y} {set ycoord [expr $ycoord+($max_y-$min_y)/31]} {
         lappend pixels $xcoord
         lappend pixels $ycoord
     }
 }    
+Info: Z axis=$z
 set 3d_pixels {}
 if {$z!="none"} {
+    @ mode:freash_op = 1
+    @ status/fail = 0
+    @ status/index = 0
+    @ config/op_iterations = 3000
+    @ config/design_feedback_th = 1e-3
+    @ config/design_feedback_activate_th = 1e-6
+    @ config/kcl_th = 5e-7
+    @ config/kcl_step = 0.03
+    @ config/step = 0.05
+    @ mode/heat_map = 1
+    default ::opt(cap_factor) 3.5
+    @ look_up_tables:pch:cox = [expr 0.000148906*$::opt(cap_factor)] 
+    @ look_up_tables:nch:cox = [expr 0.00015696*$::opt(cap_factor)] 
+    @ config/fail_on_properties = 1
+    set 3d_pixels [list [@ size:$x] [@ size:$y] [@ property:$z]]
+    set ::circuit_ids $::SESSION(focus_circuit)
     load $::env(RAMSPICE)/Etc/Templates/$::SESSION(selected_topology)/libGamma.so
-    for {set xcoord $min_x} {$xcoord<=$max_x} {set xcoord [expr $xcoord+($max_x-$min_x)/31]} {
-        for {set ycoord $min_y} {$ycoord<=$max_y} {set ycoord [expr $ycoord+($max_y-$min_y)/31]} {
-            lappend 3d_pixels $xcoord
-            lappend 3d_pixels $ycoord
+    set converged_max_x $max_x
+    set converged_min_x $min_x
+    set converged_max_y $max_y
+    set converged_min_y $min_y
+    Info: Range: $converged_min_x,$converged_max_x  $converged_min_y,$converged_max_y
+    set orig_x [@ size:$x]
+    set orig_y [@ size:$y]
+    if {[test_spec_compatibility]=="green"} {
+        #### Cross method
+        ###        set step [@ size:$x:step] 
+        ###        set color green
+        ###        while {$color=="green"} {
+            ###            @ size:$x = [expr [@ size:$x]+$step]
+            ###	    if {[@ size:$x]>[@ size:$x:max]} break
+            ###            ::C::import
+            ###            @ mode:freash_op = 0
+            ###           if {[catch {::C::op}]} break
+            ###            ::C::export
+            ###            set color [test_spec_compatibility]
+            ###            set step [expr $step*1.5]
+        ###        }
+        ###        set converged_max_x [@ size:$x]
+        ###        @ size:$x = $orig_x
+        ###        set step [@ size:$x:step] 
+        ###        set color green
+        ###        while {$color=="green"} {
+            ###            @ size:$x = [expr [@ size:$x]-$step]
+            ###	    if {[@ size:$x]<[@ size:$x:min]} break
+            ###            ::C::import
+            ###            if {[catch {::C::op}]} break
+            ###            ::C::export
+            ###            set color [test_spec_compatibility]
+            ###            set step [expr $step*1.5]
+        ###        }
+        ###        set converged_min_x [@ size:$x]
+        ###        set step [@ size:$y:step] 
+        ###        set color green
+        ###        while {$color=="green"} {
+            ###            @ size:$y = [expr [@ size:$y]+$step]
+            ###	    if {[@ size:$y]>[@ size:$y:max]} break
+            ###            ::C::import
+            ###            if {[catch {::C::op}]} break
+            ###            ::C::export
+            ###            set color [test_spec_compatibility]
+            ###            set step [expr $step*1.5]
+        ###        }
+        ###        set converged_max_y [@ size:$y]
+        ###        @ size:$y = $orig_y
+        ###        set step [@ size:$y:step] 
+        ###        set color green
+        ###        while {$color=="green"} {
+            ###            @ size:$y = [expr [@ size:$y]-$step]
+            ###	    if {[@ size:$y]<[@ size:$y:min]} break
+            ###            ::C::import
+            ###            if {[catch {::C::op}]} break
+            ###            ::C::export
+            ###            set color [test_spec_compatibility]
+            ###            set step [expr $step*1.5]
+        ###        }
+        ###        set converged_min_y [@ size:$y]
+        ### Array method
+        set min_x $orig_x
+        set max_x $orig_x
+        set min_y $orig_y
+        set max_y $orig_y
+	Info: Pivot: $orig_x,$orig_y
+        for {set xcoord $converged_min_x} {$xcoord<=$converged_max_x} {set xcoord [expr $xcoord+($converged_max_x-$converged_min_x)/31]} {
+            for {set ycoord $converged_min_y} {$ycoord<=$converged_max_y} {set ycoord [expr $ycoord+($converged_max_y-$converged_min_y)/31]} {
+                @ size:$x = $xcoord
+                @ size:$y = $ycoord
+                ::C::import
+                skip {[catch {::C::op}]}
+                 ::C::export
+                skip {[test_spec_compatibility]=="red"}
+		Info: Good one: $xcoord $ycoord
+                if {$min_x>$xcoord} {
+                    set min_x $xcoord
+                }
+                if {$max_x<$xcoord} {
+                    set max_x $xcoord
+                }
+                if {$min_y>$ycoord} {
+                    set min_y $ycoord
+                }
+                if {$max_y<$ycoord} {
+                    set max_y $ycoord
+                }
+            }
+        }
+	Info: ARRAY METHOD $min_x,$max_x $min_y,$max_y
+	set step_x [expr ($converged_max_x-$converged_min_x)/31]
+	set step_y [expr ($converged_max_y-$converged_min_y)/31]
+        set converged_min_x [expr $min_x-$step_x]
+        set converged_max_x [expr $max_x+$step_x]
+        set converged_min_y [expr $min_y-$step_y]
+        set converged_max_y [expr $max_y+$step_y]
+        
+        #  Don't over do it. If the feasible set is too narrow or shallow, the ranges are re-calculated
+###        if {$converged_max_x/$converged_min_x<1.02} {
+###            Info: Feasible width is too small: $converged_max_x/$converged_min_x=[expr $converged_max_x/$converged_min_x]
+###            set min_x [expr ($converged_max_x+$converged_min_x)/16]
+###            if {$min_x<[@ size:$x:min]} {
+###                set min_x [@ size:$x:min]
+###            }
+###            set max_x [expr ($converged_max_x+$converged_min_x)*4]
+###            set converged_min_x $min_x
+###            set converged_max_x $max_x
+###        }
+###        if {$converged_max_y/$converged_min_y<1.02} {
+###            Info: Feasible height is too small: $converged_max_y/$converged_min_y=[expr $converged_max_y/$converged_min_y]
+###            set min_y [expr ($converged_max_y+$converged_min_y)/4]
+###            if {$min_y<[@ size:$y:min]} {
+###                set min_y [@ size:$y:min]
+###            }
+###            set max_y [expr ($converged_max_y+$converged_min_y)]
+###            set converged_min_y $min_y
+###            set converged_max_y $max_y
+###        }
+###    }
+    # move the range to make sure the pivot circuit is on grid
+    Info: Range1: $converged_min_x,$converged_max_x  $converged_min_y,$converged_max_y
+    set step_x [expr ($converged_max_x-$converged_min_x)/31]
+    set res [expr $orig_x-int(($orig_x-$converged_min_x)/$step_x)*$step_x-$converged_min_x]
+    set converged_min_x [expr $converged_min_x+$res]
+    set converged_max_x [expr $converged_max_x+$res]
+    set step_y [expr ($converged_max_y-$converged_min_y)/31]
+    set res [expr $orig_y-int(($orig_y-$converged_min_y)/$step_y)*$step_y-$converged_min_y]
+    set converged_min_y [expr $converged_min_y+$res]
+    set converged_max_y [expr $converged_max_y+$res]
+    Info: Range2: $converged_min_x,$converged_max_x  $converged_min_y,$converged_max_y
+    init_circ_array
+    set num_of_circuits 0
+    for {set xcoord $converged_min_x} {$xcoord<=$converged_max_x} {set xcoord [expr $xcoord+($converged_max_x-$converged_min_x)/31]} {
+        for {set ycoord $converged_min_y} {$ycoord<=$converged_max_y} {set ycoord [expr $ycoord+($converged_max_y-$converged_min_y)/31]} {
+            skip {(abs($xcoord-$orig_x)<1e-9)&&(abs($ycoord-$orig_y)<1e-9)}
             @ size:$x = $xcoord
             @ size:$y = $ycoord
             ::C::import
             if {[catch {::C::op}]} {
-                lappend 3d_pixels -1
+                ::C::export
+           #     Info: $xcoord,$ycoord failed! code=[@ status/fail]
                 continue
             }
             ::C::export
+	    incr num_of_circuits
+            lappend 3d_pixels $xcoord
+            lappend 3d_pixels $ycoord
             lappend 3d_pixels [@ property:$z]
+            set id 1
+            while {[info exists ::CIRC($id)]} {
+                incr id
+            }
+            set ::CIRC($id) {}
+            foreach s [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
+                set value 0
+                if {[@ size:$s ?]} {
+                    set value [@ size:$s]
+                }
+                lappend ::CIRC($id) $value
+            }
+            foreach s [@ /$::SESSION(selected_topology)/circuits PAT properties] {
+                set value 0
+                if {[@ property:$s ?]} {
+                    set value [@ property:$s]
+                }
+                lappend ::CIRC($id) $value
+            }
+            ladd ::SESSION(selected_circuits_tags) $id
+            lappend ::circuit_ids $id
         }
-    }    
+    }  
+    Info: $num_of_circuits circuits converged
 }
+# Info: 3d_pixels=$3d_pixels
 set x_unit {}
 if {[info exists ::sizers($x,unit)]} {
     set x_unit $::sizers($x,unit)
@@ -223,11 +386,14 @@ if {[info exists $z=="none"]} {
 }
 set O [open out.js w]
 set selected_circuits_ids {}
-
+Info: ::circuit_ids= [llength $::circuit_ids]
 generate_table_code $x $y $z
 
-puts $O "selected_circuits=\[[join $selected_circuits_ids ,]\];"
-puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFormatter'>\"\;\n$::table_code    table+=\"</table>\";\n    document.getElementById(\"NewSpecTable\").innerHTML=table\;\n\}\;"
+# puts $O "selected_circuits=\[[join $selected_circuits_ids ,]\];"
+puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFormatter'>\"\;"
+puts $O "$::table_code"
+puts $O "table+=\"</table>\";"
+puts $O " document.getElementById(\"NewSpecTable\").innerHTML=table\;\n\}\;"
 <table><tr bgcolor=$::colors(bg)>
 <td colspan="2" rowspan="$rowspan" bgcolor="$::colors(bg)" class="tableFormatter" id="MapContainer">
 ::SVG::svg width $outer_frame_size height $outer_frame_size {
@@ -246,7 +412,7 @@ puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFor
         }
         set hm /top/students/GRAD/ECE/ystatter/home/public_html/hm[pid].bmp
         set key [heatmap $3d_pixels $pallet $hm]
-        ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $pixels markers 0:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z $z z_unit $z_unit title $::opt(title)
+        ::SVG::graph_pareto_front pallet $pallet heatmap [pid] key $key x 100 y 100 width $frame_size height $frame_size data $3d_pixels markers 2:green x_title $x y_title $y x_unit $x_unit y_unit $y_unit z $z z_unit $z_unit title $::opt(title)
     }
 }
 </td>
@@ -287,4 +453,9 @@ foreach circuit $::circuit_ids index $::circuit_list {
 puts $O "UpdateFocusOn=function() \{$focus_code\}\;"
 close $O
 save_session
+set pid [pid]
+#if {[fork]==0} {
+    #   @ / save $work_pat_file
+    #   return
+#}
 return

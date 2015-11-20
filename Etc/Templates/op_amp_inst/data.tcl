@@ -1,4 +1,4 @@
-set title "Instrumentation Operational Amplifier"
+set title "Single Reference Instrumentation Operational Amplifier"
 set input_type NMOS/PMOS
 
 define_properties {
@@ -8,6 +8,8 @@ define_properties {
     Vos V<sub>OS</sub> V 0 1 -0.001
     Rout R<sub>OUT</sub> &#8486\; 0 1e12 -1
     BW BW Hz 0 1e12 1
+    PM PM deg 0 360 1
+    Cin C<sub>in</sub> F 0 1e-3 -1
     ts t<sub>S</sub> sec 0 1 -1e-9
     Nt N<sub>T</sub> A<sup>2</sup>/Hz 0 1 -1e-17
     fc f<sub>corner</sub> Hz 0 1e9 -1
@@ -32,26 +34,23 @@ define_sizers {
     Wdn1 {n42 n41} 40e-9 10e-6 m
     Ldn2 {n36} 40e-9 10e-6 m
     Wdn2 {n36} 40e-9 10e-6 m
-    Vref1 {} 0 1.1 V
-    Vref2 {} 0 1.1 V
-    Vref3 {} 0 1.1 V
-    Vref4 {} 0 1.1 V
+    Iref {} 1e-6 2e-5 A
 }
 set name [file tail [file dirname [info script]]]
 set ::topologies(op_amp,schematic) {
 NewFormat	
-blank			blank			blank			vdd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	vdd 		    blank		    blank	    vdd 	    nl  		    
-blank			terminal(Vb1)/rrr	line/r  		pmos/rrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	pmos/fr		    twire		    line/r	    pmos/rrr	    nl
-blank			blank			corner/r		twire/rr		corner/rr     blank	    blank		blank		  blank 	    corner/r	    line/r	    	twire/r		    line		    corner/r	    twire/r	    nl
-blank			corner/r		pmos/rrr		blank			pmos/fr       corner/rr     blank		blank		  blank 	    line	    terminal(Vb2)/rrr    pmos_linethrough/fr     crosswire		    crosswire	    pmos/rrr	    nl
-blank			line			line			blank			corner        crosswire     line/r		corner/rr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rrr	    corner/rrr      line	    nl
-blank			line			corner  		line/r  		line/r        crosswire     line/r		double_corner/rr  cross_corner/rrr  double_corner/r line/r	    	crosswire		    corner/rrr  	    blank	    line	    nl
-terminal(inn)/rrr	twire/r 		blank			blank			blank	      twire/rrr     terminal(inp)/r	cross_corner/rr   quad_corner/rr    cross_corner    blank	    	line		    blank		    blank	    twire/rrr	    terminal(outp)/r			    nl
-blank			line			corner/r		line/r  		line/r        crosswire     line/r		double_corner/rrr cross_corner/r    double_corner   line/r	    	crosswire		    corner/rr		    blank	    line		    nl
-blank			line			line			blank			corner/r      crosswire     line/r		corner/rrr	  blank 	    line	    blank	    	twire/rrr		    double_corner/rr	    corner/rr	    line	    nl
-blank			corner  		nmos/frrr		blank			nmos/r        corner/rrr    blank		blank		  blank 	    line	    terminal(Vb3)/rrr    nmos_linethrough/r      crosswire		    crosswire	    nmos/frrr	    nl
-blank			blank			corner  		twire			corner/rrr    blank	    blank		blank		  blank 	    corner	    line/r	    	twire/r		    line		    corner	    twire/r	    nl
-blank			terminal(Vb4)/rrr	line/r  		nmos/frrr		blank	      blank	    blank		blank		  blank 	    blank	    blank	    	nmos/r		    twire/rr		    line/r	    nmos/frrr	    nl
-blank			blank			blank			gnd			blank	      blank	    blank		blank		  blank 	    blank	    blank	    	gnd 		    blank		    blank	    gnd 	    nl
+vdd		blank			blank		blank		vdd			blank		blank		blank		blank	blank	vdd		blank			vdd			blank		blank		vdd 	    nl  		    
+pmos/fr		twire			line/r			line/r		pmos/rrr	blank		blank		blank		blank	blank	pmos/fr		line/r			pmos_linethrough/fr	twire		line/r		pmos/rrr	    nl
+twire/rrr	corner/rrr		blank			corner/r	twire/rr	corner/rr	blank		blank		blank	blank	line		terminal(C)/rrr		twire/r			line		terminal(D)/rrr	twire/r	    nl
+line		blank			corner/r		pmos/rrr	blank		pmos/fr		corner/rr	blank		blank	blank	pmos/fr		twire			pmos_linethrough/fr     crosswire	line/r		pmos/rrr	    nl
+line		blank			line			terminal(A)/rr	blank		terminal(B)/rr	line		blank		blank	blank	twire/rrr	corner/rrr		twire/rrr		corner/rrr	blank		line	    nl
+line		blank			line			blank		blank		blank		line		blank		blank	blank	line		blank			line			blank		blank		line	    nl
+csrc/rr		terminal(inn)/rrr	twire/r 		blank		blank		blank		twire/rrr	terminal(inp)/r	blank	blank	csrc/rr		blank			line			blank		blank		twire/rrr	    terminal(outp)/r			    nl
+line		blank			line			blank		blank		blank		line		blank		blank	blank	line		blank			line			blank		blank		line		    nl
+line		blank			line			terminal(C)	blank		terminal(D)	line		blank		blank	blank	twire/rrr	corner/rr		twire/rrr		corner/rr	blank		line	    nl
+line		blank			corner  		nmos/frrr	blank		nmos/r		corner/rrr	blank		blank	blank	nmos/r		twire/rr		nmos_linethrough/r      crosswire	line/r		nmos/frrr	    nl
+twire/rrr	corner/rr		blank			corner		twire		corner/rrr	blank		blank		blank	blank	line		terminal(A)/rrr		twire/r			line		terminal(B)/rrr	twire/r	    nl
+nmos/r		twire/rr		line/r			line/r		nmos/frrr	blank		blank		blank		blank	blank	nmos/r		line/r			nmos_linethrough/r			twire/rr	line/r		nmos/frrr	    nl
+gnd		blank			blank			blank		gnd		blank		blank		blank		blank	blank	gnd		blank			gnd			blank		blank		gnd 	    nl
 end
 }

@@ -28,4 +28,5 @@ foreach key [array names ::opt] {
 set id $::opt(arg)
 set ::SESSION(selcircuit_$id) 0
 save_session
+Info: [array get ::SESSION selcircuit_*]
 return

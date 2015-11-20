@@ -26,19 +26,27 @@ proc unknown {args} {
     
     # Support for Spice cards
     if {[regexp {^[mM](\S+)\s+(.*)$} $args -> name arguments]} {
-        eval "add_transistor $name $arguments"
+        if {[catch "add_transistor $name $arguments"]} {
+	    Warning: SPICE line ignored: $args
+	}
         return
     }
     if {[regexp {^[vV](\S+)\s+(.*)$} $args -> name arguments]} {
-        eval "add_vdc $name $arguments"
+        if {[catch "add_vdc $name $arguments"]} {
+	    Warning: SPICE line ignored: $args
+	}
         return
     }
     if {[regexp {^[iI](\S+)\s+(.*)$} $args -> name arguments]} {
-        eval "add_idc $name $arguments"
+        if {[catch "add_idc $name $arguments"]} {
+	    Warning: SPICE line ignored: $args
+	}
         return
     }
     if {[regexp {^[rR](\S+)\s+(.*)$} $args -> name arguments]} {
-        eval "add_resistor $name $arguments"
+        if {[catch "add_resistor $name $arguments"]} {
+	    Warning: SPICE line ignored: $args
+	}
         return
     }
     if {[regexp {^([A-Za-z_/:][:/A-Za-z0-9_]*)\s*=>\s*(.*)$} $args -> var expression]} {

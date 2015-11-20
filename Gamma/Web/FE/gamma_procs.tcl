@@ -8,6 +8,12 @@ proc save_session {} {
 	puts $S [list $var $val]
     }
     puts $S "\}"
+    puts $S "array set ::CIRC \{"
+    foreach var [lsort [array names ::CIRC]] {
+        set val $::CIRC($var)
+	puts $S [list $var $val]
+    }
+    puts $S "\}"
     close $S
 }
 proc function {name body} {
@@ -38,6 +44,16 @@ proc get_step {min max} {
     }
     return $step
 }
+proc init_circ_array {} {
+    foreach table_circ [array names ::SESSION selcircuit_*] {
+       skip {!$::SESSION($table_circ)}
+       regsub {.*_} $table_circ {} id
+       skip {![info exists ::CIRC($id)]}
+       set table_circuits($id) $::CIRC($id)
+    }
+    array unset ::CIRC
+    array set ::CIRC [array get table_circuits]
+}
 proc SVG::graph_pareto_front {args} {
     array set opt {
         x 0
@@ -61,6 +77,7 @@ proc SVG::graph_pareto_front {args} {
         heatmap 0
         pallet {}
         z {}
+	belt 0
     }
     
     foreach {param value} $args {
@@ -77,7 +94,12 @@ proc SVG::graph_pareto_front {args} {
     } else {
         set order {x y m}
     }
-    SVG::text x [expr $opt(x)+$opt(width)/3-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size 15  {
+    if {$opt(z)=={}} {
+        set order {x y}
+    } else {
+        set order {x y z}
+    }
+    SVG::text x [expr $opt(x)+$opt(width)/3-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size 32  {
         print $opt(title)
     }
     set min_x 1e90
@@ -122,6 +144,8 @@ proc SVG::graph_pareto_front {args} {
     if {$warn_log} {
         Warning: Some graph entries were discarded because they were negative in a log-scale
     }
+    Info: RANGE: 0 [eng $min_x $opt(x_unit)] [eng $max_x $opt(x_unit)] [eng $min_y $opt(y_unit)] [eng $max_y $opt(y_unit)]
+    default z none
     foreach $order $opt(data) {
         if {$x<$min_x} {
             set min_x $x
@@ -136,14 +160,24 @@ proc SVG::graph_pareto_front {args} {
             set max_y $y
         }
     }
-    set x_min [expr $min_x-0.05*($max_x-$min_x)]
-    set x_max [expr $max_x+0.05*($max_x-$min_x)]
-    set y_min [expr $min_y-0.05*($max_y-$min_y)]
-    set y_max [expr $max_y+0.05*($max_y-$min_y)]
+    Info: RANGE: 1 [eng $min_x $opt(x_unit)] [eng $max_x $opt(x_unit)] [eng $min_y $opt(y_unit)] [eng $max_y $opt(y_unit)]
+    if {$opt(belt)} {
+        set x_min [expr $min_x-0.05*($max_x-$min_x)]
+        set x_max [expr $max_x+0.05*($max_x-$min_x)]
+        set y_min [expr $min_y-0.05*($max_y-$min_y)]
+        set y_max [expr $max_y+0.05*($max_y-$min_y)]
+    } else {
+        set x_min $min_x
+        set x_max $max_x
+        set y_min $min_y
+        set y_max $max_y
+    }
+    Info: RANGE: 2 [eng $min_x $opt(x_unit)] [eng $max_x $opt(x_unit)] [eng $min_y $opt(y_unit)] [eng $max_y $opt(y_unit)]
     set min_x [SVG::align $x_min]
     set max_x [SVG::align $x_max]
     set min_y [SVG::align $y_min]
     set max_y [SVG::align $y_max]
+    Info: RANGE: 3 [eng $min_x $opt(x_unit)] [eng $max_x $opt(x_unit)] [eng $min_y $opt(y_unit)] [eng $max_y $opt(y_unit)]
     if {$opt(heatmap)} {
         <image xlink:href="http://www.engr.colostate.edu/~ystatter/hm$opt(heatmap).bmp" x="$opt(x)" y="$opt(y)" height="$opt(height)" width="$opt(width)" />  
         set key_index 0
@@ -169,10 +203,10 @@ proc SVG::graph_pareto_front {args} {
     SVG::rect x $opt(x) y $opt(y) width $opt(width) height $opt(height) fill none stroke black stroke-width 3
     set y1_coord [expr $opt(y)+$opt(height)]
     set y2_coord [expr $y1_coord+10]
-    set y3_coord [expr $y2_coord+10]
-    set y4_coord [expr $y3_coord+20]
-    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 15  {
-        print "$opt(x_title)"
+    set y3_coord [expr $y2_coord+30]
+    set y4_coord [expr $y3_coord+40]
+    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 24  {
+        print "$opt(x_title) \[$opt(x_unit)\]"
     }
     set xstep [get_step $min_x $max_x]
     set ystep [get_step $min_y $max_y]
@@ -186,8 +220,9 @@ proc SVG::graph_pareto_front {args} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
         Info: x_coord=$x_coord
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
-        SVG::text x $x_coord y $y3_coord font-size 18 {
-            print [eng $::x_value $opt(x_unit)]
+        SVG::text x $x_coord y $y3_coord font-size 32 {
+	    regsub $opt(x_unit) [eng $::x_value $opt(x_unit)] {} NUM
+            print $NUM
         }
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke black stroke-width 1 stroke-dasharray 5,5
         set ::x_value [expr $::x_value+$xstep]
@@ -196,8 +231,8 @@ proc SVG::graph_pareto_front {args} {
     set x2_coord [expr $x1_coord-10]
     set x3_coord [expr $x2_coord-50]
     set x4_coord [expr $x3_coord-20]
-    SVG::text x $x4_coord y [expr $opt(y)+(0.8*$opt(height))] font-size 15 style "direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;" {
-        print "$opt(y_title)"
+    SVG::text x $x4_coord y [expr $opt(y)+(0.8*$opt(height))] font-size 24 style "direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;" {
+        print "$opt(y_title) \[$opt(y_unit)\]"
     }
     set ::y_value [expr int($min_y/$ystep)*$ystep]
     if {$::y_value<$min_y} {
@@ -207,13 +242,15 @@ proc SVG::graph_pareto_front {args} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
         Info: y_coord=$y_coord
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
-        SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
-            print [eng $::y_value $opt(y_unit)]
+        SVG::text x [expr $x4_coord+10] y $y_coord font-size 32 {
+	    regsub $opt(y_unit) [eng $::y_value $opt(y_unit)] {} NUM
+            print $NUM
         }
         SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
         set ::y_value [expr $::y_value+$ystep]
     }
-    foreach $order $opt(data) id $::circuit_ids index $::circuit_list {
+    foreach $order $opt(data) id $::circuit_ids {
+        skip {![info exists ::CIRC($id)]}
         set color green
         foreach key [lsort -unique [array names ::opt] ] {
             skip {$key=="Name"}
@@ -221,20 +258,25 @@ proc SVG::graph_pareto_front {args} {
             skip {![info exists ::properties($key,unit)]}
             if {$::opt($key)!={}} {
                 set entry [lsearch $::ref_list $key]
-                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set value [lindex $::CIRC($id) $entry]
                 if {$::properties($key,step)>0} {
                     if {$value<$::opt($key)} {
+		        if {$::SESSION(selcircuit_$id)} {
+			    Info: Circuit $id failed on $key: $value<$::opt($key)
+			}    
                         set color red
                     }
                 } else {
                     if {$value>$::opt($key)} {
+		        if {$::SESSION(selcircuit_$id)} {
+			    Info: Circuit $id failed on $key: $value>$::opt($key)
+			}    
                         set color red
                     }
                 }
                 
             }	
         }
-        set tag [lsearch $::SESSION(selected_circuits_tags) $id]
         default m 0
         set marker [split [lindex $opt(markers) $m] :]
         set radius [lindex $marker 0]
@@ -247,21 +289,22 @@ proc SVG::graph_pareto_front {args} {
             <circle cx="$x_coord" cy="$y_coord" r="[expr 2*$radius]" fill="transparent" stroke="$color" stroke-width="1" visibility="visible" id="washer$id">
             <set attributeName="visibility" from="visible" to="hidden" begin="marker$id.click"/> 
             </circle>
-            <text x="[expr $x_coord-5]" y="[expr $y_coord-15]" font-size="14" fill="red" visibility="visible" id="tag$id"> $tag
+            <text x="[expr $x_coord-5]" y="[expr $y_coord-15]" font-size="14" fill="red" visibility="visible" id="tag$id"> $id
             <set attributeName="visibility" from="visible" to="hidden" begin="marker$id.click"/> 
             </text>
         } else {
             <circle cx="$x_coord" cy="$y_coord" r="[expr 2*$radius]" fill="transparent" stroke="$color" stroke-width="1" visibility="hidden" id="washer$id">
             <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.click"/> 
             </circle>
-            <text x="[expr $x_coord-5]" y="[expr $y_coord-15]" font-size="14" fill="red" visibility="hidden" id="tag$id"> $tag 
+            <text x="[expr $x_coord-5]" y="[expr $y_coord-15]" font-size="14" fill="red" visibility="hidden" id="tag$id"> $id 
             <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.click"/> 
             </text>
         }
         SVG::circle cx $x_coord cy $y_coord r $radius stroke $color stroke-width 1 fill $color id marker$id onclick "updateSelectedSpec($id)"
-        <text x="[expr 1.05*$x_coord]" y="[expr 0.95*$y_coord]" font-size="20" fill="$color" visibility="hidden"> [eng $x $opt(x_unit)] [eng $y $opt(y_unit)] 
-        <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.mouseover" end="marker$id.mouseout"/> 
-        </text>
+####### Hover event makes mess!
+#        <text x="[expr 1.05*$x_coord]" y="[expr 0.95*$y_coord]" font-size="20" fill="$color" visibility="hidden"> [eng $x $opt(x_unit)] [eng $y $opt(y_unit)] 
+#        <set attributeName="visibility" from="hidden" to="visible" begin="marker$id.mouseover" end="marker$id.mouseout"/> 
+#        </text>
     }
     if {$opt(connect)=="all"} {
         set opt(connect) {}
@@ -331,8 +374,33 @@ proc sort_front {a b} {
     }
     return 1
 }
-
+proc test_spec_compatibility {{circuit {}}} {
+    set color green
+    foreach property $::property_list  {
+	if {$::opt($property)!={}} {
+	    set entry [lsearch $::ref_list $property]
+	    if {$circuit=={}} {
+	        set value [@ property/$property]
+	    } else {
+	        set value [lindex $::CIRC($circuit) $entry]
+	    }
+	    if {$::properties($property,step)>0} {
+		if {$value<$::opt($property)} {
+		    set color red
+		    break
+		}
+	    } else {
+		if {$value>$::opt($property)} {
+		    set color red
+		    break
+		}
+	    }
+	}   
+    }
+    return $color
+}	
 proc generate_table_code {x y z} {
+    Info: GENERATING $::property_list
     set ::table_code ""
     set entry_offset [llength [@ /$::SESSION(selected_topology)/circuits PAT sizes]]
     append ::table_code "table+=\"<tr bgcolor='$::colors(bg)'><td></td><td></td>"
@@ -408,7 +476,7 @@ proc generate_table_code {x y z} {
         append ::table_code "<tr></tr><td colspan='4' align='center'><font color='black'><b>$size</b></font></td></tr></table></td>"
     }
     append ::table_code "<td id='SelectedCircuitID'></td></tr>\"\;\n"
-    append ::table_code "table+=\"<tr bgcolor=$::colors(bg)><td></td><td><b>Spec:</b></td><td></td>"
+    append ::table_code "table+=\"<tr bgcolor=$::colors(bg)><td></td><td><b>Spec:</b></td>"
     foreach property $::property_list {
         set value {}
         if {$::opt($property)!={}} {
@@ -427,12 +495,23 @@ proc generate_table_code {x y z} {
     }
     append ::table_code "<td onclick='SendSpecToServer(\\\"\\\",\\\"\\\")'>$::refresh_icon</td></tr>\"\;\n"
     set j 0
-    foreach circuit $::circuit_ids index $::circuit_list {
+    set table_circuit_ids $::circuit_ids
+    set table_circuit_list $::circuit_list
+    foreach key [array names ::SESSION selcircuit_*] {
+	if {$::SESSION($key)} {
+	    regsub selcircuit_ $key {} cid
+	    set ind [@ /$::SESSION(selected_topology)/circuits PAT id2index $cid]
+	    ladd table_circuit_ids $cid
+	    ladd table_circuit_list $ind
+	}
+    }
+    foreach circuit $table_circuit_ids index $table_circuit_list {
+        skip {![info exists ::CIRC($circuit)]}
         set color green
         foreach property $::property_list  {
             if {$::opt($property)!={}} {
                 set entry [lsearch $::ref_list $property]
-                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set value [lindex $::CIRC($circuit) $entry]
                 if {$::properties($property,step)>0} {
                     if {$value<$::opt($property)} {
                         set color red
@@ -453,12 +532,19 @@ proc generate_table_code {x y z} {
         set bgcolor [lindex {yellow orange} [expr $j%2]] 
         set bgcolor $::colors($bgcolor)
         foreach operator {== !=} {
-            append ::table_code "    if ((selected_circuits.lastIndexOf($circuit)!=-1)&&(focus_circuit$operator'$circuit')) \{\n        table+=\"<tr bgcolor=$::colors(bg)><td><button onclick='DeSelect($circuit)'>X</button></td><td bgcolor=$bgcolor><font color='$color'><b>$tag</b></font></td>"
+            append ::table_code "    if ((selected_circuits.lastIndexOf($circuit)!=-1)&&(focus_circuit$operator'$circuit')) \{\n        table+=\"<tr bgcolor=$::colors(bg)><td><button onclick='DeSelect($circuit)'>X</button></td><td bgcolor=$bgcolor><font color='$color'><b>$circuit</b></font></td>"
             incr j
             foreach property $::property_list {
                 set entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT properties] $property]
                 incr entry $entry_offset
-                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set value [lindex $::CIRC($circuit) $entry]
+		# Patch infinite ts's
+		if {$property=="ts" && [string match *n* $value]} {
+		    set BW_entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT properties] BW]
+                    incr BW_entry $entry_offset
+		    set value [expr 1.0/[lindex $::CIRC($circuit) $BW_entry]]
+		}
+                set value [expr abs($value)]
                 set font_color $property_color($property)
                 if {$::opt($property)!={}} {
                     if {$::properties($property,step)>0} {
@@ -481,7 +567,7 @@ proc generate_table_code {x y z} {
                     set bgcolor [lindex {yellow orange} [expr $j%2]] 
                     set bgcolor $::colors($bgcolor)
                 }   
-                set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::properties($property,unit)]
+                set value [eng $value $::properties($property,unit)]
                 if {[regexp {^(\S+)\.(.)..(\S+)$}  $value -> a b c]} {
                     set value "$a.$b$c"
                 }
@@ -493,7 +579,7 @@ proc generate_table_code {x y z} {
             foreach size [@ /$::SESSION(selected_topology)/circuits PAT sizes] {
                 skip {![@ size:$size ?]}
                 set entry [lsearch [@ /$::SESSION(selected_topology)/circuits PAT sizes] $size]
-                set value [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry]
+                set value [lindex $::CIRC($circuit) $entry]
                 set font_color black
                 if {$operator=="=="} {
                     set bgcolor $::colors(bg)
@@ -501,7 +587,7 @@ proc generate_table_code {x y z} {
                     set bgcolor [lindex {yellow orange} [expr $j%2]] 
                     set bgcolor $::colors($bgcolor)
                 }   
-                set value [eng [lindex [@ /$::SESSION(selected_topology)/circuits PAT index $index] $entry] $::sizers($size,unit)]
+                set value [eng [lindex $::CIRC($circuit) $entry] $::sizers($size,unit)]
                 if {[regexp {^(\S+)\.(.)..(\S+)$}  $value -> a b c]} {
                     set value "$a.$b$c"
                 }

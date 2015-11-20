@@ -40,6 +40,7 @@ if {$use_original_pat} {
 } else {
     @ / load $work_pat_file
 }
+set ::ref_list [concat [@ /$::SESSION(selected_topology)/circuits PAT sizes] [@ /$::SESSION(selected_topology)/circuits PAT properties]]
 
 # Recover topology name in case the PAT is a stand-in from another topology
 if {![@ /$::SESSION(selected_topology)/circuits ?]} {
@@ -70,19 +71,20 @@ foreach p [@ /$::SESSION(selected_topology)/circuits PAT properties] {
         lappend spec_list inf
         continue
     }
+    if {[lsearch $selected_axes $p]!=-1} {
+        lappend spec_list inf
+        continue
+    }
     if {$::opt($p)=="null"} {
         set ::opt($p) {}
     }
     if {$::opt($p)=={}} {
-        if {[lsearch $selected_axes $p]!=-1} {
-            lappend spec_list inf
-        } else {
-            lappend spec_list nan
-        }
+        lappend spec_list nan
         continue
     }
     lappend spec_list $::opt($p)
 }
+Info: spec_list=$spec_list
 set axes_list {}
 foreach p [@ /$::SESSION(selected_topology)/circuits PAT properties] {
     if {[lsearch $selected_axes $p]==-1} {
@@ -95,46 +97,55 @@ foreach p [@ /$::SESSION(selected_topology)/circuits PAT properties] {
 
 @ /$::SESSION(selected_topology)/circuits >>> $spec_list
 ::SVG::out
-set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $axes_list]
-set ::SESSION(circuit_list) $::circuit_list
-set retval {}
-set ::ref_list [concat [@ /$::SESSION(selected_topology)/circuits PAT sizes] [@ /$::SESSION(selected_topology)/circuits PAT properties]]
 set entries {}
 foreach axis {x y z} {
     skip {[set $axis]=="none"}
     lappend entries [lsearch $::ref_list [set $axis]]
 }    
+set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $axes_list]
+
+### Special limitation on BW, remove after zoom is implemented
+if {$y=="BW"} {
+    set bw_circuits {}
+    foreach index $::circuit_list {
+        set circuit [@ /$::SESSION(selected_topology)/circuits PAT index $index]
+	skip {[lindex $circuit [lindex $entries 1]]>50e6}
+	lappend bw_circuits $index
+    }
+    set ::circuit_list $bw_circuits
+}
+set ::x_index [lindex $entries 0]
+set ::circuit_list [lsort -command sort_front $::circuit_list]
+set ::SESSION(circuit_list) $::circuit_list
+Info: Sizes=[@ /$::SESSION(selected_topology)/circuits PAT sizes]
+Info: Properties=[@ /$::SESSION(selected_topology)/circuits PAT properties]
+set id 1
+set ::circuit_ids {}
+set pixels {}
+set 3d_pixels {}
+init_circ_array
+foreach index $::circuit_list {
+    while {[info exists ::CIRC($id)]} {
+        incr id
+    }
+    set ::CIRC($id) [@ /$::SESSION(selected_topology)/circuits PAT index $index]
+    lappend ::circuit_ids $id
+    foreach entry [lrange $entries 0 1] {
+        Info: $index,$entry=[lindex $::CIRC($id) $entry]
+        lappend pixels [lindex $::CIRC($id) $entry]
+    }
+    foreach entry $entries {
+        lappend 3d_pixels [lindex $::CIRC($id) $entry]
+    }
+    Info: $id=$::CIRC($id)
+}
+set retval {}
 Info: [array get ::opt]
 Info: [array get ::SESSION selcircuit_*]
 Info: spec_list=$spec_list
 Info: axes_list=$axes_list
 Info: circuit_list=$circuit_list
 Info: entries=$entries
-set ::x_index [lindex $entries 0]
-set ::circuit_list [lsort -command sort_front $::circuit_list]
-set ::circuit_ids {}
-foreach circuit $::circuit_list {
-    lappend ::circuit_ids  [@ /$::SESSION(selected_topology)/circuits PAT id $circuit]
-}
-set pixels {}
-foreach index $::circuit_list {
-    set circuit [@ /$::SESSION(selected_topology)/circuits PAT index $index]
-    set id [@ /$::SESSION(selected_topology)/circuits PAT id $index]
-    if {[lsearch $::SESSION(selected_circuits_tags) $id]==-1} {
-        lappend ::SESSION(selected_circuits_tags) $id
-    }
-    foreach entry [lrange $entries 0 1] {
-        Info: $index,$entry=[lindex $circuit $entry]
-        lappend pixels [lindex $circuit $entry]
-    }
-}
-set 3d_pixels {}
-foreach index $::circuit_list {
-    set circuit [@ /$::SESSION(selected_topology)/circuits PAT index $index]
-    foreach entry $entries {
-        lappend 3d_pixels [lindex $circuit $entry]
-    }
-}
 
 set x_unit {}
 if {[info exists ::properties($x,unit)]} {
@@ -168,8 +179,8 @@ incr rowspan [llength $selected_g]
 set rowsize 15
 set frame_size [expr 600+$rowsize*$rowspan]
 set outer_frame_size [expr $frame_size+200]
-
-if {[info exists $z=="none"]} {
+default z none
+if {$z=="none"} {
     default ::opt(title) "$y \[$y_unit\] vs $x \[$x_unit\]"
 } else {
     default ::opt(title) "$z \[$z_unit\] vs $y \[$y_unit\] vs $x \[$x_unit\]"
@@ -179,8 +190,10 @@ set selected_circuits_ids {}
 
 generate_table_code $x $y $z
 
-puts $O "selected_circuits=\[[join $selected_circuits_ids ,]\];"
-puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFormatter'>\"\;\n$::table_code    table+=\"</table>\";\n    document.getElementById(\"NewSpecTable\").innerHTML=table\;\n\}\;"
+# puts $O "selected_circuits=\[[join $selected_circuits_ids ,]\];"
+puts $O "updateSpecTable = function() \{\n    var table=\"<table class='tableFormatter'>\"\;"
+puts $O $::table_code 
+puts $O "table+=\"</table>\";\n    document.getElementById(\"NewSpecTable\").innerHTML=table\;\n\}\;"
 <table><tr bgcolor=$::colors(bg)>
 <td colspan="2" rowspan="$rowspan" bgcolor="$::colors(bg)" class="tableFormatter" id="MapContainer">
 ::SVG::svg width $outer_frame_size height $outer_frame_size {

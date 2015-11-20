@@ -6,7 +6,7 @@
 #include <tcl.h>
 #include "Gamma/Web/bmp/bmp.h"
 #include "Gamma/Web/heatmap/heatmap.h"
-#define HEATMAP_RESOLUTION 512
+#define HEATMAP_RESOLUTION 256
 #define HEATMAP_Z_RESOLUTION 1000000
 #define HEATMAP_AREA HEATMAP_RESOLUTION*HEATMAP_RESOLUTION
 #define HEATMAP_BLUR_FACTOR 50
@@ -30,12 +30,12 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
         if (zmax<input[i+2]) zmax=input[i+2];
     }
     int input_scaled[count*3];
-    float x_belt=0.05*(xmax-xmin);
-    xmin-=x_belt;
-    xmax+=x_belt;
-    float y_belt=0.05*(ymax-ymin);
-    ymin-=y_belt;
-    ymax+=y_belt;
+//    float x_belt=0.05*(xmax-xmin);
+//    xmin-=x_belt;
+//    xmax+=x_belt;
+//    float y_belt=0.05*(ymax-ymin);
+//    ymin-=y_belt;
+//    ymax+=y_belt;
     
     // Scale input
     for (i=0;i<count*3;i+=3) input_scaled[i]=(int)(((input[i] - xmin)/(xmax-xmin))*(HEATMAP_RESOLUTION-1));
@@ -50,7 +50,8 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
 	    if (given) continue;
             float weight_sum=0.0;
             float weighted_sum=0.0;
-            for (k=0;k<count*3;k+=3) { //loop through the scalled inputs and calculate xdelta and ydelta
+            for (k=0;k<count*3;k+=3) { //loop through the scaled inputs and calculate xdelta and ydelta
+	        
 	        if (input_scaled[k+2]==-1) continue;
                 float weight=1.0/(HEATMAP_BLUR+(i-(input_scaled[k]))*(i-(input_scaled[k]))+(j-(input_scaled[k+1]))*(j-(input_scaled[k+1]))); // Square-Euclidean distance (round contures)
 		weight*=weight;
@@ -144,10 +145,11 @@ void create_heatmap(float *input, int count, int *pal, int pal_size, float *key,
         }//endof j
     }//endof i
     // Draw given pixels
-    for (i=0;i<count*3;i=i+3) if (input_scaled[i+2]==-1) set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0x000000); else set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0xFFFFFF);	
+//    for (i=0;i<count*3;i=i+3) if (input_scaled[i+2]==-1) set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0x000000); else set_BMP_pixel_html(bmp,input_scaled[i],input_scaled[i+1],0xFFFFFF);	
     FILE *O=fopen(filename,"w+");
     save_BMP(O,bmp);
     fclose(O);
+    printf("Done Generating Heatmap\n");
 }//endof create_heatmap
 
 /*

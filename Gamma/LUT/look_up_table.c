@@ -774,9 +774,10 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	}
 	, float c4
     ) {
-        #Dinfo: "Gamma machine's interpolation function for ${DIM}D " 
+        #Dinfo: "Gamma machine's interpolation function for ${DIM}D %x %x %x" i_a_ids  i_a_gm i_a_ro
         #tcl set num_of_corners [expr 1<<$DIM]
 	LUT *a=(LUT *)i_a_gm;
+	#Dinfo: "DIM=%d" a->dim
         Tcl_Time start_time,end_time; 
         Tcl_GetTime(&start_time);
         ordinal i,j,end;
@@ -790,7 +791,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	float i_f;
         #For: {set i 0} {$i<$DIM} {incr i} {
 	    int key${i};
-                i_f=(c$i-a->legend[$i][0])*a->physical_factor[$i];
+            i_f=(c$i-a->legend[$i][0])*a->physical_factor[$i];
 	    if (a->physical_factor[$i]>0) {
 	        key${i}=(int)i_f;
 	    } else {
@@ -827,6 +828,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	#Dinfo: "gm=%g/%g=%g (*%g/%g=%g)" interpolation_buffer0 a->hypercube_volume interpolation_buffer0/a->hypercube_volume W L interpolation_buffer0/a->hypercube_volume*Gamma
 	*gm=interpolation_buffer0/a->hypercube_volume;
 	a=i_a_ro;
+	#Dinfo: "DIM=%d" a->dim
 	float *ro_hypercube=&(a->content[index]);
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
             interpolation_buffer$corner=ro_hypercube[a->neighbors[$corner]];
@@ -852,14 +854,17 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
 	// This is where the composite interpolation takes place
 	// 1. The Ids values from the LUT get Vgs*gm and Vds*go subtracted before insertion to interpolation buffer
 	a=i_a_ids;
+	#Dinfo: "DIM=%d" a->dim
 	float *hypercube=&(a->content[index]);
-	float cornerVgs,cornerVds;
+	float cornerVgs,cornerVds,corner_ids;
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
 	    #tcl set VgsIndex [expr $corner%2]
 	    #tcl set VdsIndex [expr $corner%4/2]
 	    cornerVgs=a->legend[0][key0+$VgsIndex];
 	    cornerVds=a->legend[1][key1+$VdsIndex];
-            interpolation_buffer$corner=2*hypercube[a->neighbors[$corner]]-cornerVgs*gm_hypercube[a->neighbors[$corner]]-cornerVds/ro_hypercube[a->neighbors[$corner]];
+	    corner_ids=hypercube[a->neighbors[$corner]];
+	    #Dinfo: "Ids($corner)=%g" corner_ids
+            interpolation_buffer$corner=hypercube[a->neighbors[$corner]]-cornerVgs*gm_hypercube[a->neighbors[$corner]]-cornerVds/ro_hypercube[a->neighbors[$corner]];
 	    #Dinfo: "Ideq Corner Vgs=%g (real %g) Vds=%g (real %g) $corner=%g" cornerVgs c0 cornerVds c1 interpolation_buffer$corner
         }
         #tcl set weighing_dim 0
@@ -878,7 +883,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
             #tcl incr weighing_dim
         }
 	// 2. The final value is added with the Vgs*gm and Vds*go values calculated from previous interpolations
-	*Ids=0.5*(interpolation_buffer0/a->hypercube_volume+(*gm)*c0+(*go)*c1);
+	*Ids=(interpolation_buffer0/a->hypercube_volume+(*gm)*c0+(*go)*c1);
 	#Dinfo: "Ids=%g/%g=%g (%g)" interpolation_buffer0 a->hypercube_volume interpolation_buffer0/a->hypercube_volume+(*gm)*c0+(*go)*c1 (interpolation_buffer0/a->hypercube_volume+(*gm)*c0+(*go)*c1)*Gamma
 	*Ids*=Gamma;
 	*gm*=Gamma;

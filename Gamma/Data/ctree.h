@@ -282,7 +282,8 @@ static int tcl_enable_hit(ClientData clientData,Tcl_Interp *interp,int argc,char
 static int tcl_list_hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 static int tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]);
 float Ids_estimation(float Va,float Vt,float Vgs,float Vds,float WbyL,float temp);
-char *expr2polish(char *expr_in,int toplevel);
+void expr2polish(char *expr_in,int start,int end);
+void expr2derive(char *by,char *expr_in,int start,int end);
 
 int register_tcl_functions(Tcl_Interp *interp);
 node *ctree; 
@@ -326,6 +327,12 @@ float get_Tcl_timer;
 ordinal get_Tcl_counter;
 struct plot *save_slice_base;
 int this_process_forked;
+char *det_calc_M[256][256];
+char *det_calc_y[256];
+int det_calc_avoid_cols[256];
+// General Purpose scratch buffer
+char result_buffer[1024*1024*1024];
+long result_position;
 #endif
 
 

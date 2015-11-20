@@ -129,7 +129,18 @@ proc pseudo_inv {M_var N_var} {
 proc deti {M i y} {
     return [det $M 0 {} $i $y]
 }
-proc DET {M_var {i -1} {y {}}} {
+rename DET compiled_DET
+proc DET {M_var {y_var {}} {i -1}} {
+    upvar $M_var M
+    upvar $y_var y 
+    if {$y_var!={}} {
+        compiled_DET M y $i
+    } else {
+        compiled_DET M
+    }
+    return $::det_calc_result
+}
+proc old_DET {M_var {i -1} {y {}}} {
     Info: DET start [clock format [clock seconds]]
     for {set l 1} {$l<[info level]} {incr l} {
         Info: DET $l) [info level $l]

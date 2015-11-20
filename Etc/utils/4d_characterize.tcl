@@ -2,7 +2,7 @@
 exec $RAMSPICE/ramspice $0 $argv
 
 
-
+rm ~/temp/*
 if {[lsearch {-help -h --help} $argv]!=-1} {
     puts {
         Characterization script for Cadence .SCS files
@@ -452,11 +452,16 @@ foreach type [split $device :] {
                 }
                 set i3 1
                 foreach L $l_values {
-		    set W [expr $L*$wmin/$lmin]
+		    set rtest 1e-12
+		    set W $L
+		    if {$W<$wmin} {
+		        set W [expr $L*$wmin/$lmin]
+			set rtest [expr 1e-12*$lmin/$wmin]
+		    }	
                     netlist ".temp $::temp"
                     # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} B $L $W
-                    netlist "r_${i3} ${i3} 0 1e-12"
+                    netlist "r_${i3} ${i3} 0 $rtest"
                     incr i3
                 }
                 netlist "
@@ -465,7 +470,7 @@ foreach type [split $device :] {
                 Vbs B 0 dc 0 ac 0
                 .end
                 "
-                update_netlist
+                update_netlist Vt $::corner $::temp
                 
                 ######### Initialize database
                 Info: Measuring Vt(W,L) $::low_vgs $::high_vgs
@@ -560,7 +565,7 @@ foreach type [split $device :] {
             file delete $droppings
         }
         set views {Ids gm ro}
-	set ohmic_factor [expr 1e12*$lmin/$wmin]
+	set ohmic_factor 1e12
         foreach ::corner $::corner_list {
             set ::temp $::corner_to_temp($::corner)
             fork_task char_vig_task {
@@ -574,18 +579,23 @@ foreach type [split $device :] {
                 set i3 1
                 set i4 0
                 foreach L $l_values {
-		    set W [expr $L*$wmin/$lmin]
+		    set rtest 1e-12
+		    set W $L
+		    if {$W<$wmin} {
+		        set W [expr $L*$wmin/$lmin]
+			set rtest [expr 1e-12*$lmin/$wmin]
+		    }	
                     netlist ".temp $::temp"
                     # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} B $L $W
-                    netlist "r_${i3} ${i3} 0 1e-12"
+                    netlist "r_${i3} ${i3} 0 $rtest"
                     incr i3
                 }
                 netlist "Vds D 0 dc 0 ac 0"
                 netlist "Vgs G 0 dc 0 ac 0"
                 netlist "Vbs B 0 dc 0 ac 0"
                 netlist ".end"
-                update_netlist
+                update_netlist VIG $::corner $::temp
                 set index_range {}
                 foreach var {Vgs Vds Vbs} {
                     lappend index_range $::constraints($var,index_range)
@@ -699,10 +709,15 @@ foreach type [split $device :] {
                 set vars_of_interest {}
                 set i3 1
                 foreach L $l_values {
- 		    set W [expr $L*$wmin/$lmin]
+		    set rtest 1e-12
+		    set W $L
+		    if {$W<$wmin} {
+		        set W [expr $L*$wmin/$lmin]
+			set rtest [expr 1e-12*$lmin/$wmin]
+		    }	
                    # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} 0 $L $W
-                    netlist "r_${i3} ${i3} 0 1e-12"
+                    netlist "r_${i3} ${i3} 0 $rtest"
                     lappend vars_of_interest mn_${i3}
                     lappend vars_of_interest Vth
                     lappend vars_of_interest mn_${i3}
@@ -714,10 +729,10 @@ foreach type [split $device :] {
                 Vgs G 0 dc [expr $max_supply/2] ac 0
                 .end
                 "
-                set O [open test.sn w]
+                set O [open ~/temp/tempMis$::corner_$::temp.sn w]
                 puts $O $template_netlist
                 close $O
-                update_netlist
+                update_netlist Mis $::corner $::temp
                 
                 Info:  Measuring mis(W,L)
                 ######### Characterizing loops
@@ -865,7 +880,7 @@ foreach type [split $device :] {
                 netlist {
                     .end
                 }
-                update_netlist
+                update_netlist Noise $::corner $::temp
                 set i3 0
                 foreach L $l_values {
    		    set W [expr $L*$wmin/$lmin]

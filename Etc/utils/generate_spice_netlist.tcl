@@ -1,4 +1,18 @@
-proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} {
+proc calculate_size {size_var} {
+    upvar $size_var size
+    while {[regexp {^(.*)@([a-zA-Z0-9_:]+)(.*)$} $size -> pre c post]} {
+        # Info: c=$c
+        set size $pre
+	append size [@ $c]
+	append size $post
+    }
+    if {[catch {set val [expr $size]}]} {
+        set size [@ $size]
+    } else {
+        set size $val
+    }
+}
+proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}} {
     source $::env(RAMSPICE)/Etc/Tech_DB/$selected_tech/binning_$selected_tech.tcl
     set netlist {}
     set topology_file $::env(RAMSPICE)/Etc/Topologies/$selected_topology.gsp
@@ -18,10 +32,23 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
                     exit
                 }
                 set type [string index $name 0]
-                set L [@ $L]
-                set W [@ $W]
+		# Info: generate: L=$L W=$W
+		foreach expression {L W} {
+		    while {[regexp {^(.*)@([A-Za-z0-9_:]+)(.*)$} [set $expression] -> pre context post]} {
+		        set value [@ $context]
+			set $expression $pre$value$post
+		    }
+		    if {[catch {set value [expr [set $expression]]}]} {
+		        set $expression [@ [set $expression]]
+		    } else {
+		        set $expression $value
+		    }
+		}
+                # set L [@ $L]
+                # set W [@ $W]
+		# Info: generate: L=$L W=$W
                 default corner ss
-                set n [expr int(ceil($W/(5*$L)))]
+                set n [expr int(ceil($W/(10*$L)))]
                 set W [expr $W/$n]
                 for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
                     skip {$::bin($type,$i,lmax)<$L}
@@ -38,16 +65,18 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
                     append netlist [list m$name $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
                     append netlist "\n"
                 } else {
-                    for {set j 0} {$j<$n} {incr j} {
-                        append netlist [list m${name}_$j $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
-                        append netlist "\n"
-                    }
+                    append netlist [list m$name $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W m=$n]
+                    append netlist "\n"
+                #    for {set j 0} {$j<$n} {incr j} {
+                #        append netlist [list m${name}_$j $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
+                #        append netlist "\n"
+                #    }
                 }
                 ladd ::required_models ${type}ch_${corner}_$i
             }
             v {
                 set size [lindex $line 3]
-                # Info: line=$line size=$size
+		calculate_size size
                 if {[catch {expr $size}]} {
                     set size [@ $size]
                 }
@@ -69,7 +98,7 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
             }
             {[rci]} {
                 set size [lindex $line 3]
-                # Info: line=$line size=$size
+		calculate_size size
                 if {[catch {expr $size}]} {
                     set size [@ $size]
                 }
@@ -85,7 +114,8 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.0001}} 
     regsub {\.tcl} $::env(RAMSPICE)/../../$::active_session.sn {} ::SESSION(spice_netlist)
     default ::SESSION(focus_circuit) original
     # Info: Generating $::SESSION(spice_netlist)
-    set O [open ~/temp/temp.sn w]
+    set O [open /tmp/temp.sn w]
+    puts $O "* array set ::opt \{[array get ::opt]\}"
     puts $O "* $selected_topology Instance: $::SESSION(focus_circuit) $selected_tech"
     set I [open $::env(RAMSPICE)/Etc/Tech_DB/$selected_tech/$selected_tech.sp r]
     set copy_line 0

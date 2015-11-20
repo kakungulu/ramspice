@@ -45,8 +45,8 @@ Info: spacing3=[@ param/area_spacing]
     set span($s) [expr 10e-6-$min($s)]
 }
 default ::opt(sample) 100
-default ::opt(iref) 20e-6
-@ param:iref = $::opt(iref)
+default ::opt(Iref) 20e-6
+@ param:Iref = $::opt(Iref)
 @ sizer_step = 20e-9
 set pat_sizes {}
 @ size foreach_child s {
@@ -70,7 +70,18 @@ set pat_properties {}
     lappend pat_properties $p
 }
 @ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
+@ size:Iref = 0
+foreach dim {L W} {
+    foreach level {1 2} {
+        foreach type {p n} {
+            foreach side {c d} {
+                @ size:${dim}${side}${type}${level} = 0
+	    }
+	 }
+    }
+}
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
+@ size:Iref = 0
 set i 0
 set initial_size [@ $::opt(topology)/circuits PAT size]
 @ pat_size_target = $::opt(sample)
@@ -96,30 +107,25 @@ foreach side {c d} {
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
 Info: spacing=[@ param/area_spacing]
 
-for {set f 2} {$f<=2} {set f [expr $f+0.2]} {
-    @ size/Lcp1 = 40e-9*2
-    @ size/Wcp1 = 266e-9*8
-    @ size/Lcp2 = 40e-9*2
-    @ size/Wcp2 = 1.1e-6*8
-    @ size/Lcn1 = 40e-9*2
-    @ size/Wcn1 = 222e-9*8
-    @ size/Lcn2 = 40e-9*2
-    @ size/Wcn2 = 90e-9*8
-    @ size/Ldp1 = 40e-9*2
-    @ size/Wdp1 = 1.5e-6*8
-    @ size/Ldp2 = 40e-9*2
-    @ size/Wdp2 = 1e-6*8
-    @ size/Ldn1 = 40e-9*2
-    @ size/Wdn1 = 132e-9*8
-    @ size/Ldn2 = 40e-9*2
-    @ size/Wdn2 = 373e-9*8
-    Info: F=$f
+foreach dim {L W} {
+    foreach level {1 2} {
+        foreach type {p n} {
+            foreach side {c d} {
+                @ size:${dim}${side}${type}${level} = 0
+	    }
+	 }
+    }
+}
     ::C::import
     catch ::C::op
     ::C::export
-}
 Info: max Adc = [@ max_Adc]
 Info: size after random=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
+##### Temporary, remove after one run
+Info: Done, saving PAT=[@ $::opt(topology)/circuits PAT size]
+@ / save Etc/Templates/$::opt(topology)/$::opt(tech).db
+exit
+#####
 @ param/unique = 0
 while {[@ max_Adc]<35} {
     Info: PAT=[@ $::opt(topology)/circuits PAT size] max_Adc=[eng [@ max_Adc] dB] Trying [@ pat_size_target]
@@ -133,9 +139,10 @@ while {[@ max_Adc]<35} {
     @ size:$s:step = 100e-9
     lappend pat_sizes $s
 }
-@ size:iref:step = 1e-6
-@ size:iref:min = 5e-6
-@ size:iref:max = 25e-6
+@ size:Iref = 0
+@ size:Iref:step = 1e-6
+@ size:Iref:min = 5e-6
+@ size:Iref:max = 25e-6
 @ param/unique = 0
 @ pat_size_target = $::opt(target)
 ::C::import

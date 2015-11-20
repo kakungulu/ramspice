@@ -75,7 +75,7 @@ function toggle_axis_property(dim,id) {
 	eval(D+"_is_sizer=0;");
         selected[dim]=id;
     }
-    SendSpecToServer("","");
+    //SendSpecToServer("","");
 }
 function toggle_axis_sizer(dim,id) {
     if (focus_circuit=='none') return;
@@ -108,7 +108,7 @@ function toggle_axis_sizer(dim,id) {
         selected[dim]=id;
 	eval(D+"_is_sizer=1;");
     }
-    SendSpecToServer("","");
+    //SendSpecToServer("","");
 }
 function toggle_g(id) {
     var i;
@@ -118,13 +118,13 @@ function toggle_g(id) {
             document.getElementById("G_"+selected_g[i]).innerHTML='$::goal_icon_gray';
             selected_g[i]=selected_g[selected_g.length-1];
             selected_g.pop();
-            SendSpecToServer("","");
+            //SendSpecToServer("","");
             return
         }
     }
     inst.innerHTML='$::goal_icon_black';
     selected_g.push(id);
-    SendSpecToServer("","");
+    //SendSpecToServer("","");
 }
 function toggle_g2(id) {
     var i;
@@ -134,13 +134,13 @@ function toggle_g2(id) {
             document.getElementById("G_"+selected_g[i]).innerHTML='$::goal_icon_gray2';
             selected_g[i]=selected_g[selected_g.length-1];
             selected_g.pop();
-            SendSpecToServer("","");
+            //SendSpecToServer("","");
             return
         }
     }
     inst.innerHTML='$::goal_icon_black2';
     selected_g.push(id);
-    SendSpecToServer("","");
+    //SendSpecToServer("","");
 }
 function PopMap() {
     if (xhr.readyState==4) {
@@ -199,9 +199,10 @@ function DefinePropertySpec(property,old_value) {
         value="";
     } 
     eval(property+"='"+value+"'");
-    SendSpecToServer(property,value);
+//    SendSpecToServer(property,value);
 }
 function SendSpecToServer(property,value) { 
+//	document.getElementById("AnalysisWindox").innerHTML="<image source='http://www.engr.colostate.edu/~ystatter/test_pattern.bmp' x='100' y='100' height='750' width='750'></image>";
     if ((X_is_sizer==0)&&(Y_is_sizer==0)) SendSpecToServer_Front("","");
     if (X_is_sizer&&Y_is_sizer) SendSpecToServer_Map("","");
 }    
@@ -247,6 +248,7 @@ function UpdateTopology() {
         selected_topology = topology_array\[document.getElementById("TopologySelectForm").selectedIndex\]\;
         document.getElementById("TopologyRequest").innerHTML="<b>Topology:</b>"\;
     }
+    AjaxCmd("update_topology",selected_topology);
     SendSpecToServer("","");
 }
 
