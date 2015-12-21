@@ -20,6 +20,7 @@ default ::opt(step_count) 10
 default ::opt(np) 1
 default ::opt(mode) dc
 default ::opt(topology) diffpair_nmos
+default ::opt(shell) 0
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
@@ -96,20 +97,32 @@ set pat_properties {}
     lappend pat_properties $p
     Info: Property=$p
 }
+@ size/L/min = 40e-9
 @ size/Lp/min = 40e-9
 @ size/Ln/min = 40e-9
 @ size/Ls/min = 40e-9
 @ size/Lo/min = 40e-9
+@ size/L/max = 10e-6
 @ size/Lp/max = 10e-6
 @ size/Ln/max = 10e-6
 @ size/Ls/max = 10e-6
 @ size/Lo/max = 10e-6
 
+@ size/L/step = 3e-6
 @ size/Lp/step = 3e-6
 @ size/Ln/step = 3e-6
+@ size/W/step = 3e-6
 @ size/Wp/step = 3e-6
 @ size/Wn/step = 3e-6
 @ size/Wo/step = 3e-6
+@ size/W/max = 500e-6
+@ size/Wp/max = 500e-6
+@ size/Wn/max = 500e-6
+@ size/Wo/max = 500e-6
+@ size/W/min = 120e-9
+@ size/Wp/min = 120e-9
+@ size/Wn/min = 120e-9
+@ size/Wo/min = 120e-9
 @ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
 @ config/pat_size_target = $::opt(sample)
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
@@ -120,31 +133,20 @@ Info: max_Adc=[@ max_Adc] Trying [@ config/pat_size_target]
 ::C::import
 ::C::random
 ::C::export
-@ size/Wp/max = 500e-6
-@ size/Wn/max = 500e-6
-@ size/Wo/max = 500e-6
-@ size/Wp/min = 120e-9
-@ size/Wn/min = 120e-9
-@ size/Wo/min = 120e-9
 
 Info: max Adc = [@ max_Adc]
 Info: size after random=[@ $::opt(topology)/circuits PAT size] seed [clock format [clock seconds]]
+if {$::opt(shell)} {
+    Info: Done, saving PAT=[@ $::opt(topology)/circuits PAT size]
+    @ / save Etc/Templates/$::opt(topology)/$::opt(tech).db
+    exit
+}
 @ param/unique = 0
 @ config/pat_size_target = $::opt(target)
-#while {[@ max_Adc]<60} {
-#    ::C::import
-#    ::C::random_breed
-#    ::C::export
-#    @ $::opt(topology)/circuits PAT stars
-#}
 @ param/unique = 32
-
-
-    ::C::import
-    ::C::random_breed
-    ::C::export
-   # @ $::opt(topology)/circuits PAT stars
-
+::C::import
+::C::random_breed
+::C::export
 @ config/pat_size_target = $::opt(target)
 while {1} {
     ::C::import

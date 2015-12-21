@@ -19,7 +19,7 @@ if {[lsearch {-help -h --help} $argv]!=-1} {
         -tech name of tech file to be generated
         Example:
         characterize.tcl core_40.scs -device 'nch pch' -corner 'ss ff' -topv 1.8
-	
+        
     }
     return
 }
@@ -241,9 +241,9 @@ default corner {ss tt ff fs sf mc}
 default topv 1.8
 default tech tsmc018
 default vgs_rez 5
-default vds_rez 6
-default vbs_rez 4
-default l_rez 6
+default vds_rez 5
+default vbs_rez 3
+default l_rez 8
 set size_estimate 4*3*6
 foreach var {vgs vds vbs l} {
     set bits [set ${var}_rez]
@@ -390,7 +390,7 @@ foreach type [split $device :] {
     set wmin [set ::global_${p}wmin]
     set wmax [set ::global_${p}wmax]
     for {set l $lmin} {$l<=$lmax} {set l [expr $l+($lmax-$lmin)/pow(2,$l_rez)]} {
-	lappend l_values $l
+        lappend l_values $l
     }
     Info: l_values=$l_values
     set max_supply $topv
@@ -407,7 +407,7 @@ foreach type [split $device :] {
     set ids_mis_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_ids_mis.db
     if {[file exists $vt_db_file]&&[file exists $min_vt_file]&&[file exists $va_db_file]} {
         source $min_vt_file
-	Info: LUT exists for type=$type $vt_db_file $min_vt_file $va_db_file
+        Info: LUT exists for type=$type $vt_db_file $min_vt_file $va_db_file
     } else {
         textbox    "Characterizing Vt and Va for $type"    
         constrain "
@@ -452,12 +452,12 @@ foreach type [split $device :] {
                 }
                 set i3 1
                 foreach L $l_values {
-		    set rtest 1e-12
-		    set W $L
-		    if {$W<$wmin} {
-		        set W [expr $L*$wmin/$lmin]
-			set rtest [expr 1e-12*$lmin/$wmin]
-		    }	
+                    set rtest 1e-12
+                    set W $L
+                    if {$W<$wmin} {
+                        set W [expr $L*$wmin/$lmin]
+                        set rtest [expr 1e-12*$lmin/$wmin]
+                    }	
                     netlist ".temp $::temp"
                     # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} B $L $W
@@ -481,18 +481,18 @@ foreach type [split $device :] {
                     set Ids_low  [get_spice_data V(${i2}) 0]
                     set Ids_high [get_spice_data V(${i2}) 1]
                     if {[catch {set slope [expr ($Ids_high-$Ids_low)/$epsilon]} msg]} {
-			Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
-		        Error: $msg
-			exit
-		    }
+                        Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
+                        Error: $msg
+                        exit
+                    }
                     set Vt [expr $max_supply/2-$Ids_high/$slope]
                     if {[regexp {^p} $type]} {
                         set Vt [expr -$Vt]
                     }
                     ^ @ look_up_tables/$type/Vt/${::corner}($i3) = $Vt
-		    if {$i3>3} {
+                    if {$i3>3} {
                         ^ if "abs($Vt)<abs(\$::minVt)" "set ::minVt $Vt"  
-		    }
+                    }
                     incr i2
                     incr i3
                 }
@@ -505,10 +505,10 @@ foreach type [split $device :] {
                     set Ids_low  [get_spice_data V(${i2}) 0]
                     set Ids_high [get_spice_data V(${i2}) 1]
                     if {[catch {set slope [expr ($Ids_high-$Ids_low)/$epsilon]} msg]} {
-			Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
-		        Error: $msg
-			exit
-		    }
+                        Info: Ids_high=$Ids_high Ids_low=$Ids_low epsilon=$epsilon
+                        Error: $msg
+                        exit
+                    }
                     set Va [expr $max_supply-$Ids_high/$slope]
                     ^ @ look_up_tables/$type/Va/${::corner}($i3) = $Va
                     incr i3
@@ -529,7 +529,7 @@ foreach type [split $device :] {
             }
         }
         wait_for_forked char_vt_task
-	Info: Saving Arrays
+        Info: Saving Arrays
         @ /look_up_tables/$type/Vt save $vt_db_file
         @ /look_up_tables/$type/Va save $va_db_file
         set minVt 0
@@ -565,7 +565,7 @@ foreach type [split $device :] {
             file delete $droppings
         }
         set views {Ids gm ro}
-	set ohmic_factor 1e12
+        set ohmic_factor 1e12
         foreach ::corner $::corner_list {
             set ::temp $::corner_to_temp($::corner)
             fork_task char_vig_task {
@@ -579,12 +579,12 @@ foreach type [split $device :] {
                 set i3 1
                 set i4 0
                 foreach L $l_values {
-		    set rtest 1e-12
-		    set W $L
-		    if {$W<$wmin} {
-		        set W [expr $L*$wmin/$lmin]
-			set rtest [expr 1e-12*$lmin/$wmin]
-		    }	
+                    set rtest 1e-12
+                    set W $L
+                    if {$W<$wmin} {
+                        set W [expr $L*$wmin/$lmin]
+                        set rtest [expr 1e-12*$lmin/$wmin]
+                    }	
                     netlist ".temp $::temp"
                     # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} B $L $W
@@ -662,7 +662,7 @@ foreach type [split $device :] {
         foreach char_file [glob -nocomplain /tmp/char_vig_task*] {
             file delete $char_file
         }
-#	Info: Ids=[expr [@ /look_up_tables/$type/Ids/ss calc 1.8 1.8 0 180e-9]*220/180]
+        #	Info: Ids=[expr [@ /look_up_tables/$type/Ids/ss calc 1.8 1.8 0 180e-9]*220/180]
     }
     if {![file exists $vth_mis_file]||![file exists $ids_mis_file]} {
         textbox    "Characterizing Ids and Vt mismatch for $type"    
@@ -709,13 +709,13 @@ foreach type [split $device :] {
                 set vars_of_interest {}
                 set i3 1
                 foreach L $l_values {
-		    set rtest 1e-12
-		    set W $L
-		    if {$W<$wmin} {
-		        set W [expr $L*$wmin/$lmin]
-			set rtest [expr 1e-12*$lmin/$wmin]
-		    }	
-                   # mosfet {name type D G S B L W Lmin}
+                    set rtest 1e-12
+                    set W $L
+                    if {$W<$wmin} {
+                        set W [expr $L*$wmin/$lmin]
+                        set rtest [expr 1e-12*$lmin/$wmin]
+                    }	
+                    # mosfet {name type D G S B L W Lmin}
                     mosfet mn_${i3} $type D G ${i3} 0 $L $W
                     netlist "r_${i3} ${i3} 0 $rtest"
                     lappend vars_of_interest mn_${i3}
@@ -738,7 +738,7 @@ foreach type [split $device :] {
                 ######### Characterizing loops
                 Info: simulation started ([clock format [clock seconds]])
                 set result [monte_carlo_${::bsim_version} 200 /simulation_config/mc $vars_of_interest ::spice::op]
-		Info: result=[join $result \n]
+                Info: result=[join $result \n]
                 Info: done Mismatch running. Saving results. ([clock format [clock seconds]])
                 Info: Done ([clock format [clock seconds]])
                 set i 0
@@ -791,8 +791,6 @@ foreach type [split $device :] {
     foreach ::corner $::corner_list {
         set thermal_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
         set flicker_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
-	set cgs_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
-	set cds_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
         if {[file exists $thermal_noise_file]} continue
         set noise_complete 0
         break
@@ -800,11 +798,11 @@ foreach type [split $device :] {
     if {!$noise_complete} {
         #        textbox    "Characterizing Noise for $type Vgs=($minVt,$max_supply) Vds=(0,$max_supply)"    
         textbox    "Characterizing Noise for $type "    
-#        constrain "
-#        Vgs  $minVt			$max_supply		7
-#        Vds  [expr $max_supply/20]	$max_supply		4
-#        Vbs  [expr -$max_supply/3]	0			1
-#        "
+        #        constrain "
+        #        Vgs  $minVt			$max_supply		7
+        #        Vds  [expr $max_supply/20]	$max_supply		4
+        #        Vbs  [expr -$max_supply/3]	0			1
+        #        "
         constrain "
         Vgs  $minVt			$max_supply		2
         Vds  [expr $max_supply/20]	$max_supply		2
@@ -814,7 +812,7 @@ foreach type [split $device :] {
         foreach old_task_file [glob -nocomplain /tmp/*.tcl] {
             file delete $old_task_file
         }
-        set views {cgs cds flicker_const thermal_noise}
+        set views {flicker_const thermal_noise}
         set total_array_volume 1
         proc noise_cont {coord} {
             @ look_up_tables/$type/flicker_const/${::corner}($coord) = 0
@@ -829,8 +827,6 @@ foreach type [split $device :] {
         foreach ::corner $::corner_list {
             set thermal_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_thermal_noise.db
             set flicker_noise_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_flicker_noise.db
-            set cgs_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cgs.db
-            set cds_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_cds.db
             if {[file exists $thermal_noise_file]} continue
             set ::temp $::corner_to_temp($::corner)
             foreach array $views {
@@ -839,20 +835,20 @@ foreach type [split $device :] {
             foreach array $views {
                 foreach_in_range Vgs i0 {  
                     LUT_set_legend /look_up_tables/$type/$array/$::corner 0 $i0 $Vgs
-		    Info: 0/$i0 $Vgs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 0 $i0]
+                    Info: 0/$i0 $Vgs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 0 $i0]
                 }
                 foreach_in_range Vds i1 {
                     LUT_set_legend /look_up_tables/$type/$array/$::corner 1 $i1 $Vds
-		    Info: 1/$i1 $Vds=[LUT_get_legend /look_up_tables/$type/$array/$::corner 1 $i1]
+                    Info: 1/$i1 $Vds=[LUT_get_legend /look_up_tables/$type/$array/$::corner 1 $i1]
                 }
                 foreach_in_range Vbs i2 {
                     LUT_set_legend /look_up_tables/$type/$array/$::corner 2 $i2 $Vbs
-		    Info: 2/$i2 $Vbs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 2 $i2]
+                    Info: 2/$i2 $Vbs=[LUT_get_legend /look_up_tables/$type/$array/$::corner 2 $i2]
                 }
                 set i3 0
                 foreach L $l_values {
                     LUT_set_legend /look_up_tables/$type/$array/$::corner 3 $i3 $L
-		    Info: 3/$i3 $L=[LUT_get_legend /look_up_tables/$type/$array/$::corner 3 $i3]
+                    Info: 3/$i3 $L=[LUT_get_legend /look_up_tables/$type/$array/$::corner 3 $i3]
                     incr i3
                 }
             }
@@ -883,7 +879,7 @@ foreach type [split $device :] {
                 update_netlist Noise $::corner $::temp
                 set i3 0
                 foreach L $l_values {
-   		    set W [expr $L*$wmin/$lmin]
+                    set W [expr $L*$wmin/$lmin]
                     set prefix [string index $type 0]
                     if {$section!=[find_mosfet_bin $prefix $L $W]} {
                         incr i3
@@ -891,6 +887,7 @@ foreach type [split $device :] {
                     }
                     ::spice::alter mn_0_0 w = $W
                     ::spice::alter mn_0_0 l = $L
+                    set unit_area [expr $L*$L]
                     foreach_in_range Vgs i0 {
                         ::spice::alter vgs = $Vgs
                         foreach_in_range Vds i1 {
@@ -898,8 +895,6 @@ foreach type [split $device :] {
                             foreach_in_range Vbs i2 {
                                 ::spice::alter vbs = $Vbs
                                 ::spice::noise v(3) vgs lin 2 1 2
-				@ look_up_tables/$type/cgs/${::corner}($i0,$i1,$i2,$i3) =  [get_spice_data Captured_Cgs end]
-				@ look_up_tables/$type/cds/${::corner}($i0,$i1,$i2,$i3) =  [get_spice_data Captured_Cgd end]
                                 set thermal_noise [get_spice_data Captured_Thermal_Noise end]
                                 if {[string match *nan* $thermal_noise]} {
                                     set thermal_noise 0
@@ -949,10 +944,124 @@ foreach type [split $device :] {
                     incr i3
                 }
             }
-            @ /look_up_tables/$type/cds/$::corner save ${cds_file}
-            @ /look_up_tables/$type/cgs/$::corner save ${cgs_file}
             @ /look_up_tables/$type/thermal_noise/$::corner save ${thermal_noise_file}
             @ /look_up_tables/$type/flicker_const/$::corner save ${flicker_noise_file}
+        }
+    }
+    set cap_complete 1
+    set views {gg gd gs gb dd dg db ds sd sg ss sb bd bg bs bb}
+    foreach ::corner $::corner_list {
+        foreach view $views {
+            set ${view}_${::corner}_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_c${view}.db
+        }
+        if {[file exists [set bd_${::corner}_file]]} continue
+        set cap_complete 0
+        break
+    }
+    if {!$cap_complete} {
+        #        textbox    "Characterizing Noise for $type Vgs=($minVt,$max_supply) Vds=(0,$max_supply)"    
+        textbox    "Characterizing Capacitance for $type "    
+        constrain "
+        Vgs  0 $max_supply		$vgs_rez
+        Vds  0	$max_supply		$vgs_rez
+        Vbs  [expr -$max_supply/3]	0			$vbs_rez
+        "
+        set ::fork_limit 1
+        foreach old_task_file [glob -nocomplain /tmp/*.tcl] {
+            file delete $old_task_file
+        }
+        set total_array_volume 1
+        proc noise_cont {coord} {
+            @ look_up_tables/$type/flicker_const/${::corner}($coord) = 0
+            return -code continue
+        }
+        set index_range {}
+        foreach var {Vgs Vds Vbs} {
+            lappend index_range $::constraints($var,index_range)
+        }
+        lappend index_range [llength $l_values]
+        foreach ::corner ss {
+            foreach view $views {
+                set ${view}_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_c${view}.db
+            }
+            if {[file exists $bd_file]} continue
+            set ::temp $::corner_to_temp($::corner)
+            foreach array $views {
+                @ look_up_tables/$type/c$array/${::corner}([join $index_range ,]) !
+            }
+            foreach array $views {
+                foreach_in_range Vgs i0 {  
+                    LUT_set_legend /look_up_tables/$type/c$array/$::corner 0 $i0 $Vgs
+                }
+                foreach_in_range Vds i1 {
+                    LUT_set_legend /look_up_tables/$type/c$array/$::corner 1 $i1 $Vds
+                }
+                foreach_in_range Vbs i2 {
+                    LUT_set_legend /look_up_tables/$type/c$array/$::corner 2 $i2 $Vbs
+                }
+                set i3 0
+                foreach L $l_values {
+                    LUT_set_legend /look_up_tables/$type/c$array/$::corner 3 $i3 $L
+                    incr i3
+                }
+            }
+            textbox "Corner [string toupper $::corner], Temperature=$::temp degC"
+	    ETA [llength $l_values]
+            for {set section 1} {[info exists bin(n,$section,lmin)]} {incr section} {
+                Info: Analyzing bin $section [clock format [clock seconds]]
+                netlist ".include $::env(RAMSPICE)/Etc/Tech_DB/${tech}/${tech}.sp"
+                netlist ".temp $temp"
+                netlist {
+                    ** the N-transistor
+                    * name D G S B model L W 
+                    Vgs G 0 dc 0 ac 0.0001
+                    Vds D 0 dc 0 ac 0
+                    Vbs B 0 dc 0 ac 0
+                }
+                # mosfet {name type D G S B L W Lmin}
+                mosfet mn_0_0 $type D G 0 B $bin(n,$section,lmin) $bin(n,$section,wmin) $section
+                netlist {
+                    .end
+                }
+                update_netlist Noise $::corner $::temp
+                set i3 0
+                foreach L $l_values {
+                    set W $L
+                    if {$W<$wmin} {
+                        set W [expr $L*$wmin/$lmin]
+                    }	
+                    set prefix [string index $type 0]
+                    if {$section!=[find_mosfet_bin $prefix $L $W]} {
+                        incr i3
+                        continue
+                    }
+                    Info: L=$L W=$W [lsearch $l_values $L]/[llength $l_values]
+                    ::spice::alter mn_0_0 w = $W
+                    ::spice::alter mn_0_0 l = $L
+                    set unit_area [expr $L*$W]
+                    set WbyL [expr $W/$L]
+                    foreach_in_range Vgs i0 {
+                        ::spice::alter vgs = $Vgs
+                        foreach_in_range Vds i1 {
+                            ::spice::alter vds = $Vds
+                            foreach_in_range Vbs i2 {
+                                ::spice::alter vbs = $Vbs
+                                ::spice::ac dec 1 1 10
+                                foreach view $views {
+                                    @ look_up_tables/$type/c$view/${::corner}($i0,$i1,$i2,$i3) =  [expr [set Captured_C$view]/$unit_area]
+                                }
+                                ::spice::destroy all
+                                ::spice::alter vgs = $Vgs
+                            }
+                        }
+                    }
+                    incr i3
+		    ETA
+                }
+            }
+            foreach view $views {
+                @ /look_up_tables/$type/c$view/$::corner save [set ${view}_${::corner}_file]
+            }
         }
     }
 }

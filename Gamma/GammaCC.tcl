@@ -174,6 +174,68 @@ proc .spec {name op value} {
         Warning: $name $op $value is not a useful spec
     }
 }
+proc s2iW {expr varReal varImag {top 1}} {
+    upvar $varReal Real
+    upvar $varImag Imag
+    if {$top} {
+        while {[regexp {[\-\+][\-\+]} $expr]} {
+            regsub -all {\-\+} $expr {-} expr
+            regsub -all {\+\-} $expr {-} expr
+            regsub -all {\-\-} $expr {+} expr
+            regsub -all {\++} $expr {+} expr
+        }
+        set expr [polish $expr]
+        while {[llength $expr]==1} {
+            set expr [lindex $expr 0]
+        }
+    }
+    if {[llength $expr]==1} {
+        if {$expr=="@s"} {
+            set Real 0
+            set Imag W
+            return 
+        }
+        set Real $expr
+        set Imag 0
+        return 
+    }
+    set op [lindex $expr 0]
+    set L [lindex $expr 1]
+    set R [lindex $expr 2]
+    s2iW $L Lr Li 0
+    s2iW $R Rr Ri 0
+    switch $op {
+        - {
+            set Real [simple- $Lr $Rr]
+            set Imag [simple- $Li $Ri]
+        }
+        + {
+            set Real [simple+ $Lr $Rr]
+            set Imag [simple+ $Li $Ri]
+        }
+        * {
+            set Real [simple- [simple* $Lr $Rr] [simple* $Li $Ri]]
+            set Imag [simple+ [simple* $Lr $Ri] [simple* $Li $Rr]]
+        }
+        default {
+            Error: Operator $op not supported!
+            exit
+        }
+    }
+    while {[regexp {[\-\+][\-\+]} $Real]} {
+        regsub -all {\-\+} $Real {-} Real
+        regsub -all {\+\-} $Real {-} Real
+        regsub -all {\-\-} $Real {+} Real
+        regsub -all {\++} $Real {+} Real
+    }
+    while {[regexp {[\-\+][\-\+]} $Imag]} {
+        regsub -all {\-\+} $Imag {-} Imag
+        regsub -all {\+\-} $Imag {-} Imag
+        regsub -all {\-\-} $Imag {+} Imag
+        regsub -all {\++} $Imag {+} Imag
+    }
+    return
+}
 proc .prep_mna {mode} {
     array unset ::MNA
     set idc_orig [array get ::idc]
@@ -202,7 +264,7 @@ proc .prep_mna {mode} {
             set G Gds_${m}_${p}
             set ::sensitivity(Gds_${m}_${p},$::all_resistors($res_nodes)) -1.0/($::all_resistors($res_nodes)*$::all_resistors($res_nodes))
         }
-	Info: Adding Resistor! m=$m p=$p
+        Info: Adding Resistor! m=$m p=$p
         add_mna $m $m $G
         add_mna $p $p $G
         add_mna $p $m -$G
@@ -267,55 +329,20 @@ proc .prep_mna {mode} {
         set ::sensitivity($name:go,$L) @$name:go:$L
         @ $name:go:$L = 0
         $name:go:$L=>(@$name:dro_dl*@$L/@$W-@$L/@$name:go)*@$name:go*@$name:go
-	set ac_s $s
-	if {$s=="0"} {
-	    set ac_s vdd
-	}
-	set ac_d $d
-	if {$d=="0"} {
-	    set ac_d vdd
-	}
-###	if {$mode=="ac" || $mode=="noise"} {
-###	    add_mna $ac_s $ac_s "+@$name:cgs*@s"
-###	    add_mna $ac_s $g "-@$name:cgs*@s"
-###	    add_mna $g $ac_s "-@$name:cgs*@s"
-###	    add_mna $g $g "+@$name:cgs*@s"
-###	    if {$g!=$ac_d} {
-###		add_mna $ac_d $ac_d "+@$name:cgd*@s"
-###		add_mna $ac_d $g "-@$name:cgd*@s"
-###		add_mna $g $ac_d "-@$name:cgd*@s"
-###		add_mna $g $g "+@$name:cgd*@s"
-###	    }
-###	    set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
-###	    set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
-###	    @ $name:cgd = 0
-###	    @ $name:cgs = 0
-###	}
-	if {$mode=="ac" || $mode=="noise"} {
-	    add_mna vdd vdd "+@$name:cgs*@s"
-	    add_mna vdd $g "-@$name:cgs*@s"
-	    add_mna $g vdd "-@$name:cgs*@s"
-	    add_mna $g $g "+@$name:cgs*@s"
-
-	    add_mna $ac_s $ac_s "+@$name:cgs_out*@s"
-	    add_mna $ac_s vdd "-@$name:cgs_out*@s"
-	    add_mna vdd $ac_s "-@$name:cgs_out*@s"
-	    add_mna vdd vdd "+@$name:cgs_out*@s"
-	    if {$g!=$ac_d} {
-		add_mna vdd vdd "+@$name:cgd*@s"
-		add_mna vdd $g "-@$name:cgd*@s"
-		add_mna $g vdd "-@$name:cgd*@s"
-		add_mna $g $g "+@$name:cgd*@s"
-                add_mna $ac_d $ac_d "+@$name:cgd_out*@s"
-	        add_mna $ac_d vdd "-@$name:cgd_out*@s"
-	        add_mna vdd $ac_d "-@$name:cgd_out*@s"
-	        add_mna vdd vdd "+@$name:cgd_out*@s"
-	    }
-	    set ::cap_equations($name,cgs) "0.66666*@look_up_tables:$type:cox*@$L*@$W"
-	    set ::cap_equations($name,cgd) "0.33333*@look_up_tables:$type:cox*@$L*@$W"
-	    @ $name:cgd = 0
-	    @ $name:cgs = 0
-	}
+        foreach pin {d g s b} {
+            set ac($pin) [set $pin]
+            if {$ac($pin)=="0"} {
+         	set ac($pin) vdd
+            }
+        }
+        if {$mode=="ac" || $mode=="noise"} {
+            foreach from {g d s b} {
+                foreach to {d g s b} {
+                    add_mna $ac($from)  $ac($to) "+@$name:c$from$to*@s"
+                    @ $name:c$from$to = 0
+                }    
+            }
+        }
     }
     if {$mode!="zout"} {
         foreach idc_pair [array names ::idc] {
@@ -385,7 +412,7 @@ proc .prep_mna {mode} {
         regsub -all {\-\+} $expr {-} expr
         regsub -all {\-\-} $expr {+} expr
         regsub -all {\+}   $expr {+} expr
-	set ::MNA($entry) $expr
+        set ::MNA($entry) $expr
     }
     set old_y $::MNAy
     set ::MNAy {}
@@ -394,7 +421,7 @@ proc .prep_mna {mode} {
         regsub -all {\-\+} $expr {-} expr
         regsub -all {\-\-} $expr {+} expr
         regsub -all {\+}   $expr {+} expr
-	lappend ::MNAy $expr
+        lappend ::MNAy $expr
     }
     if {$::C::target=="OP"} {
         if {$mode=="dc"} {
@@ -437,9 +464,9 @@ proc .prep_mna {mode} {
             for {set j 0} {$j<$dim} {incr j} {
                 puts $::HTML <td>
                 if {[info exists ::MNA($i,$j)]} {
-		    set td $::MNA($i,$j)
-		    regsub -all @ $td {} td
-		    regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+                    set td $::MNA($i,$j)
+                    regsub -all @ $td {} td
+                    regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
                     puts $::HTML $td
                 } else {
                     puts $::HTML 0
@@ -447,18 +474,35 @@ proc .prep_mna {mode} {
                 puts $::HTML </td>
             }
             puts $::HTML <td>
-	    set td [lindex $::MNAy $i]
-	    regsub -all @ $td {} td
-	    regsub -all param: $td {} td
-	    regsub -all size: $td {} td
-	    regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+            set td [lindex $::MNAy $i]
+            regsub -all @ $td {} td
+            regsub -all param: $td {} td
+            regsub -all size: $td {} td
+            regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
             puts $::HTML $td
             puts $::HTML </td>
             puts $::HTML </tr>
         }
         puts $::HTML </table>
         puts $::HTML <h2>
-        #        puts $::HTML "DET=[DET ::MNA]"
+        DET ::MNA
+	set td $::det_calc_result
+        regsub -all @ $td {} td
+        regsub -all param: $td {} td
+        regsub -all size: $td {} td
+        regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+        puts $::HTML "DET=$td<br>"
+        if {[set index_out [lsearch $::independent_nodes outp]]!=-1} {
+            DET ::MNA ::MNAy $index_out 
+        } elseif {[set index_out [lsearch $::independent_nodes out]]!=-1} {	
+            DET ::MNA ::MNAy $index_out 
+	}
+	set td $::det_calc_result
+        regsub -all @ $td {} td
+        regsub -all param: $td {} td
+        regsub -all size: $td {} td
+        regsub -all {:([a-zA-Z]+)} $td {<sub>\1</sub>} td
+        puts $::HTML "V<sub>OUT</sub>=$td<br>"
         puts $::HTML </h2>
         if {$mode=="ac"} {
             puts $::HTML </body></html>
@@ -470,16 +514,16 @@ proc .prep_mna {mode} {
     array unset ::idc
     array set ::idc $idc_orig
     for {set i 0} {$i<$::MNA(dim)} {incr i} {
-	    set all_zeroes 1
-	    for {set j 0} {$j<$::MNA(dim)} {incr j} {
-		    skip {![info exists ::MNA($i,$j)]}
-		    skip {$::MNA($i,$j)==0}
-		    set all_zeroes 0
-		    break
-	    }
-	    skip {$all_zeroes==0}
-	    Error: Node [lindex $::independent_nodes $i] is dangling. Add path to ground or a voltage source.
-	    exit
+        set all_zeroes 1
+        for {set j 0} {$j<$::MNA(dim)} {incr j} {
+            skip {![info exists ::MNA($i,$j)]}
+            skip {$::MNA($i,$j)==0}
+            set all_zeroes 0
+            break
+        }
+        skip {$all_zeroes==0}
+        Error: Node [lindex $::independent_nodes $i] is dangling. Add path to ground or a voltage source.
+        exit
     }
 }
 #proc .circuit {name} {
@@ -488,8 +532,8 @@ proc .prep_mna {mode} {
 proc .compile_circuit {args} {
     if {[file exists $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/bypass.ignore.c]} {
         file copy -force $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/bypass.ignore.c /tmp/gamma_source.ignore.c
-	gcc $::opt(topology) 0
-	return
+        gcc $::opt(topology) 0
+        return
     }
     get_opts outp {} out {} outn {} in {} inn {} inp {} vdd {} name {}
     default ::opt(debug) 0
@@ -533,16 +577,16 @@ proc .compile_circuit {args} {
             exit
         }
         if {$opt(inp)!={} && $opt(inn)!={}} {
-	        set expr 0.5*([DERIVE $opt(inp) $::output_net]-[DERIVE $opt(inn) $::output_net])
+            set expr 0.5*([DERIVE $opt(inp) $::output_net]-[DERIVE $opt(inn) $::output_net])
         } elseif {$opt(in)!={}} {
-	        set expr [DERIVE $opt(in) $::output_net]
+            set expr [DERIVE $opt(in) $::output_net]
         }
-	Info: Adc expr=$expr ($::output_net)
+        Info: Adc expr=$expr ($::output_net)
         .property Adc -expression $expr -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         if {$opt(inp)!={} && $opt(inn)!={}} {
-                .property CMRR -expression derive($::output_net,$opt(inp))+derive($::output_net,$opt(inn)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+            .property CMRR -expression derive($::output_net,$opt(inp))+derive($::output_net,$opt(inn)) -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         } elseif {$opt(in)!={}} {
-                .property CMRR -expression 0 -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
+            .property CMRR -expression 0 -to_display 20*log10(@) -from_display pow(10,@/20) -unit dB
         }
         if {![@ property/PSRR ?]} {
             if {$opt(vdd)=={}} {
@@ -747,7 +791,11 @@ proc ::C::tcl_preprocessor {c_code} {
     }
 }
 
-
+### rename regsub regsub_orig
+### proc regsub {args} {
+###     Info: REGSUB $args
+###     uplevel [concat regsub_orig $args]
+### }
 proc gcc {name {preprocess 1}} {
     if {$preprocess} {
         regsub -all @name $::C::code_template $name body
@@ -814,7 +862,9 @@ proc gcc {name {preprocess 1}} {
             }
             regsub -all \& $code ` code
             regsub ${target}_CODE_GOES_HERE $body $code body
+            Info: converted $context_string
         }
+	Info: Post Processing is Done
         regsub VOS_FORMULA $body $::VOS_FORMULA body
         regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
         regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
@@ -823,7 +873,10 @@ proc gcc {name {preprocess 1}} {
         regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
         regsub -all `_ $body {P_} body
         regsub -all ` $body {\&} body
-	regsub -all {\&look_up} $body {Plook_up} body
+        regsub -all {\&look_up} $body {Plook_up} body
+	set ::C::O [open /tmp/gamma_pre_processed.ignore.c w]
+	puts $::C::O $body
+	close $::C::O
         set ::C::O [open /tmp/gamma_source.ignore.c w]
         ::C::tcl_preprocessor $body
         close $::C::O
@@ -840,7 +893,7 @@ proc gcc {name {preprocess 1}} {
     set build_path /tmp/${::binary}_build/preprocessed-${::target}
     Info: Launching GCC
     
-    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/gamma_source.ignore.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/libGamma.so"
+    uplevel "exec gcc -O3 [glob /tmp/${::binary}_build/object_files-[ginfo target]/*.o] -fPIC -shared -DUSE_TCL_STUBS -I$build_path -I$build_path/Gamma/Data  -I$build_path/Gamma/LUT -I$build_path/ngspice/root/maths/poly -I$build_path/ngspice/root/frontend -I$build_path/ngspice/root/spicelib/devices -I$build_path/ngspice/root/xspice/icm/analog -I/usr/include /tmp/gamma_source.ignore.c -L[file dirname [lindex $find_lib_stub 0]] -ltclstub[info tclversion]  -o /tmp/libGamma.so |& tee  $::env(RAMSPICE)/compilation.log"
     if {[file exists /tmp/libGamma.so]} {
         Info: Shared Object was created for Gamma on [clock format [file mtime /tmp/libGamma.so]]
         if {![file exists $::env(RAMSPICE)/Etc/Templates]} {

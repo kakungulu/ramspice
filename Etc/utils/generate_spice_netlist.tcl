@@ -48,7 +48,7 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}}
                 # set W [@ $W]
 		# Info: generate: L=$L W=$W
                 default corner ss
-                set n [expr int(ceil($W/(10*$L)))]
+                set n [expr int(ceil($W/(2*$L)))]
                 set W [expr $W/$n]
                 for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
                     skip {$::bin($type,$i,lmax)<$L}
@@ -58,7 +58,7 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}}
                     break
                 }
                 if {![info exists ::bin($type,$i,lmax)]} {
-                    Error: Transistor dimensions L=$L and W=$W (n=$n) do not correspond to any bin
+#                    Error: Transistor dimensions L=$L and W=$W (n=$n) do not correspond to any bin
                     return 0
                 }
                 if {$n==1} {
@@ -114,9 +114,10 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}}
     regsub {\.tcl} $::env(RAMSPICE)/../../$::active_session.sn {} ::SESSION(spice_netlist)
     default ::SESSION(focus_circuit) original
     # Info: Generating $::SESSION(spice_netlist)
-    set O [open /tmp/temp.sn w]
+    set O [open /tmp/temp[pid].sn w]
     puts $O "* array set ::opt \{[array get ::opt]\}"
     puts $O "* $selected_topology Instance: $::SESSION(focus_circuit) $selected_tech"
+    puts $O "* generated on [clock format [clock seconds]]"
     set I [open $::env(RAMSPICE)/Etc/Tech_DB/$selected_tech/$selected_tech.sp r]
     set copy_line 0
     # Info: required_models=$::required_models

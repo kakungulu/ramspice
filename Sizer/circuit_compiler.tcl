@@ -66,8 +66,9 @@ foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     @ /look_up_tables/$dev/flicker_noise/ !
     @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
     @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
-    @ /look_up_tables/$dev/cgs/ load $::opt(source)/$::opt(tech)_${dev}_ss_cgs.db
-    @ /look_up_tables/$dev/cgd/ load $::opt(source)/$::opt(tech)_${dev}_ss_cds.db
+    foreach cap {cgg cgd cgs cgb cdd cdg cdb cds csd csg css csb cbd cbg cbs cbb} {
+        @ /look_up_tables/$dev/$cap/ load $::opt(source)/$::opt(tech)_${dev}_ss_$cap.db
+    }	
 }
 
 set ::all_transistors {}

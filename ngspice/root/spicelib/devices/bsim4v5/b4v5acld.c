@@ -54,6 +54,7 @@ CKTcircuit *ckt)
     double ggidld, ggidlg, ggidlb, ggislg, ggislb, ggisls;
     
     double m;
+    char cmd[256];
     
     omega = ckt->CKTomega;
     for (; model != NULL; model = model->BSIM4v5nextModel) 
@@ -427,7 +428,6 @@ CKTcircuit *ckt)
                 xcgsbi = Cgdi;
                 xcgbbi = Cgbi;
             }
-            
             if (model->BSIM4v5rdsMod == 1)
             {   gstot = here->BSIM4v5gstot;
                 gstotd = here->BSIM4v5gstotd;
@@ -452,16 +452,6 @@ CKTcircuit *ckt)
             */
             
             m = here->BSIM4v5m;
-	    char cmd[256];
-	    sprintf(cmd,"set ::CGD(%s) %g",here->BSIM4v5name,m*xcgdbr/omega);
-	    Tcl_Eval(interp,cmd);
-	    sprintf(cmd,"set ::CDG(%s) %g",here->BSIM4v5name,m*xcdgbr/omega);
-	    Tcl_Eval(interp,cmd);
-	    sprintf(cmd,"set ::CGS(%s) %g",here->BSIM4v5name,m*xcgsbr/omega);
-	    Tcl_Eval(interp,cmd);
-	    sprintf(cmd,"set ::CSG(%s) %g",here->BSIM4v5name,m*xcsgbr/omega);
-	    Tcl_Eval(interp,cmd);
-            
             if (!model->BSIM4v5rdsMod)
             {   gdpr = here->BSIM4v5drainConductance;
                 gspr = here->BSIM4v5sourceConductance;
@@ -531,7 +521,7 @@ CKTcircuit *ckt)
                 
                 *(here->BSIM4v5GPgpPtr) -= m * (gcrgg - xcggbi - gIgtotg);
                 *(here->BSIM4v5GPgpPtr +1) += m * xcggbr;
-                *(here->BSIM4v5GPdpPtr) -= m * (gcrgd - xcgdbi - gIgtotd);
+               *(here->BSIM4v5GPdpPtr) -= m * (gcrgd - xcgdbi - gIgtotd);
                 *(here->BSIM4v5GPdpPtr +1) += m * xcgdbr;
                 *(here->BSIM4v5GPspPtr) -= m * (gcrgs - xcgsbi - gIgtots);
                 *(here->BSIM4v5GPspPtr +1) += m * xcgsbr;
@@ -540,12 +530,20 @@ CKTcircuit *ckt)
             }
             else
             {   *(here->BSIM4v5GPgpPtr +1) += m * xcggbr;
+ 	        sprintf(cmd,"set ::Captured_Cgg %g",m * xcggbr/omega);
+	        Tcl_Eval(interp,cmd);
                 *(here->BSIM4v5GPgpPtr) += m * (xcggbi + gIgtotg);
                 *(here->BSIM4v5GPdpPtr +1) += m * xcgdbr;
+ 	        sprintf(cmd,"set ::Captured_Cgd %g",m * xcgdbr/omega);
+	        Tcl_Eval(interp,cmd);
                 *(here->BSIM4v5GPdpPtr) += m * (xcgdbi + gIgtotd);
                 *(here->BSIM4v5GPspPtr +1) += m * xcgsbr;
+ 	        sprintf(cmd,"set ::Captured_Cgs %g",m * xcgsbr/omega);
+	        Tcl_Eval(interp,cmd);
                 *(here->BSIM4v5GPspPtr) += m * (xcgsbi + gIgtots);
                 *(here->BSIM4v5GPbpPtr +1) += m * xcgbbr;
+ 	        sprintf(cmd,"set ::Captured_Cgb %g",m * xcgbbr/omega);
+	        Tcl_Eval(interp,cmd);
                 *(here->BSIM4v5GPbpPtr) += m * (xcgbbi + gIgtotb);
             }
             
@@ -557,42 +555,67 @@ CKTcircuit *ckt)
                 (*(here->BSIM4v5SgpPtr) += m * gstotg);
                 (*(here->BSIM4v5SbpPtr) += m * gstotb);
             }
-            
+	    // Capture Capacitances
             *(here->BSIM4v5DPdpPtr +1) += m * (xcddbr + gdsi + RevSumi);
+ 	    sprintf(cmd,"set ::Captured_Cdd %g",m * (xcddbr + gdsi + RevSumi)/omega);
+	    Tcl_Eval(interp,cmd);
+	    
             *(here->BSIM4v5DPdpPtr) += m * (gdpr + xcddbi + gdsr + here->BSIM4v5gbd 
             - gdtotd + RevSumr + gbdpdp - gIdtotd);
             *(here->BSIM4v5DPdPtr) -= m * (gdpr + gdtot);
             *(here->BSIM4v5DPgpPtr +1) += m * (xcdgbr + Gmi);
+ 	    sprintf(cmd,"set ::Captured_Cdg %g",m * (xcdgbr + Gmi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5DPgpPtr) += m * (Gmr + xcdgbi - gdtotg + gbdpg - gIdtotg);
             *(here->BSIM4v5DPspPtr +1) += m * (xcdsbr - gdsi - FwdSumi);
+ 	    sprintf(cmd,"set ::Captured_Cds %g",m * (xcdsbr - gdsi - FwdSumi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5DPspPtr) -= m * (gdsr - xcdsbi + FwdSumr + gdtots - gbdpsp + gIdtots);
             *(here->BSIM4v5DPbpPtr +1) += m * (xcdbbr + Gmbsi);
+ 	    sprintf(cmd,"set ::Captured_Cdb %g",m * (xcdbbr + Gmbsi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5DPbpPtr) -= m * (gjbd + gdtotb - xcdbbi - Gmbsr - gbdpb + gIdtotb);
             
             *(here->BSIM4v5DdpPtr) -= m * (gdpr - gdtotd);
             *(here->BSIM4v5DdPtr) += m * (gdpr + gdtot);
             
             *(here->BSIM4v5SPdpPtr +1) += m * (xcsdbr - gdsi - RevSumi);
+ 	    sprintf(cmd,"set ::Captured_Csd %g",m * (xcsdbr - gdsi - RevSumi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5SPdpPtr) -= m * (gdsr - xcsdbi + gstotd + RevSumr - gbspdp + gIstotd);
             *(here->BSIM4v5SPgpPtr +1) += m * (xcsgbr - Gmi);
+ 	    sprintf(cmd,"set ::Captured_Csg %g",m * (xcsgbr - Gmi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5SPgpPtr) -= m * (Gmr - xcsgbi + gstotg - gbspg + gIstotg);
             *(here->BSIM4v5SPspPtr +1) += m * (xcssbr + gdsi + FwdSumi);
+ 	    sprintf(cmd,"set ::Captured_Css %g",m * (xcssbr + gdsi + FwdSumi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5SPspPtr) += m * (gspr + xcssbi + gdsr + here->BSIM4v5gbs
             - gstots + FwdSumr + gbspsp - gIstots);
             *(here->BSIM4v5SPsPtr) -= m * (gspr + gstot);
             *(here->BSIM4v5SPbpPtr +1) += m * (xcsbbr - Gmbsi);
+ 	    sprintf(cmd,"set ::Captured_Csb %g",m * (xcsbbr - Gmbsi)/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5SPbpPtr) -= m * (gjbs + gstotb - xcsbbi + Gmbsr - gbspb + gIstotb);
             
             *(here->BSIM4v5SspPtr) -= m * (gspr - gstots);
             *(here->BSIM4v5SsPtr) += m * (gspr + gstot);
             
             *(here->BSIM4v5BPdpPtr +1) += m * xcbdb;
+ 	    sprintf(cmd,"set ::Captured_Cbd %g",m * xcbdb/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5BPdpPtr) -= m * (gjbd - gbbdp + gIbtotd);
             *(here->BSIM4v5BPgpPtr +1) += m * xcbgb;
+ 	    sprintf(cmd,"set ::Captured_Cbg %g",m * xcbgb/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5BPgpPtr) -= m * (here->BSIM4v5gbgs + gIbtotg);
             *(here->BSIM4v5BPspPtr +1) += m * xcbsb;
+ 	    sprintf(cmd,"set ::Captured_Cbs %g",m * xcbsb/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5BPspPtr) -= m * (gjbs - gbbsp + gIbtots);
             *(here->BSIM4v5BPbpPtr +1) += m * xcbbb;
+ 	    sprintf(cmd,"set ::Captured_Cbb %g",m * xcbbb/omega);
+	    Tcl_Eval(interp,cmd);
             *(here->BSIM4v5BPbpPtr) += m * (gjbd + gjbs - here->BSIM4v5gbbs
             - gIbtotb);
             ggidld = here->BSIM4v5ggidld;

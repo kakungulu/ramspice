@@ -30,6 +30,7 @@
 #define MAXCUBE 1<<MAXDIM
 typedef void (*sighandler)(int);
 
+
 typedef enum {
     rtype_void,
     rtype_string,

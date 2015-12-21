@@ -214,7 +214,14 @@ CKTcircuit *ckt)
             Check = Check1 = Check2 = 1;
             ByPass = 0;
             pParam = here->pParam;
-            
+	    if (DEBUG_MODEL>0) {
+                #Foreach: var $::bsim4v5_structure_fields {
+	             #Info: "PRE STRUCT $var=%g" here->BSIM4v5$var
+	        }
+                #Foreach: var $::bsim4v5_model_fields {
+	             #Info: "PRE MODEL $var=%g" model->BSIM4v5$var
+	        }
+	    }
             if ((ckt->CKTmode & MODEINITSMSIG))
             {   vds = *(ckt->CKTstate0 + here->BSIM4v5vds);
                 vgs = *(ckt->CKTstate0 + here->BSIM4v5vgs);
@@ -4588,7 +4595,6 @@ CKTcircuit *ckt)
             geltd = here->BSIM4v5grgeltd;
             
             T1 = qdef * here->BSIM4v5gtau;
-            
             if (here->BSIM4v5rgateMod == 1)
             {   (*(here->BSIM4v5GEgePtr) += m * geltd);
                 (*(here->BSIM4v5GPgePtr) -= m * geltd);
@@ -4754,6 +4760,15 @@ CKTcircuit *ckt)
             #Foreach: var $::bsim4v5_internal_calculation_vars {
                 InnerCalc->$var=$var;
             }
+	    
+	    if (DEBUG_MODEL>0) {
+                #Foreach: var $::bsim4v5_structure_fields {
+	             #Info: "POST STRUCT $var=%g" here->BSIM4v5$var
+	        }
+                #Foreach: var $::bsim4v5_model_fields {
+	             #Info: "POST MODEL $var=%g" model->BSIM4v5$var
+	        }
+	    }
             
         }  /* End of MOSFET Instance */
     }   /* End of Model Instance */

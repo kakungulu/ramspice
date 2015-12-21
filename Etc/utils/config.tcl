@@ -16,7 +16,6 @@ set ::exclude {
     cmexport.c
     inp2dot.c
 }
-
 # The preprocessor fails on those and no point in complicating it for those particular corner cases 
 set ::bypass_preprocessor {
     mod_lex.c
@@ -136,6 +135,7 @@ set ::global_c_variables {
     Captured_Quick_Noise
     Captured_Cgs
     Captured_Cgd
+    DEBUG_MODEL
 }
 set ::sizer_parameters_no_ids {gm go Vt Nth Nflicker sigmaVt}
 set ::sizer_parameters [concat Ids $::sizer_parameters_no_ids]

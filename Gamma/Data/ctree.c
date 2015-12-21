@@ -1722,6 +1722,7 @@ tcl_dc_analysis (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     printf("DC Analysis end\n");
     return TCL_OK;
 }
+
 static int
 set_spice_var (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 {

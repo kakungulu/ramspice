@@ -123,16 +123,18 @@
     *c "@Ted=1/@Det;"
      if {$::debug_mode} {*c "printf(\"Ted=%g\\n\",@Ted);"}
    if {[@ param:inn ?] && [@ param:inp ?]} {
-        *c "double der_p=[DERIVE @param:inp $expression(outp)];"
-        *c "double der_n=[DERIVE @param:inn $expression(outp)];"
+        set out_node_expression $expression(outp)
+        *c "double der_p=[DERIVE @param:inp $out_node_expression];"
+        *c "double der_n=[DERIVE @param:inn $out_node_expression];"
         if {$::debug_mode} {*c "printf(\" der=%g %g\\n\",der_p,der_n);"}
        *c "@property:Adc=0.5*Ted*(fabs(der_p)+fabs(der_n));"
         *c "@property:CMRR=Ted*(fabs(der_p)-fabs(der_n));"
-        *c "@property:PSRR=Ted*([DERIVE @param:vdd $expression(outp)]);"
+        *c "@property:PSRR=Ted*([DERIVE @param:vdd $out_node_expression]);"
     } elseif {[@ param:in ?]} {
-        *c "@property:Adc=Ted*([DERIVE @param:in $expression(out)]);"
+        set out_node_expression $expression(out)
+        *c "@property:Adc=Ted*([DERIVE @param:in $out_node_expression]);"
         *c "@property:CMRR=@property:Adc;"
-        *c "@property:PSRR=Ted*([DERIVE @param:vdd $expression(out)]);"
+        *c "@property:PSRR=Ted*([DERIVE @param:vdd $out_node_expression]);"
     }
     if {$::debug_mode} {*c "printf(\" Adc=%g (%gdB)\\n\",@property:Adc,20*log10(fabs(@property:Adc)));"}
     
@@ -152,14 +154,30 @@
     .prep_mna ac
     DET ::MNA
     set expression(Det_ac) $::det_calc_result
+    if {[set index_out [lsearch $::independent_nodes outp]]!=-1} {
+        DET ::MNA ::MNAy $index_out 
+        set spectrum_num ([DERIVE @param:inp $::det_calc_result])+([DERIVE @param:inn $::det_calc_result])
+    } elseif {[set index_out [lsearch $::independent_nodes out]]!=-1} {	
+        DET ::MNA ::MNAy $index_out 
+        set spectrum_num [DERIVE @param:in $::det_calc_result]
+	*c "//AC output: $::det_calc_result/$expression(Det_ac)"
+	*c "//AC gain: $spectrum_num/$expression(Det_ac)"
+    } else {
+        Error: No output node in list: $::independent_nodes
+	exit
+    }	
     Info: AC
     set expression(dDet_ac) [derive_expression @s $expression(Det_ac)]
+    set views {gg gd gs gb dd dg db ds sd sg ss sb bd bg bs bb}
     foreach transistor $::all_transistors {
-        foreach cap {cgs cgd} {
+        foreach key [array names ::transistors $transistor,*] {
+	    set field [regsub {.*,} $key {}]
+	    set $field $::transistors($key)
+	}    
+        foreach view $views {
+	    set cap c$view
             skip {![@ $transistor:$cap ?]}
-            *c "@$transistor:$cap=$::cap_equations($transistor,$cap);"
-	    *c "if (!isfinite(@$transistor:$cap))  \{@status:fail=7; return TCL_ERROR;\}"
-	    *c "@$transistor:${cap}_out=0;"
+            *c "@$transistor:$cap=gamma_gcc_interpolate_4(&@look_up_tables:${type}:$cap:ss:LUT,(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L)*@$L*@$W*@config:${cap}_factor;"
             if {$::debug_mode} {*c "printf(\"$transistor:$cap=%g\\n\",@$transistor:$cap);"}
 	    set target_node [string index $cap end]
 	    skip {$::transistors($transistor,$target_node)=="0"}
@@ -168,19 +186,35 @@
 	    skip {$index==-1} 
 	    skip {![info exists point_admitance($index)]} 
 	    skip {$point_admitance($index)==0} 
-	    *c "// Miller Effect"
-	    *c "@$transistor:${cap}_out=@$transistor:$cap*(1+($point_admitance($index))/@$transistor:gm);"
-	    *c "@$transistor:$cap*=1+@$transistor:gm/($point_admitance($index));"
         }
     }	    
     *c "@s=-1;"
     *c "int BW_it;"
     if {$::debug_mode} {*c "printf(\"num=$expression(Det_ac)\\n\");"}
     if {$::debug_mode} {*c "printf(\"denom=$expression(dDet_ac)\\n\");"}
+    s2iW $spectrum_num spectrum_num_real spectrum_num_imag
+    s2iW $expression(Det_ac) spectrum_denom_real spectrum_denom_imag
+    *c "float W=0;"
+    *c "float BW_Mag0=1;"
+    *c "float BW_Mag=1;"
+    *c "float snr;"
+    *c "float sni;"
+    *c "float sdr;"
+    *c "float sdi;"
+    *c "while ((BW_Mag0/BW_Mag)<2) \{"
+    *c "      snr=$spectrum_num_real;"
+    *c "      sni=$spectrum_num_imag;"
+    *c "      sdr=$spectrum_denom_real;"
+    *c "      sdi=$spectrum_denom_imag;"
+    *c "      BW_Mag=(snr*snr+sni*sni)/(sdr*sdr+sdi*sdi);"
+    *c "      if (W==0) BW_Mag0=BW_Mag;"
+#    *c "      printf(\"F=%g fraction=(%g,%g/%g,%g) Adc=%g A=%g/%g=%g phase=%g\\n\",W/(2*3.141592656),snr,sni,sdr,sdi,@property:Adc*@property:Adc,BW_Mag0,BW_Mag,BW_Mag/BW_Mag0,atan(sni/snr)-atan(sdi/sdr));"
+    *c "      if (W==0) W=1; else W*=1.01;"
+    *c "\}"
+    *c "@property:BW=fabs(W/(2*3.141592656));"
     *c "for (BW_it=0;BW_it<5;BW_it++)  @s-=($expression(Det_ac))/($expression(dDet_ac));"
     *c "@property:BW:s=$expression(dDet_ac);"
     *c "@p1=-@s;"
-    *c "@property:BW=fabs(@p1/(2*3.141592656));"
     if {$::debug_mode} {*c "printf(\"BW=%g\\n\",@property:BW);"}
     *c "if (!isfinite(@property:BW))  \{@status:fail=8; return TCL_ERROR;\}"
     # Move away from the found root 
@@ -212,6 +246,15 @@
 	*c "@property:PM=fabs(@property:PM);"
 	break
     }	
+    *c "while (BW_Mag>4) \{"
+    *c "      snr=$spectrum_num_real;"
+    *c "      sni=$spectrum_num_imag;"
+    *c "      sdr=$spectrum_denom_real;"
+    *c "      sdi=$spectrum_denom_imag;"
+    *c "      BW_Mag=(snr*snr+sni*sni)/(sdr*sdr+sdi*sdi);"
+    *c "      W*=1.01;"
+    *c "\}"
+    *c "@property:PM=180-180*(atan(sni/snr)-atan(sdi/sdr))/3.1415926;"
     if {$::debug_mode} {*c "printf(\"Settling time=%g\\n\",@property:ts);"}
     
     #####################################################################################################
@@ -226,12 +269,12 @@
         *c "@$transistor:Nt=@$transistor:Nt_unit*@$transistor:go;"
 	*c "if (!isfinite(@$transistor:Nt))  \{@status:fail=5; return TCL_ERROR;\}"
         *c "@$transistor:Nf_unit=$::Nf_equations($transistor);"
-        *c "@$transistor:Nf=20*@$transistor:Nf_unit*@$transistor:go*@$transistor:go/(@$W*@$L);"
+        *c "@$transistor:Nf=@$transistor:Nf_unit*@$transistor:go*@$transistor:go/(@$W*@$L);"
 	*c "if (!isfinite(@$transistor:Nf))  \{@status:fail=6; return TCL_ERROR;\}"
 	if {0} {*c "printf(\"$transistor Nt=%gA^2/Hz Nf(f=1Hz)=%gA^2/Hz\\n\",@$transistor:Nt,@$transistor:Nf);"}
     }
     foreach transistor $::all_transistors {
-        *c "float current_transfer_$transistor=@Ted*([DERIVE @$transistor:Ideq $expression(outp)])/@property:Adc;"
+        *c "float current_transfer_$transistor=@Ted*([DERIVE @$transistor:Ideq $out_node_expression])/@property:Adc;"
 	if {0} {*c "printf(\"$transistor:noise_trans=%gOhm\\n\",current_transfer_$transistor);"}
     } 
     foreach noise_type {t f} {   
