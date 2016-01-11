@@ -97,6 +97,7 @@ set pat_properties {}
     lappend pat_properties $p
     Info: Property=$p
 }
+source $::env(RAMSPICE)/Gamma/Init.tcl
 @ size/L/min = 40e-9
 @ size/Lp/min = 40e-9
 @ size/Ln/min = 40e-9
@@ -125,6 +126,7 @@ set pat_properties {}
 @ size/Wo/min = 120e-9
 @ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
 @ config/pat_size_target = $::opt(sample)
+@ config/op_iterations = 10000
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so
 set i 0
 set initial_size [@ $::opt(topology)/circuits PAT size]

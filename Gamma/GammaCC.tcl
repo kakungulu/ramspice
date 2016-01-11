@@ -332,7 +332,7 @@ proc .prep_mna {mode} {
         foreach pin {d g s b} {
             set ac($pin) [set $pin]
             if {$ac($pin)=="0"} {
-         	set ac($pin) vdd
+         	    # set ac($pin) vdd
             }
         }
         if {$mode=="ac" || $mode=="noise"} {

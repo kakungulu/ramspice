@@ -237,7 +237,7 @@ foreach arg [lrange $argv 2 end] {
 }
 default source toplevel.scs
 default device nch:pch
-default corner {ss tt ff fs sf mc}
+default corner {ss tt ff}
 default topv 1.8
 default tech tsmc018
 default vgs_rez 5
@@ -879,7 +879,10 @@ foreach type [split $device :] {
                 update_netlist Noise $::corner $::temp
                 set i3 0
                 foreach L $l_values {
-                    set W [expr $L*$wmin/$lmin]
+                    set W $L
+                    if {$W<$wmin} {
+                        set W [expr $L*$wmin/$lmin]
+                    }	
                     set prefix [string index $type 0]
                     if {$section!=[find_mosfet_bin $prefix $L $W]} {
                         incr i3
@@ -950,13 +953,13 @@ foreach type [split $device :] {
     }
     set cap_complete 1
     set views {gg gd gs gb dd dg db ds sd sg ss sb bd bg bs bb}
-    foreach ::corner $::corner_list {
+    foreach ::corner {ss tt ff} {
         foreach view $views {
             set ${view}_${::corner}_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_c${view}.db
+	    if {![file exists [set ${view}_${::corner}_file]]} {
+                set cap_complete 0
+	    }
         }
-        if {[file exists [set bd_${::corner}_file]]} continue
-        set cap_complete 0
-        break
     }
     if {!$cap_complete} {
         #        textbox    "Characterizing Noise for $type Vgs=($minVt,$max_supply) Vds=(0,$max_supply)"    
@@ -980,11 +983,11 @@ foreach type [split $device :] {
             lappend index_range $::constraints($var,index_range)
         }
         lappend index_range [llength $l_values]
-        foreach ::corner ss {
+        foreach ::corner {ss tt ff} {
             foreach view $views {
                 set ${view}_file $::env(RAMSPICE)/Etc/Tech_DB/${tech}/4d/${::rez}/${tech}_${type}_${::corner}_c${view}.db
             }
-            if {[file exists $bd_file]} continue
+            if {[file exists [set ${view}_${::corner}_file]]} continue
             set ::temp $::corner_to_temp($::corner)
             foreach array $views {
                 @ look_up_tables/$type/c$array/${::corner}([join $index_range ,]) !

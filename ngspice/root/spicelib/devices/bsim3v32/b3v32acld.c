@@ -35,6 +35,7 @@ BSIM3v32acLoad (GENmodel *inModel, CKTcircuit *ckt)
     double T1, CoxWL, qcheq, Cdg, Cdd, Cds, Csg, Csd, Css;
     double ScalingFactor = 1.0e-9;
     double m;
+    char cmd[256];
 //    #Info: "BSIM3v32acLoad"
     omega = ckt->CKTomega;
     for (; model != NULL; model = model->BSIM3v32nextModel)
@@ -285,7 +286,39 @@ BSIM3v32acLoad (GENmodel *inModel, CKTcircuit *ckt)
             *(here->BSIM3v32SPbPtr + 1) -=
             m * (xcsgb + xcsdb + xcssb);
             *(here->BSIM3v32SPdpPtr + 1) += m * xcsdb;
-            
+            sprintf(cmd,"set ::Captured_Cdd %g",m * xcddb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cdg %g",m * xcdgb/omega);
+            Tcl_Eval(interp,cmd);
+             sprintf(cmd,"set ::Captured_Cds %g",m * xcdsb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cdb 0");
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cgd %g",m * xcgdb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cgg %g",m * xcggb/omega);
+            Tcl_Eval(interp,cmd);
+             sprintf(cmd,"set ::Captured_Cgs %g",m * xcgsb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cgb 0");
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Csd %g",m * xcsdb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Csg %g",m * xcsgb/omega);
+            Tcl_Eval(interp,cmd);
+             sprintf(cmd,"set ::Captured_Css %g",m * xcssb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Csb 0");
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cbd %g",m * xcbdb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cbg %g",m * xcbgb/omega);
+            Tcl_Eval(interp,cmd);
+             sprintf(cmd,"set ::Captured_Cbs %g",m * xcbsb/omega);
+            Tcl_Eval(interp,cmd);
+            sprintf(cmd,"set ::Captured_Cbb 0");
+            Tcl_Eval(interp,cmd);
+           
             *(here->BSIM3v32DdPtr) += m * gdpr;
             *(here->BSIM3v32SsPtr) += m * gspr;
             *(here->BSIM3v32BbPtr) +=

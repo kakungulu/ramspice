@@ -93,9 +93,11 @@ foreach p [@ /$::SESSION(selected_topology)/circuits PAT properties] {
     }
     lappend axes_list inf
 }
+Info: axes_list=$axes_list
 
-
-@ /$::SESSION(selected_topology)/circuits >>> $spec_list
+Info: SFSG1
+set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $spec_list]
+Info: Initial circuit_list=$::circuit_list
 ::SVG::out
 set entries {}
 foreach axis {x y z} {
@@ -103,7 +105,7 @@ foreach axis {x y z} {
     lappend entries [lsearch $::ref_list [set $axis]]
 }    
 set ::circuit_list [@ /$::SESSION(selected_topology)/circuits >>> $axes_list]
-
+Info: Final circuit_list=$::circuit_list
 ### Special limitation on BW, remove after zoom is implemented
 if {$y=="BW"} {
     set bw_circuits {}
@@ -114,6 +116,7 @@ if {$y=="BW"} {
     }
     set ::circuit_list $bw_circuits
 }
+Info: circuit_list=$::circuit_list
 set ::x_index [lindex $entries 0]
 set ::circuit_list [lsort -command sort_front $::circuit_list]
 set ::SESSION(circuit_list) $::circuit_list

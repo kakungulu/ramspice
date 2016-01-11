@@ -105,10 +105,9 @@ proc netbatch {code args} {
     exec mv $process_path/$rand_name $process_path/gamma_${machine}_$i.tcl
 }
 proc list_tree {c {pre ""}} {
-    regsub -all {/+} $pre/$c / path
-    Info: [.] $path
-    @ $c foreach_child ch {
-       list_tree $ch $pre/$c
+    Info: [.] $c
+    @ $pre/$c foreach_child ch {
+        list_tree $ch $pre/$c
     }
 }
 
@@ -866,7 +865,7 @@ proc eng {value {unit {}} } {
     if {[string match *n* $value]} {
         return $value$unit
     }
-    if {[catch {expr $value}]} {
+    if {[catch {set value [expr $value]}]} {
         return $value$unit
     }
     if {$value==0.0} {
@@ -891,12 +890,6 @@ proc eng {value {unit {}} } {
             set value $integer
             incr value
         }
-#    if {[regexp {^([0-9]+)\.([0-9]+)9+} $value -> integer zeros]} {
-#	regsub -all {.} [string range $zeros 0 end-1] 0 leading 
-#	Info: Value=$value integer=$integer zeros=$zeros leading=$leading
-#        set value [expr $integer.$zeros+0.${leading}1]
-#	Info: Final Value=$value 
-#    }
         if {[regexp {^([0-9]+)\.0(0*)9+$} $value -> integer zeros]} {
             set value $integer.${zeros}1
         }
@@ -911,6 +904,23 @@ proc eng {value {unit {}} } {
     }
     if {$unit=="%"} {    
         regsub {(\-?[0-9]+\.[0-9]?[0-9]?[0-9]?).*$} [format "%f" $value] {\1} value
+        if {[regexp {^([0-9]+)\.0*$} $value -> integer]} {
+            set value $integer
+        }
+        if {[regexp {^([0-9]+)\.9+$} $value -> integer]} {
+            set value $integer
+            incr value
+        }
+        if {[regexp {^\-([0-9]+)\.0*$} $value -> integer]} {
+            set value -$integer
+        }
+        if {[regexp {^\-([0-9]+)\.9+$} $value -> integer]} {
+            set value -$integer
+            incr value -1
+        }
+        regsub {(.*)\.(.*)0$} $value {\1.\2} value
+        regsub {(.*)\.(.*)0$} $value {\1.\2} value
+        regsub {(.*)\.(.*)0$} $value {\1.\2} value
         return $sign$value$unit
     }
     set mag [expr int(log($value)/log($kilo))]
@@ -918,10 +928,19 @@ proc eng {value {unit {}} } {
         set mag [expr -$mag]
         set mag_qual [lindex {m u n p f a z y e-27 e-30 e-33 e-36} $mag]
         set value [expr $value*pow($kilo,$mag+1)]
+        if {$value>=1000} {
+            set value 1
+            set mag_qual [lindex {m u n p f a z y e-27 e-30 e-33 e-36} $mag-1]
+        }
     } else {
         set mag_qual [lindex {K M G T P E Z Y e+27 e+30 e+33 e+36} $mag-1]
         set value [expr $value/pow($kilo,$mag)]
+        if {$value>=1000} {
+            set value 1
+            set mag_qual [lindex {K M G T P E Z Y e+27 e+30 e+33 e+36} $mag]
+        }
     }
+    
     if {$unit=="B"} {
         set value [expr round($value)]
     } else {
@@ -935,18 +954,19 @@ proc eng {value {unit {}} } {
         set value $integer
         incr value
     }
-#    if {[regexp {^([0-9]+)\.([0-9]+)9+} $value -> integer zeros]} {
-#	regsub -all {.} [string range $zeros 0 end-1] 0 leading 
-#	Info: Value=$value integer=$integer zeros=$zeros leading=$leading
-#        set value [expr $integer.$zeros+0.${leading}1]
-#	Info: Final Value=$value 
-#    }
     if {[regexp {^\-([0-9]+)\.0*$} $value -> integer]} {
         set value -$integer
     }
     if {[regexp {^\-([0-9]+)\.9+$} $value -> integer]} {
         set value -$integer
         incr value -1
+    }
+    regsub {(.*)\.(.*)0$} $value {\1.\2} value
+    regsub {(.*)\.(.*)0$} $value {\1.\2} value
+    regsub {(.*)\.(.*)0$} $value {\1.\2} value
+    if {$value>=1000} {
+    	set value 1
+    	set mag_qual [lindex {m u n p f a z y e-27 e-30 e-33 e-36} $mag-1]
     }
     append value $mag_qual 
     return $sign$value$unit

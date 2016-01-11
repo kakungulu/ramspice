@@ -2996,7 +2996,7 @@ void pat_front(PAT *p,vector_float *properties) {
         for (j=0;j<p->properties->num_of;j++) if (isfinite(properties->content[j])) if (p->content->content[i]->properties->content[j]>properties->content[j]) num_of_th_met++;
         if (num_of_th_met<=criterion) p->content->content[i]->flags|=1;
     }	
-    #Dinfo: "Performing Specific Pareto Analysis on %ld circuits. To qualify, a circuit must meet %d spec criteria" collection criterion
+    #Info: "Performing Specific Pareto Analysis on %ld circuits. To qualify, a circuit must meet %d spec criteria" collection criterion
     // Negate all properties that are "less is better"
     ordinal volume=collection;
     for (i=0;i<p->content->num_of;i++) {
@@ -3033,11 +3033,11 @@ void pat_front(PAT *p,vector_float *properties) {
                 //   If both entries excede the threshold in the spec, 
                 //   then this property cannot justify the higher entry and can't be used to turn off one of the domination flags
                 if (isinf(TH)==0) {
-                    #Dinfo: "%d,%d: TH %d: %g %g %g" i ii j TH P Q
+                    #Info: "%d,%d: TH %d: %g %g %g" i ii j TH P Q
                     if (Q>TH) Q=TH;
                     if (P>TH) P=TH;
                 }    
-                #Dinfo: "%d,%d: Comparing %d: %g %g" i ii j P Q
+                #Info: "%d,%d: Comparing %d: %g %g" i ii j P Q
                 if (Q>P) dominated=0;
                 if (Q<P) dominates=0;	    
 		if (!(dominated||dominates)) break;
@@ -3046,14 +3046,14 @@ void pat_front(PAT *p,vector_float *properties) {
             if (dominated) {
                 if (!(p->content->content[ii]->flags)) {
                     volume--;
-                    #Dinfo: "%d Dominated %ld left" ii volume
+                    #Info: "%d Dominated %ld left" ii volume
                 }
                 p->content->content[ii]->flags|=1;
             }    
             if (dominates) {
                 if (!(p->content->content[i]->flags)) {
                     volume--;
-                    #Dinfo: "%d Dominated %ld left" i volume
+                    #Info: "%d Dominated %ld left" i volume
                 }
                 p->content->content[i]->flags|=1;
             }    
@@ -4145,13 +4145,25 @@ tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
 	}
         int ARGC;
         char **ARGV;
+	#Info: "SFSG1"
         Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
+	#Info: "SFSG2"
         vector_float *properties=new_vector_float();
+	#Info: "SFSG1"
         for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
-        free(ARGV);
+	#Info: "SFSG3 %d" i 
+        //free(ARGV);
+	#Info: "SFSG4"
 	for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags<<=1;
+	#Info: "SFSG5"
         pat_front(p,properties);
-        for (i=0;i<p->content->num_of;i++) if (!(p->content->content[i]->flags)) tcl_append_int(interp,i);
+	#Info: "SFSG6"
+        Tcl_ResetResult(interp);
+        for (i=0;i<p->content->num_of;i++) if (!(p->content->content[i]->flags)) {
+	    #Info: "Appending %d" i
+	    tcl_append_int(interp,i);
+	}    
+	#Info: "SFSG7"
         return TCL_OK;
     }
     if (strcmp(argv[2],"<<<")==0) {

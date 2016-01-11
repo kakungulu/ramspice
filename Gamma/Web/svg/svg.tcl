@@ -100,13 +100,14 @@ proc SVG::graph_data {args} {
         x_type lin
         y_type lin
         title {}
-	font 24
+	font 28
         connect_pattern 2,5
         connect_width 1
         script {}
         heatmap 0
         pallet {}
         z {}
+	show_unit 1
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -122,7 +123,7 @@ proc SVG::graph_data {args} {
     } else {
         set order {x y m}
     }
-    SVG::text x [expr $opt(x)+$opt(width)/4-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size $opt(font)  {
+    SVG::text x [expr $opt(x)+$opt(width)/2] y [expr $opt(y)-15] font-size $opt(font) text-anchor middle {
         print $opt(title)
     }
     set min_x 1e90
@@ -217,8 +218,12 @@ proc SVG::graph_data {args} {
     set y2_coord [expr $y1_coord+10]
     set y3_coord [expr $y2_coord+10]
     set y4_coord [expr $y3_coord+20]
-    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 24  {
-        print "$opt(x_title)"
+    SVG::text x [expr $opt(x)+$opt(width)/2] y [expr $y4_coord+40] font-size $opt(font) text-anchor middle {
+        if {$opt(show_unit)} {
+            print "$opt(x_title)"
+	} else {
+            print "$opt(x_title) \[$opt(x_unit)\]"
+	}
     }
     set xstep [get_step $min_x $max_x]
     set ystep [get_step $min_y $max_y]
@@ -229,18 +234,32 @@ proc SVG::graph_data {args} {
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
-        SVG::text x $x_coord y $y3_coord font-size 18 {
-            print [eng $::x_value $opt(x_unit)]
+        SVG::text x $x_coord y [expr $y3_coord+20] font-size $opt(font) text-anchor middle {
+            if {$opt(show_unit)} {
+                print [eng $::x_value $opt(x_unit)]
+	    } else {
+                print [regsub $opt(x_unit)\$ [eng $::x_value $opt(x_unit)] ""]
+	    }
         }
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke black stroke-width 1 stroke-dasharray 5,5
-        set ::x_value [expr $::x_value+$xstep]
+	if {$::x_value==0} {
+	    set ::x_value [expr $::x_value+$xstep]
+	} elseif {1.0*abs($::x_value+$xstep)/abs($::x_value)<1e-6} {
+	    set ::x_value 0
+        } else {
+	    set ::x_value [expr $::x_value+$xstep]
+        }
     }
     set x1_coord [expr $opt(x)]
     set x2_coord [expr $x1_coord-10]
     set x3_coord [expr $x2_coord-50]
     set x4_coord [expr $x3_coord-20]
-    SVG::text x $x4_coord y [expr $opt(y)+(0.8*$opt(height))] font-size 24 style "direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;" {
-        print "$opt(y_title)"
+    SVG::text x [expr $opt(height)/2] y -5 font-size $opt(font) text-anchor middle  transform "rotate(90 0,0)"  {
+        if {$opt(show_unit)} {
+            print "$opt(y_title)"
+	} else {
+            print "$opt(y_title) \[$opt(y_unit)\]"
+	}
     }
     set ::y_value [expr int($min_y/$ystep)*$ystep]
     if {$::y_value<$min_y} {
@@ -249,8 +268,12 @@ proc SVG::graph_data {args} {
     while {$::y_value<=$max_y} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
-        SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
-            print [eng $::y_value $opt(y_unit)]
+        SVG::text x [expr $x1_coord-10] y [expr $y_coord+$opt(font)/4] font-size $opt(font) text-anchor end {
+            if {$opt(show_unit)} {
+                print [eng $::y_value $opt(y_unit)]
+	    } else {
+                print [regsub $opt(y_unit)\$ [eng $::y_value $opt(y_unit)] ""]
+	    }
         }
         SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
         set ::y_value [expr $::y_value+$ystep]
@@ -312,7 +335,7 @@ proc SVG::graph_hist {args} {
         y_unit {}
         z_unit {}
         x_title {}
-        y_title {}
+        y_title Count
         x_type lin
         y_type lin
         title {}
@@ -322,6 +345,8 @@ proc SVG::graph_hist {args} {
         heatmap 0
         pallet {}
         z {}
+	show_unit 1
+	font 28
     }
     foreach {param value} $args {
         set opt($param) $value
@@ -337,7 +362,7 @@ proc SVG::graph_hist {args} {
     } else {
         set order {x y m}
     }
-    SVG::text x [expr $opt(x)+$opt(width)/3-[string length $opt(title)]*2] y [expr $opt(y)-15] font-size 24  {
+    SVG::text x [expr $opt(x)+$opt(width)/2] y [expr $opt(y)-15] font-size $opt(font) text-anchor middle  {
         print $opt(title)
     }
     set min_x 1e90
@@ -415,11 +440,15 @@ proc SVG::graph_hist {args} {
     set y2_coord [expr $y1_coord+10]
     set y3_coord [expr $y2_coord+10]
     set y4_coord [expr $y3_coord+20]
-    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 24  {
-        print "$opt(x_title)"
-    }
     set xstep [get_step $min_x $max_x]
     set ystep [get_step $min_y $max_y]
+    SVG::text x [expr $opt(x)+$opt(width)/2] y [expr $y4_coord+40] font-size $opt(font) text-anchor middle {
+        if {$opt(show_unit)} {
+            print "$opt(x_title)"
+	} else {
+            print "$opt(x_title) \[$opt(x_unit)\]"
+	}
+    }
     set ::x_value [expr int($min_x/$xstep)*$xstep]
     if {$::x_value<$min_x} {
         set ::x_value [expr $::x_value+$xstep]
@@ -427,17 +456,27 @@ proc SVG::graph_hist {args} {
     while {$::x_value<=$max_x} {
         set x_coord [expr $opt(x)+int($opt(width)*($::x_value-$min_x)/($max_x-$min_x))]
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $y2_coord stroke black stroke-width 3
-        SVG::text x $x_coord y $y3_coord font-size 18 {
-            print [eng $::x_value $opt(x_unit)]
+        SVG::text x $x_coord y [expr $y3_coord+20] font-size $opt(font) text-anchor middle {
+            if {$opt(show_unit)} {
+                print [eng $::x_value $opt(x_unit)]
+	    } else {
+                print [regsub $opt(x_unit)\$ [eng $::x_value $opt(x_unit)] ""]
+	    }
         }
         SVG::line x1 $x_coord y1 $y1_coord x2 $x_coord y2 $opt(y) stroke black stroke-width 1 stroke-dasharray 5,5
-        set ::x_value [expr $::x_value+$xstep]
+	if {$::x_value==0} {
+	    set ::x_value [expr $::x_value+$xstep]
+	} elseif {1.0*abs($::x_value+$xstep)/abs($::x_value)<1e-6} {
+	    set ::x_value 0
+        } else {
+	    set ::x_value [expr $::x_value+$xstep]
+        }
     }
     set x1_coord [expr $opt(x)]
     set x2_coord [expr $x1_coord-10]
     set x3_coord [expr $x2_coord-50]
     set x4_coord [expr $x3_coord-20]
-    SVG::text x $x4_coord y [expr $opt(y)+(0.8*$opt(height))] font-size 24 style "direction: rtl; writing-mode: tb; glyph-orientation-vertical: 90;" {
+    SVG::text x [expr $opt(height)/2] y -10 font-size $opt(font) text-anchor middle  transform "rotate(90 0,0)"  {
         print "$opt(y_title)"
     }
     set ::y_value [expr int($min_y/$ystep)*$ystep]
@@ -447,7 +486,7 @@ proc SVG::graph_hist {args} {
     while {$::y_value<=$max_y} {
         set y_coord [expr $opt(y)+$opt(height)-int($opt(height)*($::y_value-$min_y)/($max_y-$min_y))]
         SVG::line x1 $x1_coord y1 $y_coord x2 $x2_coord y2 $y_coord stroke black stroke-width 3
-        SVG::text x [expr $x4_coord+10] y $y_coord font-size 18 {
+        SVG::text x [expr $x1_coord-10] y [expr $y_coord+$opt(font)/4] font-size $opt(font) text-anchor end {
             print [eng $::y_value $opt(y_unit)]
         }
         SVG::line x1 [expr $opt(x)+$opt(width)] y1 $y_coord x2 $opt(x) y2 $y_coord stroke black stroke-width 1 stroke-dasharray 5,5
@@ -607,7 +646,7 @@ proc SVG::graph_markers {args} {
     set y2_coord [expr $y1_coord+10]
     set y3_coord [expr $y2_coord+10]
     set y4_coord [expr $y3_coord+20]
-    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 15  {
+    SVG::text x [expr $opt(x)+$opt(width)/3] y [expr $y4_coord+40] font-size 15  {
         print "$opt(x_title)"
     }
     for {set i 0} {$i<=10} {incr i} {
@@ -1002,7 +1041,7 @@ proc SVG::graph_histogram {args} {
     set y2_coord [expr $y1_coord+10]
     set y3_coord [expr $y2_coord+10]
     set y4_coord [expr $y3_coord+20]
-    SVG::text x [expr $opt(x)+$opt(width)/3] y $y4_coord font-size 15  {
+    SVG::text x [expr $opt(x)+$opt(width)/3] y [expr $y4_coord+40] font-size 15  {
         print "$opt(x_title)"
     }
     for {set x $min_x} {$x<=$max_x} {set x [expr $x+($max_x-$min_x)/10]} {

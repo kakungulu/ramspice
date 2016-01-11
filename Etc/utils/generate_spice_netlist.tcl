@@ -1,7 +1,8 @@
 proc calculate_size {size_var} {
     upvar $size_var size
+    # Info: calculating $size_var=$size
     while {[regexp {^(.*)@([a-zA-Z0-9_:]+)(.*)$} $size -> pre c post]} {
-        # Info: c=$c
+    #    Info: c=$c=[@ $c]
         set size $pre
 	append size [@ $c]
 	append size $post
@@ -11,7 +12,9 @@ proc calculate_size {size_var} {
     } else {
         set size $val
     }
+   # Info: = $size
 }
+default ::squares 1
 proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}} {
     source $::env(RAMSPICE)/Etc/Tech_DB/$selected_tech/binning_$selected_tech.tcl
     set netlist {}
@@ -48,19 +51,34 @@ proc generate_spice_netlist {selected_tech selected_topology {stimulus 0.00025}}
                 # set W [@ $W]
 		# Info: generate: L=$L W=$W
                 default corner ss
-                set n [expr int(ceil($W/(2*$L)))]
-                set W [expr $W/$n]
+                set n [expr int(ceil($W/($::squares*$L)))]
+                set alt_W [expr $W/$n]
                 for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
                     skip {$::bin($type,$i,lmax)<$L}
                     skip {$::bin($type,$i,lmin)>$L}
-                    skip {$::bin($type,$i,wmax)<$W}
-                    skip {$::bin($type,$i,wmin)>$W}
+                    skip {$::bin($type,$i,wmax)<$alt_W}
+                    skip {$::bin($type,$i,wmin)>$alt_W}
                     break
                 }
-                if {![info exists ::bin($type,$i,lmax)]} {
-#                    Error: Transistor dimensions L=$L and W=$W (n=$n) do not correspond to any bin
-                    return 0
+		# If couldn't find a bin, try different number of squares
+		set alt_squares $::squares
+                while {![info exists ::bin($type,$i,lmax)]} {
+		    incr  alt_squares
+		    if {$alt_squares>10} {
+		        Error: Couldn't find bin for L=$L W=$W
+			return 0
+		    }
+                    set n [expr int(ceil($W/($alt_squares*$L)))]
+                    set alt_W [expr $W/$n]
+                    for {set i 1} {[info exists ::bin($type,$i,lmax)]} {incr i} {
+                        skip {$::bin($type,$i,lmax)<$L}
+                        skip {$::bin($type,$i,lmin)>$L}
+                        skip {$::bin($type,$i,wmax)<$alt_W}
+                        skip {$::bin($type,$i,wmin)>$alt_W}
+                        break
+                    }
                 }
+		set W $alt_W
                 if {$n==1} {
                     append netlist [list m$name $d $g $s $b ${type}ch_${corner}_$i L=$L W=$W]
                     append netlist "\n"

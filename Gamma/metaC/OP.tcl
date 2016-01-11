@@ -48,10 +48,12 @@
 	    set $field $::transistors($key)
 	}    
         *c "composite_gamma_gcc_interpolate_4(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:ro:ss:LUT,&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
+	*c "if (@$transistor:Ids<0) @$transistor:Ids=0;"
+	*c "if (@$transistor:Ids>1e-3) @$transistor:Ids=1e-3;"
 	if {$type=="pch"} {
 	    *c "@$transistor:Ids=-@$transistor:Ids;"
 	}
-        if {$::debug_mode} {*c "printf(\"%d) $transistor L=%g W=%g Ids=%g gm=%g go=%g\\n\",op_it,@$L,@$W,@$transistor:Ids,@$transistor:gm,@$transistor:go);"}
+        if {$::debug_mode} {*c "printf(\"%d) $transistor L=%g W=%g Vgs=%g Vds=%g Vbs=%g Ids=%g gm=%g go=%g\\n\",op_it,@$L,@$W,(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$transistor:Ids,@$transistor:gm,@$transistor:go);"}
         if {$::debug_mode} {*c "fflush(stdout);"}
     }
     foreach name [array names ::G_equations] {
