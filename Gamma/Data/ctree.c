@@ -2929,6 +2929,7 @@ int context_print_path(Tcl_Interp *interp,context *c) {
 static int
 copy_ctree_structure(Tcl_Interp *interp,char *target,char *key,char *argv[]) {
     context *s;
+    #Info: "KEY=%s" key
     if (!(resolve_context(key,&s,NULL))) {
         #Error: "Can't find structure %s" key
         return TCL_ERROR;

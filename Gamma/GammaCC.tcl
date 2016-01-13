@@ -305,6 +305,12 @@ proc .prep_mna {mode} {
         add_mna $s $g "-@$name:gm"
         add_mna $d $s "-@$name:gm"
         add_mna $d $g "+@$name:gm"
+	if {$s!=$b} {
+            add_mna $s $s "+@$name:gb"
+            add_mna $s $b "-@$name:gb"
+            add_mna $d $s "-@$name:gb"
+            add_mna $d $b "+@$name:gb"
+	}
         if {$type=="nch"} {
             set ::Ids_equations($name) "gamma_gcc_interpolate_4(`@:look_up_tables:$type:Ids:$::opt(process):LUT,[Vdiff $Vg $Vs],[Vdiff $Vd $Vs],[Vdiff $Vb $Vs],@$L)*@$W/@$L-@$name:gm*[Vdiff $Vg $Vs]-@$name:go*[Vdiff $Vd $Vs]"
         } else {
