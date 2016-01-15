@@ -48,7 +48,7 @@
 	    set $field $::transistors($key)
 	}    
  #       *c "composite_gamma_gcc_interpolate_4(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:ro:ss:LUT,&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
-        *c "composite_gamma_gcc_interpolate_2p3(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:go:ss:LUT,&@look_up_tables:${type}:gb:ss:LUT,&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
+        *c "composite_gamma_gcc_interpolate_2p3(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:go:ss:LUT,&@look_up_tables:${type}:gb:ss:LUT,&(@$transistor:gb),&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
 	*c "if (@$transistor:Ids<0) @$transistor:Ids=0;"
 	*c "if (@$transistor:Ids>1e-3) @$transistor:Ids=1e-3;"
 	if {$type=="pch"} {
@@ -138,6 +138,9 @@
         *c "@property:Adc=Ted*([DERIVE @param:in $out_node_expression]);"
         *c "@property:CMRR=@property:Adc;"
         *c "@property:PSRR=Ted*([DERIVE @param:vdd $out_node_expression]);"
+    } else {
+        Error: param=[@ param ?] param:inn=[@ param:inn ?] param:inp=[@ param:inp ?] param:in=[@ param:in ?]
+	exit
     }
     if {$::debug_mode} {*c "printf(\" Adc=%g (%gdB)\\n\",@property:Adc,20*log10(fabs(@property:Adc)));"}
     

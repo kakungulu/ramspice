@@ -369,9 +369,40 @@ foreach dim {l w} {
         }
     }
 }
+
 set ::epsilon 1e-2
 foreach type [split $::opt(device) :] {
+    # First create a LUT for bins
     set p [string index $type 0]
+    set l_values {}
+    set w_values {}
+    foreach lmin_key [array names ::bin $p,*,lmin] {
+        ladd l_values $::bin($lmin_key)
+    }
+    set l_values [lsort -real $l_values]
+    foreach wmin_key [array names ::bin $p,*,wmin] {
+        ladd w_values $::bin($wmin_key)
+    }
+    set w_values [lsort -real $w_values]
+    @ /look_up_tables/$type/binning([llength $l_values],[llength $w_values]) !
+    foreach lmin_key [array names ::bin $p,*,lmin] {
+        regsub lmin $lmin_key wmin wmin_key
+	set l_index [lsearch $l_values $::bin($lmin_key)]
+	set w_index [lsearch $w_values $::bin($wmin_key)]
+        set bin_num [lindex [split $lmin_key ,] 1]
+        @ /look_up_tables/$type/binning($l_index,$w_index) = $bin_num
+    }
+    set i3 0
+    foreach L $l_values {
+        LUT_set_legend /look_up_tables/$type/binning 0 $i3 $L
+        incr i3
+    }
+    set i3 0
+    foreach W $w_values {
+        LUT_set_legend /look_up_tables/$type/binning 1 $i3 $W
+        incr i3
+    }
+    @ /look_up_tables/$type/binning save $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/2p3d/$::opt(rez)/$::opt(tech)_${type}_binning.db
     foreach lmin_key [array names ::bin $p,*,lmin] {
         set bin_num [lindex [split $lmin_key ,] 1]
         set l_values {}

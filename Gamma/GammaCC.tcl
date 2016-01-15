@@ -431,7 +431,7 @@ proc .prep_mna {mode} {
     }
     if {$::C::target=="OP"} {
         if {$mode=="dc"} {
-            set ::HTML [open $::env(RAMSPICE)/tmp/$::opt(topology)_MNA.html w]
+            set ::HTML [open ~/public_html/$::opt(topology)_MNA.html w]
             puts $::HTML <html>
             puts $::HTML <head>
             puts $::HTML {<style type="text/css">

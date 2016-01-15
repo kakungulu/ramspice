@@ -233,7 +233,6 @@ void tcl_append_long(Tcl_Interp *interp,long in_int);
 void tcl_append_int(Tcl_Interp *interp,int in_int); 
 void tcl_append_float(Tcl_Interp *interp,float in_int);
 node *add_array_context(char *i_key,node **i_node);
-ordinal add_sub_context(context *i_parent,context *i_child);
 void map_slice_separation(LUT *a,ordinal **separation);
 hit_node *array2hit(LUT *a,ordinal **separation,int degree);
 ordinal merge_hit_leaves(hit_node **hit);

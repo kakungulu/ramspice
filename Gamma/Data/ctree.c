@@ -822,7 +822,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
             for (i=0;i<d->v_length;i++) {
                 w=d->v_realdata[i]*factor;
                 write_float(O,w);
-//		#Info: "%s) Ids(%d)=%g" d->v_name i w
+                //		#Info: "%s) Ids(%d)=%g" d->v_name i w
             }	
         }
         /*
@@ -1281,7 +1281,10 @@ void context_save(context *c,FILE *O) {
     }
     int i;
     #Dinfo: "[c] Saving %d children of %s" c->num_of_children c->name
-    for (i=0;i<c->num_of_children;i++) context_save(c->children[i],O);
+    for (i=0;i<c->num_of_children;i++) {
+        if (c->children[i]==NULL) continue;
+        context_save(c->children[i],O);
+    }	
 }
 void context_load(context *c,int level) {
     while (more_to_read()) {
@@ -1385,7 +1388,6 @@ void context_load(context *c,int level) {
             }
             next_context->value.v=a;
         }
-        //add_sub_context(c,next_context);
         ordinal num_of_children=read_ordinal();
         #Dinfo: "num_of_children=%ld" num_of_children
         int i;
@@ -2256,10 +2258,24 @@ node *new_node(node *i_parent,int i_index) {
 }
 
 context *new_context(context *i_parent, char *i_name,CTYPE i_type) {
-    // First, make sure the context is really new.
+    // Index?
+    int index=-1;
+    int i;
+    if (i_name) {
+        index=0;
+        for (i=0;i_name[i];i++) {
+            if (i_name[i]<'0') break;
+            if (i_name[i]>'9') break;
+            index*=10;
+            index+=i_name[i]-'0';
+        }
+        if (i_name[i]!=0) index=-1;
+    }
+    // Make sure the context is really new.
     if ((i_parent)&&(i_name)) {
         int i;
         for (i=0;i<i_parent->num_of_children;i++) {
+            if (i_parent->children[i]==NULL) continue;
             if (strcmp(i_parent->children[i]->name,i_name)==0) {
                 if (i_type) i_parent->children[i]->value_type=i_type;
                 return i_parent->children[i];
@@ -2269,30 +2285,28 @@ context *new_context(context *i_parent, char *i_name,CTYPE i_type) {
     context *new_context=(context *)malloc(sizeof(context));
     new_context->max_num_of_children=DEFAULT_NUM_OF_SUBCONTEXTS;
     new_context->children=(context **)malloc(sizeof(context *)*new_context->max_num_of_children);
-    int i;
     for (i=0;i<new_context->max_num_of_children;i++) new_context->children[i]=NULL;
     new_context->num_of_children=0;
     new_context->sibling_order=0;
     new_context->parent=i_parent;
-    if (i_parent) new_context->sibling_order=add_sub_context(i_parent,new_context);
+    if (i_parent) {
+        if (index==-1) index=i_parent->num_of_children;
+        while (index>=i_parent->max_num_of_children) {
+            context **copied_list_of_children=(context **)malloc(sizeof(context *)*i_parent->max_num_of_children*2);
+            for (i=0;i<i_parent->max_num_of_children;i++) copied_list_of_children[i]=i_parent->children[i];
+            for (;i<i_parent->max_num_of_children*2;i++) copied_list_of_children[i]=NULL;
+            i_parent->max_num_of_children*=2;
+            free(i_parent->children);
+            i_parent->children=copied_list_of_children;
+        }
+        i_parent->children[index]=new_context;
+        if (index+1>i_parent->num_of_children) i_parent->num_of_children=index+1;
+        new_context->sibling_order=index;
+    }	
     new_context->name=NULL;
     if (i_name) new_context->name=strdup(i_name);
     new_context->value_type=i_type;
     return new_context;
-}
-ordinal add_sub_context(context *i_parent,context *i_child) {
-    int i;
-    if (i_parent->num_of_children==i_parent->max_num_of_children) {
-        context **copied_list_of_children=(context **)malloc(sizeof(context *)*i_parent->max_num_of_children*2);
-        for (i=0;i<i_parent->max_num_of_children;i++) copied_list_of_children[i]=i_parent->children[i];
-        for (;i<i_parent->max_num_of_children*2;i++) copied_list_of_children[i]=NULL;
-        i_parent->max_num_of_children*=2;
-        free(i_parent->children);
-        i_parent->children=copied_list_of_children;
-    }
-    i_parent->children[i_parent->num_of_children]=i_child;
-    i_parent->num_of_children++;
-    return(i_parent->num_of_children-1);
 }
 int resolve_context(char *i_key,context **i_context,float **array_entry) {
     context *temp_context=Context;
@@ -2323,6 +2337,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
             int l;
             context *next_context=NULL;
             for (l=0;l<temp_context->num_of_children;l++) {
+                if (temp_context->children[l]==NULL) continue;
                 if (strcmp(context_name_buffer,temp_context->children[l]->name)==0) {
                     next_context=temp_context->children[l];
                     break;
@@ -2363,6 +2378,7 @@ int resolve_context(char *i_key,context **i_context,float **array_entry) {
         }
         context *next_context=NULL;
         for (k=0;k<temp_context->num_of_children;k++) {
+            if (temp_context->children[k]==NULL) continue;
             if (strcmp(context_name_buffer,temp_context->children[k]->name)==0) {
                 next_context=temp_context->children[k];
                 break;
@@ -2425,7 +2441,8 @@ context *create_context(char *i_key) {
             int l;
             context *next_context=NULL;
             for (l=0;l<temp_context->num_of_children;l++) {
-                if (strcmp(context_name_buffer,temp_context->children[l])==0) {
+                if (temp_context->children[l]==NULL) continue;
+                if (strcmp(context_name_buffer,temp_context->children[l]->name)==0) {
                     next_context=temp_context->children[l];
                     break;
                 }
@@ -2440,35 +2457,35 @@ context *create_context(char *i_key) {
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l++]=0;
-	    add_entry_vector_int(p->factors,1);
+            add_entry_vector_int(p->factors,1);
             add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l]));
             for (;context_name_buffer[l]!=')';l++) if (context_name_buffer[l]==',') {
-		add_entry_vector_int(p->factors,1);
+                add_entry_vector_int(p->factors,1);
                 add_entry_vector_pointer_char(p->properties,&(context_name_buffer[l+1]));
                 context_name_buffer[l]=0;
             }		
             context_name_buffer[l]=0;
             for (l=0;l<p->sizes->num_of;l++) p->sizes->content[l]=strdup(p->sizes->content[l]);
             for (l=0;l<p->properties->num_of;l++) {
-	        #Dinfo: "p%d %x" l p->properties->content[l]
+                #Dinfo: "p%d %x" l p->properties->content[l]
                 int colon=0;
                 float margin=0;
                 while ((p->properties->content[l][colon])&&(p->properties->content[l][colon]!='?')) {
-		    #Dinfo: "SFSG %c" p->properties->content[l][colon]
-		    colon++; 
-		    #Dinfo: "SFSG %c" p->properties->content[l][colon]
-		}    
+                    #Dinfo: "SFSG %c" p->properties->content[l][colon]
+                    colon++; 
+                    #Dinfo: "SFSG %c" p->properties->content[l][colon]
+                }    
                 if (p->properties->content[l][colon]=='?') {
                     margin=atof(&(p->properties->content[l][colon+1]));
                     p->properties->content[l][colon]=0;
                 }
                 add_entry_vector_float(p->margins,margin);
-		if (p->properties->content[l][0]=='-') {
+                if (p->properties->content[l][0]=='-') {
                     p->properties->content[l]=strdup(&(p->properties->content[l][1]));
-		    p->factors->content[l]=-1;
-		} else {
+                    p->factors->content[l]=-1;
+                } else {
                     p->properties->content[l]=strdup(p->properties->content[l]);
-		}
+                }
             }
             #Dinfo: "new pareto associative table: %s (%d sizes and %d properties)" temp_context->name p->sizes->num_of p->properties->num_of
             continue;
@@ -2477,7 +2494,8 @@ context *create_context(char *i_key) {
             int l;
             context *next_context=NULL;
             for (l=0;l<temp_context->num_of_children;l++) {
-                if (strcmp(context_name_buffer,temp_context->children[l])==0) {
+                if (temp_context->children[l]==NULL) continue;
+                if (strcmp(context_name_buffer,temp_context->children[l]->name)==0) {
                     next_context=temp_context->children[l];
                     break;
                 }
@@ -2538,6 +2556,7 @@ context *create_context(char *i_key) {
         context *next_context=NULL;
         #Dinfo: "Searching for sub-context %s of %s" context_name_buffer temp_context->name
         for (k=0;k<temp_context->num_of_children;k++) {
+            if (temp_context->children[k]==NULL) continue;
             #Dinfo: "    Child %d=%s" k temp_context->children[k]->name
             if (strcmp(context_name_buffer,temp_context->children[k]->name)==0) {
                 #Dinfo: "Sub-context %s already exists as child of %s" context_name_buffer temp_context->name
@@ -2947,6 +2966,7 @@ copy_ctree_structure(Tcl_Interp *interp,char *target,char *key,char *argv[]) {
     return TCL_OK;
 }
 void delete_context(context *c) {
+    if (c==NULL) return;
     struct rusage* memory = malloc(sizeof(struct rusage));
     getrusage(RUSAGE_SELF, memory);
     if (c->value_type==ctype_LUT) {
@@ -3041,8 +3061,8 @@ void pat_front(PAT *p,vector_float *properties) {
                 #Info: "%d,%d: Comparing %d: %g %g" i ii j P Q
                 if (Q>P) dominated=0;
                 if (Q<P) dominates=0;	    
-		if (!(dominated||dominates)) break;
-
+                if (!(dominated||dominates)) break;
+                
             }
             if (dominated) {
                 if (!(p->content->content[ii]->flags)) {
@@ -3069,7 +3089,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
     }
     if (properties->num_of!=p->properties->num_of) {
         #Error: "Tried to add an entry to PAT with incompatible number of properties: PAT has %d property, but the entry has %d" p->properties->num_of properties->num_of
-	exit(1);
+        exit(1);
         return(-2);
     }
     // Negate all properties that are "less is better"
@@ -3094,7 +3114,7 @@ ordinal add_pat_entry(PAT *p,vector_float *sizes,vector_float *properties) {
             if (properties->content[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
             if (properties->content[j]<p->content->content[i]->properties->content[j]) dominates=0;
             if (properties->content[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
-	    if (!(dominated||dominates)) break;
+            if (!(dominated||dominates)) break;
         }
         if (dominated) {
             return(-1);
@@ -3141,7 +3161,7 @@ ordinal add_pat_array(PAT *p,float *sizes,float *properties) {
             if (properties[j]-p->margins->content[j]>p->content->content[i]->properties->content[j]) significantly_better=1;
             if (properties[j]<p->content->content[i]->properties->content[j]) dominates=0;
             if (properties[j]+p->margins->content[j]<p->content->content[i]->properties->content[j]) significantly_worse=1;
-	    if (!(dominated||dominates)) break;
+            if (!(dominated||dominates)) break;
         }
         if (dominated) {
             return(i);
@@ -3167,7 +3187,7 @@ ordinal force_pat_array(PAT *p,float *sizes,float *properties) {
     ordinal i,j;
     // Negate all properties that are "less is better"
     for (i=0;i<p->properties->num_of;i++) properties[i]=p->factors->content[i]*properties[i];
- 
+    
     PAT_entry *pe=(PAT_entry *)malloc(sizeof(PAT_entry));
     pe->id=p->id_counter++;
     pe->flags=0;
@@ -3305,14 +3325,14 @@ void pat_graph(FILE *O,PAT *p,int x,int y) {
     int size=0;
     for (i=0;i<p->content->num_of;i++) {
         if (p->content->content[i]->flags) continue;
-	size++;
+        size++;
     }
     PAT_graph_pixel *g=(PAT_graph_pixel *)malloc(sizeof(PAT_graph_pixel)*size);
     int j=0;
     for (i=0;i<p->content->num_of;i++) {
         if (p->content->content[i]->flags) continue;
-	g[j].x=p->factors->content[x]*p->content->content[i]->properties->content[x];
-	g[j].y=p->factors->content[y]*p->content->content[i]->properties->content[y];
+        g[j].x=p->factors->content[x]*p->content->content[i]->properties->content[x];
+        g[j].y=p->factors->content[y]*p->content->content[i]->properties->content[y];
         j++;
     }
     qsort(g,size,sizeof(PAT_graph_pixel),compare_pat_graph_pixels);
@@ -3327,29 +3347,29 @@ void pat_unique(PAT *p,float f) {
     for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(min,p->content->content[0]->properties->content[i]);
     for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(max,p->content->content[0]->properties->content[i]);
     for (i=0;i<p->content->num_of;i++) for (j=0;j<p->properties->num_of;j++) {
-    	if (p->content->content[i]->properties->content[j]>max->content[j]) max->content[j]=p->content->content[i]->properties->content[j];
-    	if (p->content->content[i]->properties->content[j]<min->content[j]) min->content[j]=p->content->content[i]->properties->content[j];
+        if (p->content->content[i]->properties->content[j]>max->content[j]) max->content[j]=p->content->content[i]->properties->content[j];
+        if (p->content->content[i]->properties->content[j]<min->content[j]) min->content[j]=p->content->content[i]->properties->content[j];
     }
     vector_float *interval=new_vector_float();
     for (i=0;i<p->properties->num_of;i++) {
         add_entry_vector_float(interval,(max->content[i]-min->content[i])/f);
-//	#Info: "Interval %s: (%g-%g)/%g=%g" p->properties->content[i] max->content[i] min->content[i] f interval->content[i] 
+        //	#Info: "Interval %s: (%g-%g)/%g=%g" p->properties->content[i] max->content[i] min->content[i] f interval->content[i] 
     }
     for (i=0;i<p->content->num_of;i++) for (j=i+1;j<p->content->num_of;j++) {
         int same=1;
-	for (k=0;k<p->properties->num_of;k++) {
-	    if (fabs(p->content->content[i]->properties->content[k]-p->content->content[j]->properties->content[k])>interval->content[k]) {
-	        same=0;
-		break;
-	    }
-	}
-	if (same) {
-	 //   for (k=0;k<p->properties->num_of;k++) {
-	  //      float diff=fabs(p->content->content[i]->properties->content[k]-p->content->content[j]->properties->content[k]);
-	  //      #Info: "Same %s: %g-%g=%g<%g" p->properties->content[k] p->content->content[i]->properties->content[k] p->content->content[j]->properties->content[k] diff interval->content[k]
-	//    }
-	    delete_entry_vector_pointer_PAT_entry(p->content,j--);
-	}    
+        for (k=0;k<p->properties->num_of;k++) {
+            if (fabs(p->content->content[i]->properties->content[k]-p->content->content[j]->properties->content[k])>interval->content[k]) {
+                same=0;
+                break;
+            }
+        }
+        if (same) {
+            //   for (k=0;k<p->properties->num_of;k++) {
+                //      float diff=fabs(p->content->content[i]->properties->content[k]-p->content->content[j]->properties->content[k]);
+                //      #Info: "Same %s: %g-%g=%g<%g" p->properties->content[k] p->content->content[i]->properties->content[k] p->content->content[j]->properties->content[k] diff interval->content[k]
+            //    }
+            delete_entry_vector_pointer_PAT_entry(p->content,j--);
+        }    
     }
 }
 void pat_stars(PAT *p) {
@@ -3359,15 +3379,15 @@ void pat_stars(PAT *p) {
     for (i=0;i<p->properties->num_of;i++) add_entry_vector_float(max,p->content->content[0]->properties->content[i]);
     for (i=0;i<p->properties->num_of;i++) add_entry_vector_int(indices,0);
     for (i=0;i<p->content->num_of;i++) for (j=0;j<p->properties->num_of;j++) {
-    	if (p->content->content[i]->properties->content[j]<=max->content[j]) continue;
-	max->content[j]=p->content->content[i]->properties->content[j];
-	indices->content[j]=p->content->content[i]->id;
+        if (p->content->content[i]->properties->content[j]<=max->content[j]) continue;
+        max->content[j]=p->content->content[i]->properties->content[j];
+        indices->content[j]=p->content->content[i]->id;
     }
     for (i=0;i<p->content->num_of;i++) {
         int star=0;
         for (j=0;j<p->properties->num_of;j++) if (indices->content[j]==p->content->content[i]->id) star=1;
-	if (star) continue;
-	delete_entry_vector_pointer_PAT_entry(p->content,i--);
+        if (star) continue;
+        delete_entry_vector_pointer_PAT_entry(p->content,i--);
     }	
 }
 
@@ -3377,16 +3397,16 @@ int polish2expr(char *expr,int start,int end) {
     int atom=1;
     for (i=start;i<=end;i++) if (expr[i]==' ') {
         atom=0;
-	break;
+        break;
     }
     if (atom) {
         for (i=start;i<=end;i++) result_buffer[result_position++]=expr[i];
         char atomic_string[256];
-	for (i=start;i<=end;i++) atomic_string[i-start]=expr[i];
-	atomic_string[i-start]=0;
-	if (strcmp(atomic_string,"0")==0) return(0);
-	if (strcmp(atomic_string,"1")==0) return(1);
-	return(-1);
+        for (i=start;i<=end;i++) atomic_string[i-start]=expr[i];
+        atomic_string[i-start]=0;
+        if (strcmp(atomic_string,"0")==0) return(0);
+        if (strcmp(atomic_string,"1")==0) return(1);
+        return(-1);
     }
     int peelme=1;
     int i_start=start;
@@ -3395,7 +3415,7 @@ int polish2expr(char *expr,int start,int end) {
         brace_count=0;
         for (i=i_start;i<=i_end;i++) {
             if (expr[i]=='{') brace_count++;
-            if (brace_count==0) peelme=0;
+                if (brace_count==0) peelme=0;
             if (expr[i]=='}') brace_count--;
         }
         if (peelme) {
@@ -3407,2266 +3427,2270 @@ int polish2expr(char *expr,int start,int end) {
     for (i=i_start+1;expr[i]==' ';i++);
     int start_arg1=i;
     if (expr[i]=='{') {
-        brace_count=1;
-        for (i++;brace_count;i++) {
-            if (expr[i]=='{') brace_count++;
-            if (expr[i]=='}') brace_count--;
-        }
-	i--;
-    } else {
-        for (;expr[i]!=' ';i++);
-	i--;
-    }
-    int end_arg1=i;
-    i++;
-    for (;expr[i]==' ';i++);
-    int start_arg2=i;
-    if (expr[i]=='{') {
-        brace_count=1;
-        for (i++;brace_count;i++) {
-            if (expr[i]=='{') brace_count++;
-            if (expr[i]=='}') brace_count--;
-        }
-	i--;
-    } else {
-        i=i_end;
-    }
-    int end_arg2=i;
-    int backtrack=result_position;
-    result_buffer[result_position]=0;
-    if (op=='*') {
-        flag1=polish2expr(expr,start_arg1,end_arg1);
-        if (flag1==0) {
-	    result_position=backtrack;
-	    result_buffer[result_position++]='0';
-	    return(0);
-	}
-        result_buffer[result_position++]='*';
-	flag2=polish2expr(expr,start_arg2,end_arg2);
-        if (flag2==0) {
-	    result_position=backtrack;
-	    result_buffer[result_position++]='0';
-	    return(0);
-	}
-        if (flag1==1) {
-	    result_position=backtrack;
-	    return(polish2expr(expr,start_arg2,end_arg2));
-	}
-        if (flag2==1) {
-	    result_position=backtrack;
-	    return(polish2expr(expr,start_arg1,end_arg1));
-	}
-    }
-    if (op=='+') {
-        result_buffer[result_position++]='(';
-        flag1=polish2expr(expr,start_arg1,end_arg1);
-        if (flag1==0) {
-	    result_position=backtrack;
-	    return(polish2expr(expr,start_arg2,end_arg2));
-	}
-        result_buffer[result_position++]='+';
-	flag2=polish2expr(expr,start_arg2,end_arg2);
-        if (flag2==0) {
-	    result_position=backtrack;
-	    return(polish2expr(expr,start_arg1,end_arg1));
-	}
-        result_buffer[result_position++]=')';
-    }
-    if (op=='-') {
-        result_buffer[result_position++]='(';
-        flag1=polish2expr(expr,start_arg1,end_arg1);
-        if (flag1==0) {
-	    result_position=backtrack;
-            result_buffer[result_position++]='(';
-            result_buffer[result_position++]='-';
-	    flag2=polish2expr(expr,start_arg2,end_arg2);
-            result_buffer[result_position++]=')';
-	    return(flag2);
-	}
-        result_buffer[result_position++]='-';
-	flag2=polish2expr(expr,start_arg2,end_arg2);
-        if (flag2==0) {
-	    result_position=backtrack;
-	    return(polish2expr(expr,start_arg1,end_arg1));
-	}
-        result_buffer[result_position++]=')';
-    }
-    return(-1);
-}
-void expr2polish(char *expr,int start,int end) {
-    int i=0;
-    if (expr[start]==0) {
-        result_buffer[result_position++]='0';
-        return;
-    }
-    int brace_count;
-    int weakest_degree=3;
-    int weakest=-1;
-    int peelme=1;
-    int i_start=start;
-    int i_end=end;
-    while (peelme) {
-        brace_count=0;
-        for (i=i_start;i<=i_end;i++) {
-            if (expr[i]=='(') brace_count++;
-            if (brace_count==0) peelme=0;
-            if (expr[i]==')') brace_count--;
-        }
-        if (peelme) {
-            i_end--;
-            i_start++;   
-        }
-    }
-    brace_count=0;
-    for (i=i_start;i<=i_end;i++) {
-        if (expr[i]=='(') brace_count++;
-        if (brace_count==0) {
-            if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
-                weakest_degree=1;
-                weakest=i;
+            brace_count=1;
+            for (i++;brace_count;i++) {
+                if (expr[i]=='{') brace_count++;
+                if (expr[i]=='}') brace_count--;
             }
-            if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
-                weakest_degree=2;
-                weakest=i;
+            i--;
+        } else {
+            for (;expr[i]!=' ';i++);
+            i--;
+        }
+        int end_arg1=i;
+        i++;
+        for (;expr[i]==' ';i++);
+        int start_arg2=i;
+        if (expr[i]=='{') {
+                brace_count=1;
+                for (i++;brace_count;i++) {
+                    if (expr[i]=='{') brace_count++;
+                    if (expr[i]=='}') brace_count--;
+                }
+                i--;
+            } else {
+                i=i_end;
             }
-        }
-        if (expr[i]==')') brace_count--;
-    }
-    char *expr_start=&(expr[i_start]);
-    if (weakest==-1) {
-        for (i=i_start;i<=i_end;i++) result_buffer[result_position++]=expr[i];
-        return;
-    }
-    char op=expr[weakest];
-    result_buffer[result_position++]='{';
-    result_buffer[result_position++]=op;
-    result_buffer[result_position++]=' ';
-    if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
-    result_buffer[result_position++]=' ';
-    expr2polish(expr,weakest+1,i_end);
-    result_buffer[result_position++]='}';
-}
-
-void expr2derive(char *by,char *expr,int start,int end) {
-    int i=0;
-    if (expr[start]==0) {
-        result_buffer[result_position++]='0';
-        return;
-    }
-    int brace_count;
-    int weakest_degree=3;
-    int weakest=-1;
-    int peelme=1;
-    int i_start=start;
-    int i_end=end;
-    while (peelme) {
-        brace_count=0;
-        for (i=i_start;i<=i_end;i++) {
-            if (expr[i]=='(') brace_count++;
-            if (brace_count==0) peelme=0;
-            if (expr[i]==')') brace_count--;
-        }
-        if (peelme) {
-            i_end--;
-            i_start++;   
-        }
-    }
-    brace_count=0;
-    for (i=i_start;i<=i_end;i++) {
-        if (expr[i]=='(') brace_count++;
-        if (brace_count==0) {
-            if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
-                weakest_degree=1;
-                weakest=i;
+            int end_arg2=i;
+            int backtrack=result_position;
+            result_buffer[result_position]=0;
+            if (op=='*') {
+                flag1=polish2expr(expr,start_arg1,end_arg1);
+                if (flag1==0) {
+                    result_position=backtrack;
+                    result_buffer[result_position++]='0';
+                    return(0);
+                }
+                result_buffer[result_position++]='*';
+                flag2=polish2expr(expr,start_arg2,end_arg2);
+                if (flag2==0) {
+                    result_position=backtrack;
+                    result_buffer[result_position++]='0';
+                    return(0);
+                }
+                if (flag1==1) {
+                    result_position=backtrack;
+                    return(polish2expr(expr,start_arg2,end_arg2));
+                }
+                if (flag2==1) {
+                    result_position=backtrack;
+                    return(polish2expr(expr,start_arg1,end_arg1));
+                }
             }
-            if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
-                weakest_degree=2;
-                weakest=i;
+            if (op=='+') {
+                result_buffer[result_position++]='(';
+                flag1=polish2expr(expr,start_arg1,end_arg1);
+                if (flag1==0) {
+                    result_position=backtrack;
+                    return(polish2expr(expr,start_arg2,end_arg2));
+                }
+                result_buffer[result_position++]='+';
+                flag2=polish2expr(expr,start_arg2,end_arg2);
+                if (flag2==0) {
+                    result_position=backtrack;
+                    return(polish2expr(expr,start_arg1,end_arg1));
+                }
+                result_buffer[result_position++]=')';
             }
+            if (op=='-') {
+                result_buffer[result_position++]='(';
+                flag1=polish2expr(expr,start_arg1,end_arg1);
+                if (flag1==0) {
+                    result_position=backtrack;
+                    result_buffer[result_position++]='(';
+                    result_buffer[result_position++]='-';
+                    flag2=polish2expr(expr,start_arg2,end_arg2);
+                    result_buffer[result_position++]=')';
+                    return(flag2);
+                }
+                result_buffer[result_position++]='-';
+                flag2=polish2expr(expr,start_arg2,end_arg2);
+                if (flag2==0) {
+                    result_position=backtrack;
+                    return(polish2expr(expr,start_arg1,end_arg1));
+                }
+                result_buffer[result_position++]=')';
+            }
+            return(-1);
         }
-        if (expr[i]==')') brace_count--;
-    }
-    if (weakest==-1) {
-        char atom_buffer[256];
-	for (i=i_start;i<=i_end;i++) atom_buffer[i-i_start]=expr[i];
-	atom_buffer[i-i_start]=0;
-        if (strcmp(atom_buffer,by)==0) {
-	    result_buffer[result_position++]='1';
-	} else {
-	    result_buffer[result_position++]='0';
-	}
-	return;
-    }
-    char op=expr[weakest];
-    if (op=='*') {
-        result_buffer[result_position++]='{';
-        result_buffer[result_position++]='+';
-        result_buffer[result_position++]=' ';
-        result_buffer[result_position++]='{';
-        result_buffer[result_position++]='*';
-        result_buffer[result_position++]=' ';
-        if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
-        result_buffer[result_position++]=' ';
-        expr2polish(expr,weakest+1,i_end);
-        result_buffer[result_position++]='}';
-        result_buffer[result_position++]=' ';
-        result_buffer[result_position++]='{';
-        result_buffer[result_position++]='*';
-        result_buffer[result_position++]=' ';
-        if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
-        result_buffer[result_position++]=' ';
-        expr2derive(by,expr,weakest+1,i_end);
-        result_buffer[result_position++]='}';
-        result_buffer[result_position++]='}';
-        return;
-    }
-    result_buffer[result_position++]='{';
-    result_buffer[result_position++]=op;
-    result_buffer[result_position++]=' ';
-    if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
-    result_buffer[result_position++]=' ';
-    expr2derive(by,expr,weakest+1,i_end);
-    result_buffer[result_position++]='}';
-    return;
-}
-char *peel(char *expr_in,int toplevel) {
-    int i=0;
-    char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
-    for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
-    expr[i]=0;
-    int brace_count;
-    int weakest_degree=3;
-    int weakest=-1;
-    int peelme=1;
-    while (peelme) {
-        brace_count=0;
-        for (i=0;expr[i];i++) {
-            if (expr[i]=='(') brace_count++;
-            if (brace_count==0) peelme=0;
-            if (expr[i]==')') brace_count--;
+        void expr2polish(char *expr,int start,int end) {
+            int i=0;
+            if (expr[start]==0) {
+                result_buffer[result_position++]='0';
+                return;
+            }
+            int brace_count;
+            int weakest_degree=3;
+            int weakest=-1;
+            int peelme=1;
+            int i_start=start;
+            int i_end=end;
+            while (peelme) {
+                brace_count=0;
+                for (i=i_start;i<=i_end;i++) {
+                    if (expr[i]=='(') brace_count++;
+                    if (brace_count==0) peelme=0;
+                    if (expr[i]==')') brace_count--;
+                }
+                if (peelme) {
+                    i_end--;
+                    i_start++;   
+                }
+            }
+            brace_count=0;
+            for (i=i_start;i<=i_end;i++) {
+                if (expr[i]=='(') brace_count++;
+                if (brace_count==0) {
+                    if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
+                        weakest_degree=1;
+                        weakest=i;
+                    }
+                    if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
+                        weakest_degree=2;
+                        weakest=i;
+                    }
+                }
+                if (expr[i]==')') brace_count--;
+            }
+            char *expr_start=&(expr[i_start]);
+            if (weakest==-1) {
+                for (i=i_start;i<=i_end;i++) result_buffer[result_position++]=expr[i];
+                return;
+            }
+            char op=expr[weakest];
+            result_buffer[result_position++]='{';
+                result_buffer[result_position++]=op;
+                result_buffer[result_position++]=' ';
+                if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+                result_buffer[result_position++]=' ';
+                expr2polish(expr,weakest+1,i_end);
+            result_buffer[result_position++]='}';
         }
-        if (peelme) {
-            expr[i-1]=0;
-            expr=&(expr[1]);   
+        
+        void expr2derive(char *by,char *expr,int start,int end) {
+            int i=0;
+            if (expr[start]==0) {
+                result_buffer[result_position++]='0';
+                return;
+            }
+            int brace_count;
+            int weakest_degree=3;
+            int weakest=-1;
+            int peelme=1;
+            int i_start=start;
+            int i_end=end;
+            while (peelme) {
+                brace_count=0;
+                for (i=i_start;i<=i_end;i++) {
+                    if (expr[i]=='(') brace_count++;
+                    if (brace_count==0) peelme=0;
+                    if (expr[i]==')') brace_count--;
+                }
+                if (peelme) {
+                    i_end--;
+                    i_start++;   
+                }
+            }
+            brace_count=0;
+            for (i=i_start;i<=i_end;i++) {
+                if (expr[i]=='(') brace_count++;
+                if (brace_count==0) {
+                    if ((expr[i]=='-')||(expr[i]=='+')) if (weakest_degree>=1) {
+                        weakest_degree=1;
+                        weakest=i;
+                    }
+                    if ((expr[i]=='*')||(expr[i]=='/')) if (weakest_degree>=2) {
+                        weakest_degree=2;
+                        weakest=i;
+                    }
+                }
+                if (expr[i]==')') brace_count--;
+            }
+            if (weakest==-1) {
+                char atom_buffer[256];
+                for (i=i_start;i<=i_end;i++) atom_buffer[i-i_start]=expr[i];
+                atom_buffer[i-i_start]=0;
+                if (strcmp(atom_buffer,by)==0) {
+                    result_buffer[result_position++]='1';
+                } else {
+                    result_buffer[result_position++]='0';
+                }
+                return;
+            }
+            char op=expr[weakest];
+            if (op=='*') {
+                result_buffer[result_position++]='{';
+                    result_buffer[result_position++]='+';
+                    result_buffer[result_position++]=' ';
+                    result_buffer[result_position++]='{';
+                        result_buffer[result_position++]='*';
+                        result_buffer[result_position++]=' ';
+                        if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+                        result_buffer[result_position++]=' ';
+                        expr2polish(expr,weakest+1,i_end);
+                    result_buffer[result_position++]='}';
+                    result_buffer[result_position++]=' ';
+                    result_buffer[result_position++]='{';
+                        result_buffer[result_position++]='*';
+                        result_buffer[result_position++]=' ';
+                        if (weakest>i_start) expr2polish(expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+                        result_buffer[result_position++]=' ';
+                        expr2derive(by,expr,weakest+1,i_end);
+                    result_buffer[result_position++]='}';
+                result_buffer[result_position++]='}';
+                return;
+            }
+            result_buffer[result_position++]='{';
+                result_buffer[result_position++]=op;
+                result_buffer[result_position++]=' ';
+                if (weakest>i_start) expr2derive(by,expr,i_start,weakest-1); else result_buffer[result_position++]='0';
+                result_buffer[result_position++]=' ';
+                expr2derive(by,expr,weakest+1,i_end);
+            result_buffer[result_position++]='}';
+            return;
         }
-    }
-    return(expr);
-}
-int det_calc(int dim,int row_num,int replacement_col,int level) {
-    int sign=0;
-    int i;
-    int notfirst=0;
-    int this_is_zero=1;
-//    #Info: "DET %d start" level
-    for (i=0;i<dim;i++) {
-        if (det_calc_avoid_cols[i]) continue;
-        sign=1-sign;
-	char *term=det_calc_M[row_num][i];
-	if (i==replacement_col) {
-	    term=det_calc_y[row_num];
-	}
-        if (term==NULL) continue;
-//	#Info: "term(%d,%d)=%s" row_num i term
-        if (term[0]==0) continue;
-        if (strcmp(term,"0")==0) continue;
-        int subposition=result_position;
-        if (sign) result_buffer[result_position++]='+'; else result_buffer[result_position++]='-';
-        int j=0;
-        result_buffer[result_position++]='(';
-        for (j=0;term[j];j++) result_buffer[result_position++]=term[j];
-        result_buffer[result_position++]=')';
-        int sub_is_zero=0;
-        if (row_num<dim-1) {
-            result_buffer[result_position++]='*';
-            result_buffer[result_position++]='(';
-	    int detect_empty=result_position;
-            det_calc_avoid_cols[i]=1;
-            sub_is_zero=det_calc(dim,row_num+1,replacement_col,level+1);
-            det_calc_avoid_cols[i]=0;
-	    if (detect_empty==result_position) sub_is_zero=1;
-            result_buffer[result_position++]=')';
+        char *peel(char *expr_in,int toplevel) {
+            int i=0;
+            char *expr=(char *)malloc(sizeof(char)*(1+strlen(expr_in)));
+            for (i=0;expr_in[i];i++) expr[i]=expr_in[i];
+            expr[i]=0;
+            int brace_count;
+            int weakest_degree=3;
+            int weakest=-1;
+            int peelme=1;
+            while (peelme) {
+                brace_count=0;
+                for (i=0;expr[i];i++) {
+                    if (expr[i]=='(') brace_count++;
+                    if (brace_count==0) peelme=0;
+                    if (expr[i]==')') brace_count--;
+                }
+                if (peelme) {
+                    expr[i-1]=0;
+                    expr=&(expr[1]);   
+                }
+            }
+            return(expr);
         }
-        if (sub_is_zero) result_position=subposition; else this_is_zero=0;
-        result_buffer[result_position]=0;
-    }
-    result_buffer[result_position]=0;
-//    #Info: "DET %d end" level
-    return(this_is_zero);
-}
-
-
-static int
-tcl_det (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if ((argc!=2)&&(argc!=4)) {
-        #Error: "%s requires a tcl array that expresses a matrix" argv[0]
-	return TCL_ERROR;
-    }
-    result_position=0;
-    #Info: "Matrix %s " argv[1]
-    char *dim_string=Tcl_GetVar2(interp,argv[1],"dim",0);
-    #Info: "Matrix %s " argv[1]
-    if (dim_string==NULL) {
-    	#Error: "matrix %s contains no dim field" argv[1]
-    	return TCL_ERROR;
-    }
-    int dim=atoi(dim_string);
-    #Info: "Matrix %s is of %d dim" argv[1] dim
-    int i,j;
-    for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
-        char key[256];
-	sprintf(key,"%d,%d",i,j);
-	char *entry_string=Tcl_GetVar2(interp,argv[1],key,0);
-	if (entry_string==NULL) {
-	    det_calc_M[i][j]=NULL;
-	} else {    
-	    det_calc_M[i][j]=strdup(entry_string);
-	    #Info: "%s(%d,%d)=%s" argv[1] i j det_calc_M[i][j]
-	}    
-    } 
-    if (argc==4) {
-	char *y=Tcl_GetVar2(interp,argv[2],NULL,0);
-	if (y==NULL) {
-            #Error: "%s requires a y vector for an Mx=y system" argv[0]
-	    return TCL_ERROR;
-	}
-	int ARGC;
-	char **ARGV;
-        Tcl_SplitList(interp,y,&ARGC,&ARGV);
-	if (ARGC!=dim) {
-            #Error: "%s y vector is not of length %d" argv[0] dim
-	    return TCL_ERROR;
-	}
-	for (i=0;i<dim;i++) det_calc_y[i]=strdup(ARGV[i]);
-	det_calc(dim,0,atoi(argv[3]),1);
-    } else {
-	det_calc(dim,0,-1,1);
-    }
-    #Info: "DET initial result(%d)=%s" result_position result_buffer
-    char *temp_result=strdup(result_buffer);
-    result_position=0;
-    expr2polish(temp_result,0,strlen(temp_result)-1);
-    free(temp_result);
-    result_buffer[result_position]=0;
-    
-    char *polish_result=strdup(result_buffer);
-    printf("DET polish result(%d)=%s\n",result_position,polish_result);
-    fflush(stdout);
-    result_position=0;
-    polish2expr(polish_result,0,strlen(polish_result)-1);
-    free(polish_result);
-    result_buffer[result_position]=0;
-    Tcl_SetVar(interp,"::det_calc_result",result_buffer,0);
-    Tcl_ResetResult(interp);
-    #Info: "DET simplified result(%d)=%s" result_position result_buffer
-    for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
-        if (det_calc_M[i][j]==NULL) continue;
-	free(det_calc_M[i][j]);
-    }
-    return TCL_OK;
-}
-
-static int
-tcl_polish2expr (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=2) {
-        #Error: "%s requires a no-spaces expression" argv[0]
-	return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    result_position=0;
-    int i;
-    for (i=0;argv[1][i];i++) {
-        printf("Expression %d %c\n",i,argv[1][i]);
-    }
-    polish2expr(argv[1],0,strlen(argv[1])-1);
-    result_buffer[result_position]=0;
-    Tcl_AppendElement(interp,result_buffer);
-    return TCL_OK;	
-}
-static int
-tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=2) {
-        #Error: "%s requires a no-spaces expression" argv[0]
-	return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    result_position=0;
-    expr2polish(argv[1],0,strlen(argv[1])-1);
-    result_buffer[result_position]=0;
-    Tcl_AppendElement(interp,result_buffer);
-    return TCL_OK;	
-}
-static int
-tcl_derive (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=3) {
-        #Error: "%s requires a no-spaces expression" argv[0]
-	return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    result_position=0;
-    expr2derive(argv[1],argv[2],0,strlen(argv[2])-1);
-    result_buffer[result_position]=0;
-    printf("polish derivative=%s\n",result_buffer);
-    char *polish=strdup(result_buffer);
-    result_position=0;
-    polish2expr(polish,0,strlen(polish)-1);
-    result_buffer[result_position]=0;
-    printf("simplified derivative=%s\n",result_buffer);
-    free(polish);
-    Tcl_AppendElement(interp,result_buffer);
-    return TCL_OK;	
-}
-static int
-tcl_peel (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=2) {
-        #Error: "%s requires a no-spaces expression"
-	return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    Tcl_AppendElement(interp,peel(argv[1],1));
-    return TCL_OK;	
-}
-
-static int
-tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc<2) {
-        #Error: "(ctree) got no context"
-        return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    context *c=Context;
-    float *array_entry;
-    if ((argv[1][0]=='/')||(argv[1][0]==':')) {
-        c=ctree;
-    }
-    // "exists" and "create" require an exception to the rule other commands require, that the context given as 1st arg must be valid.
-    if (argc==3) {
-        if ((strcmp(argv[2],"exists")==0)||(strcmp(argv[2],"?")==0)||(strcmp(argv[2],"exists?")==0)) {
-            tcl_append_int(interp,resolve_context(argv[1],&c,&array_entry));
-            return TCL_OK;
+        int det_calc(int dim,int row_num,int replacement_col,int level) {
+            int sign=0;
+            int i;
+            int notfirst=0;
+            int this_is_zero=1;
+            //    #Info: "DET %d start" level
+            for (i=0;i<dim;i++) {
+                if (det_calc_avoid_cols[i]) continue;
+                sign=1-sign;
+                char *term=det_calc_M[row_num][i];
+                if (i==replacement_col) {
+                    term=det_calc_y[row_num];
+                }
+                if (term==NULL) continue;
+                //	#Info: "term(%d,%d)=%s" row_num i term
+                if (term[0]==0) continue;
+                if (strcmp(term,"0")==0) continue;
+                int subposition=result_position;
+                if (sign) result_buffer[result_position++]='+'; else result_buffer[result_position++]='-';
+                int j=0;
+                result_buffer[result_position++]='(';
+                for (j=0;term[j];j++) result_buffer[result_position++]=term[j];
+                result_buffer[result_position++]=')';
+                int sub_is_zero=0;
+                if (row_num<dim-1) {
+                    result_buffer[result_position++]='*';
+                    result_buffer[result_position++]='(';
+                    int detect_empty=result_position;
+                    det_calc_avoid_cols[i]=1;
+                    sub_is_zero=det_calc(dim,row_num+1,replacement_col,level+1);
+                    det_calc_avoid_cols[i]=0;
+                    if (detect_empty==result_position) sub_is_zero=1;
+                    result_buffer[result_position++]=')';
+                }
+                if (sub_is_zero) result_position=subposition; else this_is_zero=0;
+                result_buffer[result_position]=0;
+            }
+            result_buffer[result_position]=0;
+            //    #Info: "DET %d end" level
+            return(this_is_zero);
         }
-        if ((strcmp(argv[2],"!")==0)||(strcmp(argv[2],"create")==0)||(strcmp(argv[2],"exists!")==0)) {
-            create_context(argv[1]);
-            return TCL_OK;
-        }
-    }
-    if (!(resolve_context(argv[1],&c,&array_entry))) {
-        //        #Error: "(ctree) no such context %s" argv[1]
-        //        return TCL_ERROR;
-        create_context(argv[1]);
-        resolve_context(argv[1],&c,&array_entry);
-    }
-    if (argc==2) {
-        // simple value return
-        if (c->value_type==ctype_POLY) {
-            tcl_append_float(interp,calc_POLY(c->value.v));
-            return TCL_OK;
-        }
-        if (c->value_type==ctype_void) {
-            return TCL_OK;
-        }
-        if (c->value_type==ctype_string) {
-            Tcl_AppendElement(interp,(char *)c->value.v);
-            return TCL_OK;
-        }
-        if (c->value_type==ctype_real) {
-            tcl_append_float(interp,c->value.s);
-            return TCL_OK;
-        }
-        if (c->value_type==ctype_integer) {
-            tcl_append_int(interp,c->value.o);
-            return TCL_OK;
-        }
-        if (c->value_type==ctype_LUT) {
-            if (array_entry==NULL) {
-                #Error: "(ctree) invalid array access %s" argv[1]
+        
+        
+        static int
+        tcl_det (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if ((argc!=2)&&(argc!=4)) {
+                #Error: "%s requires a tcl array that expresses a matrix" argv[0]
                 return TCL_ERROR;
             }
-            tcl_append_float(interp,*array_entry);
+            result_position=0;
+            #Info: "Matrix %s " argv[1]
+            char *dim_string=Tcl_GetVar2(interp,argv[1],"dim",0);
+            #Info: "Matrix %s " argv[1]
+            if (dim_string==NULL) {
+                #Error: "matrix %s contains no dim field" argv[1]
+                return TCL_ERROR;
+            }
+            int dim=atoi(dim_string);
+            #Info: "Matrix %s is of %d dim" argv[1] dim
+            int i,j;
+            for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
+                char key[256];
+                sprintf(key,"%d,%d",i,j);
+                char *entry_string=Tcl_GetVar2(interp,argv[1],key,0);
+                if (entry_string==NULL) {
+                    det_calc_M[i][j]=NULL;
+                } else {    
+                    det_calc_M[i][j]=strdup(entry_string);
+                    #Info: "%s(%d,%d)=%s" argv[1] i j det_calc_M[i][j]
+                }    
+            } 
+            if (argc==4) {
+                char *y=Tcl_GetVar2(interp,argv[2],NULL,0);
+                if (y==NULL) {
+                    #Error: "%s requires a y vector for an Mx=y system" argv[0]
+                    return TCL_ERROR;
+                }
+                int ARGC;
+                char **ARGV;
+                Tcl_SplitList(interp,y,&ARGC,&ARGV);
+                if (ARGC!=dim) {
+                    #Error: "%s y vector is not of length %d" argv[0] dim
+                    return TCL_ERROR;
+                }
+                for (i=0;i<dim;i++) det_calc_y[i]=strdup(ARGV[i]);
+                det_calc(dim,0,atoi(argv[3]),1);
+            } else {
+                det_calc(dim,0,-1,1);
+            }
+            #Info: "DET initial result(%d)=%s" result_position result_buffer
+            char *temp_result=strdup(result_buffer);
+            result_position=0;
+            expr2polish(temp_result,0,strlen(temp_result)-1);
+            free(temp_result);
+            result_buffer[result_position]=0;
+            
+            char *polish_result=strdup(result_buffer);
+            printf("DET polish result(%d)=%s\n",result_position,polish_result);
+            fflush(stdout);
+            result_position=0;
+            polish2expr(polish_result,0,strlen(polish_result)-1);
+            free(polish_result);
+            result_buffer[result_position]=0;
+            Tcl_SetVar(interp,"::det_calc_result",result_buffer,0);
+            Tcl_ResetResult(interp);
+            #Info: "DET simplified result(%d)=%s" result_position result_buffer
+            for (i=0;i<dim;i++) for (j=0;j<dim;j++) {
+                if (det_calc_M[i][j]==NULL) continue;
+                free(det_calc_M[i][j]);
+            }
             return TCL_OK;
         }
-        if (c->value_type==ctype_PAT) {
-            PAT *p=(PAT *)c->value.v;
-            tcl_append_int(interp,p->content->num_of);
+        
+        static int
+        tcl_polish2expr (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if (argc!=2) {
+                #Error: "%s requires a no-spaces expression" argv[0]
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            result_position=0;
+            int i;
+            for (i=0;argv[1][i];i++) {
+                printf("Expression %d %c\n",i,argv[1][i]);
+            }
+            polish2expr(argv[1],0,strlen(argv[1])-1);
+            result_buffer[result_position]=0;
+            Tcl_AppendElement(interp,result_buffer);
+            return TCL_OK;	
+        }
+        static int
+        tcl_polish (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if (argc!=2) {
+                #Error: "%s requires a no-spaces expression" argv[0]
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            result_position=0;
+            expr2polish(argv[1],0,strlen(argv[1])-1);
+            result_buffer[result_position]=0;
+            Tcl_AppendElement(interp,result_buffer);
+            return TCL_OK;	
+        }
+        static int
+        tcl_derive (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if (argc!=3) {
+                #Error: "%s requires a no-spaces expression" argv[0]
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            result_position=0;
+            expr2derive(argv[1],argv[2],0,strlen(argv[2])-1);
+            result_buffer[result_position]=0;
+            printf("polish derivative=%s\n",result_buffer);
+            char *polish=strdup(result_buffer);
+            result_position=0;
+            polish2expr(polish,0,strlen(polish)-1);
+            result_buffer[result_position]=0;
+            printf("simplified derivative=%s\n",result_buffer);
+            free(polish);
+            Tcl_AppendElement(interp,result_buffer);
+            return TCL_OK;	
+        }
+        static int
+        tcl_peel (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if (argc!=2) {
+                #Error: "%s requires a no-spaces expression"
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            Tcl_AppendElement(interp,peel(argv[1],1));
+            return TCL_OK;	
+        }
+        
+        static int
+        tcl_ctree (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc<2) {
+                #Error: "(ctree) got no context"
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            context *c=Context;
+            float *array_entry;
+            if ((argv[1][0]=='/')||(argv[1][0]==':')) {
+                c=ctree;
+            }
+            // "exists" and "create" require an exception to the rule other commands require, that the context given as 1st arg must be valid.
+            if (argc==3) {
+                if ((strcmp(argv[2],"exists")==0)||(strcmp(argv[2],"?")==0)||(strcmp(argv[2],"exists?")==0)) {
+                    tcl_append_int(interp,resolve_context(argv[1],&c,&array_entry));
+                    return TCL_OK;
+                }
+                if ((strcmp(argv[2],"!")==0)||(strcmp(argv[2],"create")==0)||(strcmp(argv[2],"exists!")==0)) {
+                    create_context(argv[1]);
+                    return TCL_OK;
+                }
+            }
+            if (!(resolve_context(argv[1],&c,&array_entry))) {
+                //        #Error: "(ctree) no such context %s" argv[1]
+                //        return TCL_ERROR;
+                create_context(argv[1]);
+                resolve_context(argv[1],&c,&array_entry);
+            }
+            if (argc==2) {
+                // simple value return
+                if (c->value_type==ctype_POLY) {
+                    tcl_append_float(interp,calc_POLY(c->value.v));
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_void) {
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_string) {
+                    Tcl_AppendElement(interp,(char *)c->value.v);
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_real) {
+                    tcl_append_float(interp,c->value.s);
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_integer) {
+                    tcl_append_int(interp,c->value.o);
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_LUT) {
+                    if (array_entry==NULL) {
+                        #Error: "(ctree) invalid array access %s" argv[1]
+                        return TCL_ERROR;
+                    }
+                    tcl_append_float(interp,*array_entry);
+                    return TCL_OK;
+                }
+                if (c->value_type==ctype_PAT) {
+                    PAT *p=(PAT *)c->value.v;
+                    tcl_append_int(interp,p->content->num_of);
+                    return TCL_OK;
+                }
+                #Error: "(ctree) ccontext has unrecognized value_type. (%d)" c->value_type
+                return TCL_ERROR;
+            }
+            if (strcmp(argv[2],"type")==0) {
+                tcl_append_int(interp,c->value_type);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"expression")==0) {
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The expression command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                if (argc!=3) {
+                    #Error: "(ctree) The expression command takes no arguments"
+                    return TCL_ERROR;
+                }
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The expression command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                POLY *p=(POLY *)c->value.v;
+                Tcl_AppendElement(interp,p->expression);
+                return TCL_OK;
+            }	
+            if (strcmp(argv[2],"denom")==0) {
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The denom command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                if (argc<4) {
+                    #Error: "(ctree) The denom command requires a polynomial"
+                    return TCL_ERROR;
+                }
+                POLY *nom=get_POLY(argv[1]);
+                nom->denom=get_POLY(argv[3]);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"derive")==0) {
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The derive command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                if (argc<4) {
+                    #Error: "(ctree) The derive command requires a by-variable"
+                    return TCL_ERROR;
+                }
+                context *by=Context;
+                float *array_entry;
+                if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+                    by=ctree;
+                }
+                float *array_context;
+                if (!resolve_context(argv[3],&by,&array_context)) {
+                    #Warning: "(ctree) The derive command was given a non-existent context %s" argv[3]
+                    tcl_append_float(interp,0);
+                    return TCL_OK;
+                }
+                void *by_var=&(by->value.s);
+                tcl_append_float(interp,derive_POLY(c->value.v,by_var));
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"root")==0) {
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The root command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                if (argc<4) {
+                    #Error: "(ctree) The root command requires a by-variable"
+                    return TCL_ERROR;
+                }
+                float init=0;
+                if (argc==5) init=strtod(argv[4],NULL);
+                context *by=Context;
+                float *array_entry;
+                if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+                    by=ctree;
+                }
+                float *array_context;
+                if (!resolve_context(argv[3],&by,&array_context)) {
+                    #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
+                    tcl_append_float(interp,0);
+                    return TCL_OK;
+                }
+                void *by_var=&(by->value.s);
+                tcl_append_float(interp,root_POLY(c->value.v,by_var,init));
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"imp_derive")==0) {
+                if (c->value_type!=ctype_POLY) {
+                    #Error: "(ctree) The root command is to be used with a polynomial only."
+                    return TCL_ERROR;
+                }
+                if (argc<5) {
+                    #Error: "(ctree) The implicit derivative command requires two by-variables"
+                    return TCL_ERROR;
+                }
+                float init=0;
+                if (argc==6) init=strtod(argv[5],NULL);
+                float *array_context;
+                context *by=Context;
+                if ((argv[3][0]=='/')||(argv[3][0]==':')) {
+                    by=ctree;
+                }
+                if (!resolve_context(argv[3],&by,&array_context)) {
+                    #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
+                    tcl_append_float(interp,0);
+                    return TCL_OK;
+                }
+                void *by_var=&(by->value.s);
+                context *root=Context;
+                if ((argv[4][0]=='/')||(argv[4][0]==':')) {
+                    root=ctree;
+                }
+                if (!resolve_context(argv[4],&root,&array_context)) {
+                    #Warning: "(ctree) The root command was given a non-existent context %s" argv[4]
+                    tcl_append_float(interp,0);
+                    return TCL_OK;
+                }
+                void *root_var=&(root->value.s);
+                tcl_append_float(interp,imp_derive_POLY(c->value.v,by_var,root_var,init));
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"PAT")==0) {
+                if (c->value_type!=ctype_PAT) {
+                    #Error: "(ctree) The PAT command is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+                    return TCL_ERROR;
+                }
+                if (argc<4) {
+                    #Error: "(ctree) The PAT command requires a sub-command: size, index, delete, foreach"
+                    return TCL_ERROR;
+                }
+                PAT *p=(PAT *)c->value.v;
+                if (strcmp(argv[3],"size")==0) {
+                    tcl_append_int(interp,p->content->num_of);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"properties")==0) {
+                    ordinal i;
+                    for (i=0;i<p->properties->num_of;i++) Tcl_AppendElement(interp,p->properties->content[i]);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"sizes")==0) {
+                    ordinal i;
+                    for (i=0;i<p->sizes->num_of;i++) Tcl_AppendElement(interp,p->sizes->content[i]);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"margins")==0) {
+                    ordinal i;
+                    for (i=0;i<p->margins->num_of;i++) tcl_append_float(interp,p->margins->content[i]);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"index")==0) {
+                    if (argc!=5) {
+                        #Error: "(ctree) The PAT index sub-command requires an index"
+                        return TCL_ERROR;
+                    }
+                    ordinal i,j;
+                    j=atoi(argv[4]);
+                    for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
+                    for (i=0;i<p->properties->num_of;i++) {
+                        float value=p->factors->content[i]*p->content->content[j]->properties->content[i];
+                        tcl_append_float(interp,value);
+                    }	
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"unique")==0) {
+                    if (argc!=5) {
+                        #Error: "(ctree) The PAT unique sub-command requires a factor"
+                        return TCL_ERROR;
+                    }
+                    pat_unique(p,atof(argv[4]));
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"id")==0) {
+                    if (argc!=5) {
+                        #Error: "(ctree) The PAT id sub-command requires an index"
+                        return TCL_ERROR;
+                    }
+                    tcl_append_int(interp,p->content->content[atoi(argv[4])]->id);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"id2index")==0) {
+                    if (argc!=5) {
+                        #Error: "(ctree) The PAT id sub-command requires an index"
+                        return TCL_ERROR;
+                    }
+                    int id=atoi(argv[4]);
+                    int i;
+                    for (i=0;i<p->content->num_of;i++) if (p->content->content[i]->id==id) break;
+                    if (i==p->content->num_of) tcl_append_int(interp,-1); else tcl_append_int(interp,i);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"graph")==0) {
+                    if (argc!=7) {
+                        #Error: "(ctree) The PAT graph sub-command requires an output file, x and y axes"
+                        return TCL_ERROR;
+                    }
+                    int i,x=-1,y=-1;
+                    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[5])==0) x=i;
+                    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[6])==0) y=i;
+                    if (x==-1) {
+                        #Error: "No such property %s in PAT %s" argv[5] c->name;
+                        return TCL_ERROR;
+                    }
+                    if (y==-1) {
+                        #Error: "No such property %s in PAT %s" argv[6] c->name;
+                        return TCL_ERROR;
+                    }
+                    FILE *O=fopen(argv[4],"w");
+                    fprintf(O,"%s,%s\n",argv[5],argv[6]);
+                    pat_graph(O,p,x,y);
+                    fclose(O);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"delete")==0) {
+                    if (argc!=5) {
+                        #Error: "(ctree) The PAT delete sub-command requires an index"
+                        return TCL_ERROR;
+                    }
+                    ordinal j;
+                    j=atoi(argv[4]);
+                    delete_entry_vector_pointer_PAT_entry(p->content,j);
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"stars")==0) {
+                    if (argc!=4) {
+                        #Error: "(ctree) The PAT stars sub-command requires no more arguments"
+                        return TCL_ERROR;
+                    }
+                    pat_stars(p);
+                    return TCL_OK;
+                }
+                #Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]
+                return TCL_ERROR;
+            }
+            if (strcmp(argv[2],">>>")==0) {
+                if (c->value_type!=ctype_PAT) {
+                    #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+                    return TCL_ERROR;
+                }
+                if (argc!=4) {
+                    #Error: "(ctree) The >>> operator requires a list of properties."
+                    return TCL_ERROR;
+                }
+                ordinal i;
+                PAT *p=(PAT *)c->value.v;
+                if (strcmp(argv[3],"reset")==0) {
+                    for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags=0;
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"undo")==0) {
+                    for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
+                    return TCL_OK;
+                }
+                int ARGC;
+                char **ARGV;
+                #Info: "SFSG1"
+                Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
+                #Info: "SFSG2"
+                vector_float *properties=new_vector_float();
+                #Info: "SFSG1"
+                for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+                #Info: "SFSG3 %d" i 
+                //free(ARGV);
+                #Info: "SFSG4"
+                for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags<<=1;
+                #Info: "SFSG5"
+                pat_front(p,properties);
+                #Info: "SFSG6"
+                Tcl_ResetResult(interp);
+                for (i=0;i<p->content->num_of;i++) if (!(p->content->content[i]->flags)) {
+                    #Info: "Appending %d" i
+                    tcl_append_int(interp,i);
+                }    
+                #Info: "SFSG7"
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"<<<")==0) {
+                if (c->value_type!=ctype_PAT) {
+                    #Error: "(ctree) The <<< operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
+                    return TCL_ERROR;
+                }
+                if (argc!=5) {
+                    #Error: "(ctree) The <<< operator requires a list of sizes and a list of properties."
+                    return TCL_ERROR;
+                }
+                int ARGC;
+                char **ARGV;
+                Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
+                vector_float *sizes=new_vector_float();
+                int i;
+                for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
+                free(ARGV);
+                Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
+                vector_float *properties=new_vector_float();
+                for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
+                free(ARGV);
+                tcl_append_int(interp,add_pat_entry((PAT *)c->value.v,sizes,properties));
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"=")==0) {
+                #Dinfo: "%s gets assignemnt" argv[1]
+                if (argc==4) {
+                    if (c->value_type==ctype_POLY) {
+                        POLY *p=new_POLY();
+                        p->expression=strdup(argv[3]);
+                        link_POLY(p);
+                        c->value.v=p;
+                        return TCL_OK;
+                    }
+                    if (c->value_type==ctype_LUT) {
+                        if (array_entry==NULL) {
+                            #Error: "(ctree) invalid array access %s" argv[1]
+                            return TCL_ERROR;
+                        }
+                        *array_entry=atof(argv[3]);
+                        return TCL_OK;
+                    }
+                    if (strcmp(c->name,"POLY")==0) {
+                        POLY *p=new_POLY();
+                        p->expression=strdup(argv[3]);
+                        link_POLY(p);
+                        c->value.v=p;
+                        c->value_type=ctype_POLY;
+                        return TCL_OK;
+                    }
+                    c->value.s=atof(argv[3]);
+                    #Dinfo: "ASSIGNMENT %x=%s %g" &(c->value.s) argv[3] c->value.s
+                    //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
+                    c->value_type=ctype_real;
+                    return TCL_OK;
+                }
+                if (argc<5) {
+                    #Error: "(ctree) usage: @ <context> = [<type>] <value>"
+                    return TCL_ERROR;
+                }
+                if (strcmp(argv[3],"real")==0) {
+                    c->value.s=atof(argv[4]);
+                    c->value_type=ctype_real;
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"integer")==0) {
+                    c->value.o=atol(argv[4]);
+                    c->value_type=ctype_integer;
+                    return TCL_OK;
+                }
+                if (strcmp(argv[3],"string")==0) {
+                    c->value.v=strdup(argv[4]);
+                    c->value_type=ctype_string;
+                    return TCL_OK;
+                }
+                return(copy_ctree_structure(interp,argv[1],argv[3],argv));	
+            }
+            if (strcmp(argv[2],"is_array")==0) {
+                if (argc!=3) {
+                    #Error: "(ctree) usage: @ <context> is_array"
+                    return TCL_ERROR;
+                }
+                if (c->value_type==ctype_LUT) {
+                    tcl_append_int(interp,1);
+                } else {
+                    tcl_append_int(interp,0);
+                }
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"delete")==0) {
+                if (argc!=3) {
+                    #Error: "(ctree) usage: @ <context> delete"
+                    return TCL_ERROR;
+                }
+                context *d=c->parent;
+                int i=0,j=0;
+                for (i=0;i<d->num_of_children;i++) {
+                    if (d->children[i]==c) j++;
+                    if (j>=d->num_of_children) break;
+                    d->children[i]=d->children[j];
+                    j++;
+                }
+                d->num_of_children--;
+                delete_context(c);
+                Context=Ctree;
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"cd")==0) {
+                if (argc!=3) {
+                    #Error: "(ctree) usage: @ <context> cd"
+                    return TCL_ERROR;
+                }
+                Context=c;
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"list")==0) {
+                if (argc!=3) {
+                    #Error: "(ctree) usage: @ <context> list"
+                    return TCL_ERROR;
+                }
+                int i;
+                for (i=0;i<c->num_of_children;i++) {
+                    if (c->children[i]==NULL) continue;
+                    Tcl_AppendElement(interp,c->children[i]->name);
+                }    
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"foreach_child")==0) {
+                if (argc!=5) {
+                    #Error: "(ctree) usage: @ <context> foreach_child <iterator> <code>"
+                    return TCL_ERROR;
+                }
+                int i;
+                char buf[1024*1024];
+                for (i=0;i<c->num_of_children;i++)  {
+                    if (c->children[i]==NULL) continue;
+                    sprintf(buf,"set %s %s",argv[3],c->children[i]->name);
+                    Tcl_Eval(interp,buf);
+                    Tcl_Eval(interp,argv[4]);
+                }
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"path")==0) {
+                if (argc!=3) {
+                    #Error: "(ctree) usage: @ . path"
+                    return TCL_ERROR;
+                }
+                context_print_path(interp,c);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"save")==0) {
+                if (argc!=4) {
+                    #Error: "(ctree) usage: @ <array context> save <filename>"
+                    return TCL_ERROR;
+                }
+                FILE *O=fopen(argv[3],"w");
+                context_save(c,O);
+                fclose(O);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"load")==0) {
+                if (argc!=4) {
+                    #Error: "(ctree) usage: @ <array context> load <filename>"
+                    return TCL_ERROR;
+                }
+                open_to_read(argv[3]);
+                context_load(c,0);
+                done_reading();
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"calc")==0) {
+                if (c->value_type!=ctype_LUT) {
+                    #Error: "(ctree) @ calc requires an array context"
+                    return TCL_ERROR;
+                }
+                LUT *a=(LUT *)c->value.v;
+                if (argc-3!=a->dim) {
+                    #Error: "(ctree) Array %s has %d dimentions. Can't interpolate with %d coordinates." a->name a->dim argc-3
+                    return TCL_ERROR;
+                }
+                int i;
+                for (i=0;i<a->dim;i++) global_coord[i]=atof(argv[i+3]);
+                tcl_append_float(interp,a->interpolate(a,global_coord));
+                return TCL_OK;
+            }
+            #Error: "(ctree) unsupported command %s" argv[2]
+            return TCL_ERROR;
+        }
+        static int
+        init_ip(int temp_port) {
+            if (my_port) return 0;
+            // Create the socket
+            node_sock = socket(AF_INET, SOCK_STREAM, 0); 
+            bzero(my_ip,HOSTNAME_SIZE);
+            gethostname(my_ip,HOSTNAME_SIZE-1);
+            struct hostent *h;
+            int i;
+            if((h=gethostbyname(my_ip)) == NULL) {
+                sprintf(my_ip,"127.0.0.1");
+            } else {
+                // Converting 4 bytes to IP string
+                int host_ip_int[4];
+                for (i=0;i<4;i++) {
+                    host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
+                }
+                sprintf(my_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
+            }
+            // Reset the buffer content
+            bzero((char *)&my_addr, sizeof(my_addr)); 
+            // Make it an INET connection
+            my_addr.sin_family = AF_INET;
+            // Get the port
+            my_addr.sin_port=htons(temp_port);
+            // Any address allocated to this machine
+            my_addr.sin_addr.s_addr = INADDR_ANY;
+            // Don't give up if the port's busy. Find an available one
+            while (bind(node_sock, &my_addr, sizeof(my_addr)) == -1){
+                #Info: "Skipping unavailable port %d" temp_port
+                temp_port++;
+                my_addr.sin_port=htons(temp_port);
+            }
+            my_port=temp_port;
+            #Info: "(%d) New node %s %d" getpid(),my_ip,my_port
             return TCL_OK;
         }
-        #Error: "(ctree) ccontext has unrecognized value_type. (%d)" c->value_type
-        return TCL_ERROR;
-    }
-    if (strcmp(argv[2],"type")==0) {
-        tcl_append_int(interp,c->value_type);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"expression")==0) {
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The expression command is to be used with a polynomial only."
-            return TCL_ERROR;
+        static int
+        set_base_ip(char *host,int port) {
+            // Getting IP address of host from its name
+            struct hostent *h;
+            int i;
+            printf("Tryin to find host %s\n",host);
+            if((h=gethostbyname(host)) == NULL) {
+                printf("Host %s not found => using loopback address instead\n",host);
+                sprintf(base_ip,"127.0.0.1");
+            } else {
+                // Converting 4 bytes to IP string
+                int host_ip_int[4];
+                for (i=0;i<4;i++) {
+                    host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
+                }
+                sprintf(base_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
+                printf("Host %s found => using IP address %s\n",host,base_ip);
+            }
+            base_port=port;
+            #Info: "(%d) Set base IP=%s port=%d" getpid(),base_ip,port
         }
-        if (argc!=3) {
-            #Error: "(ctree) The expression command takes no arguments"
-            return TCL_ERROR;
-        }
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The expression command is to be used with a polynomial only."
-            return TCL_ERROR;
-        }
-        POLY *p=(POLY *)c->value.v;
-        Tcl_AppendElement(interp,p->expression);
-        return TCL_OK;
-    }	
-    if (strcmp(argv[2],"denom")==0) {
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The denom command is to be used with a polynomial only."
-            return TCL_ERROR;
-        }
-        if (argc<4) {
-            #Error: "(ctree) The denom command requires a polynomial"
-            return TCL_ERROR;
-        }
-        POLY *nom=get_POLY(argv[1]);
-        nom->denom=get_POLY(argv[3]);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"derive")==0) {
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The derive command is to be used with a polynomial only."
-            return TCL_ERROR;
-        }
-        if (argc<4) {
-            #Error: "(ctree) The derive command requires a by-variable"
-            return TCL_ERROR;
-        }
-        context *by=Context;
-        float *array_entry;
-        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
-            by=ctree;
-        }
-        float *array_context;
-        if (!resolve_context(argv[3],&by,&array_context)) {
-            #Warning: "(ctree) The derive command was given a non-existent context %s" argv[3]
-            tcl_append_float(interp,0);
+        static int
+        network_update (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            char buffer[NETWORK_BEFFER_SIZE];
+            struct sockaddr rem_addr; 
+            int length = sizeof(rem_addr);
+            signal(SIGCHLD, SIG_IGN);
+            int I;
+            while(1) {
+                I=accept(node_sock, &rem_addr, &length);
+                if (I!=-1) {
+                    break;
+                }
+            }
+            char *rx=buffer;
+            int i=read(I, buffer, NETWORK_BEFFER_SIZE);
+            buffer[i]=0;
+            if (buffer[0]=='!') {
+                while (buffer[i-1]!='!') {
+                    i+=read(I, &(buffer[i]), NETWORK_BEFFER_SIZE);
+                    buffer[i]=0;
+                }
+                rx=&(buffer[1]);
+                buffer[i-1]=0;
+            }	
+            #Info: "(%d) received: %s" getpid(),rx
+            if (Tcl_Eval(interp,rx)==TCL_ERROR) {
+                Tcl_Eval(interp,"puts $::errorInfo");
+            }
+            close(I);
             return TCL_OK;
         }
-        void *by_var=&(by->value.s);
-        tcl_append_float(interp,derive_POLY(c->value.v,by_var));
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"root")==0) {
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The root command is to be used with a polynomial only."
+        static int network_wait_loop(Tcl_Interp *interp) {
+            char buffer[NETWORK_BEFFER_SIZE];
+            struct sockaddr_in addr;
+            // Reset the buffer content
+            bzero((char *)&addr, sizeof(addr)); 
+            // Make it an INET connection
+            addr.sin_family = AF_INET;
+            // Get the port
+            addr.sin_port=htons(my_port);
+            // Any address allocated to this machine
+            addr.sin_addr.s_addr = INADDR_ANY;
+            #Info: "Node: %s %d" my_ip,my_port
+            // Now LISTEN TO ME
+            if (listen(node_sock, CLIENT_COUNT) == -1) {
+                // or let me know you can't hear
+                perror("Listen error");
+                exit(1);
+            }
+            
+            struct sockaddr rem_addr; 
+            int length = sizeof(rem_addr);
+            signal(SIGCHLD, SIG_IGN);
+            Tcl_Eval(interp,"if {![info exists ::network_node_event_code]} {set ::network_node_event_code {}}");
+            Tcl_Eval(interp,"set ::network_mode 1");
+            // Start serving commands from nodes
+            int cnt=0;
+            network_loop=1;
+            Tcl_LinkVar(interp,"::network_mode",&network_loop,TCL_LINK_INT);
+            #Info: "(%d) Starting TCP event loop" getpid()
+            while (network_loop) {
+                Tcl_Eval(interp,"uplevel #0 $::network_node_event_code");
+                int I=accept(node_sock, &rem_addr, &length);
+                if (I==-1) {
+                    continue;
+                }
+                char *rx=buffer;
+                int i=read(I, buffer, NETWORK_BEFFER_SIZE);
+                buffer[i]=0;
+                if (buffer[0]=='!') {
+                    while (buffer[i-1]!='!') {
+                        i+=read(I, &(buffer[i]), NETWORK_BEFFER_SIZE);
+                        buffer[i]=0;
+                    }
+                    rx=&(buffer[1]);
+                    buffer[i-1]=0;
+                }	
+                #Info: "(%d) received: %s" getpid(),rx
+                if (Tcl_Eval(interp,rx)==TCL_ERROR) {
+                    Tcl_Eval(interp,"puts $::errorInfo");
+                }
+                close(I);
+            }
+            #Info: "(%d) Finished TCP event loop" getpid()
+            return TCL_OK;
+            
+        }
+        static int
+        network_mode (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if ((argc!=1)&&(argc!=3)) {
+                #Error: "Usage: %s [<base-station> <base station port>]" argv[0]
+            } 
+            if (argc==3) {
+                network_node_type=net_mode_node;
+                set_base_ip(argv[1],atoi(argv[2]));
+            }
+            int i;
+            init_ip(atoi(argv[2]));
+            return(network_wait_loop(interp));
+        }
+        static int
+        start_network_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=3) {
+                #Error: "Usage: %s <base-station> <base station port>" argv[0]
+            }
+            char buffer[NETWORK_BEFFER_SIZE];
+            int i;
+            // Create the socket
+            node_sock = socket(AF_INET, SOCK_STREAM, 0); 
+            // Getting IP address of host from its name
+            set_base_ip(argv[1],atoi(argv[2]));
+            bzero(my_ip,HOSTNAME_SIZE);
+            gethostname(my_ip,HOSTNAME_SIZE-1);
+            init_ip(atoi(argv[2]));
+            #Info: "New node: %s %d" my_ip,my_port
+            sprintf(buffer,"add_network_node %s %d",my_ip,my_port);
+            send_task_to_base(buffer);
+            struct sockaddr rem_addr; 
+            int length = sizeof(rem_addr);
+            signal(SIGCHLD, SIG_IGN);
+            Tcl_Eval(interp,"if {![info exists ::network_node_event_code]} {set ::network_node_event_code {}}");
+            // Start serving commands from BS
+            network_loop=1;
+            while (network_loop) {
+                Tcl_Eval(interp,"uplevel #0 $::network_node_event_code");
+                int I=accept(node_sock, &rem_addr, &length);
+                if (I==-1) {
+                    continue;
+                }
+                
+                int i=read(I, buffer, NETWORK_BEFFER_SIZE);
+                buffer[i]=0;
+                if (Tcl_Eval(interp,buffer)==TCL_ERROR) {
+                    Tcl_Eval(interp,"puts $::errorInfo");
+                }
+                close(I);
+            }
+            
+            return TCL_OK;
+        }
+        static int
+        add_network_node (char *host,int port)
+        {
+            struct hostent *h;
+            network_node *n=network_node_root;
+            char host_ip[32];
+            network_node *new_network_node=(network_node *)malloc(sizeof(network_node));
+            if((h=gethostbyname(host)) == NULL) {
+                sprintf(new_network_node->host_ip,"127.0.0.1");
+            } else {
+                // Converting 4 bytes to IP string
+                int host_ip_int[4],i;
+                for (i=0;i<4;i++) {
+                    host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
+                }
+                sprintf(host_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
+            }
+            while (n) {
+                if ((n->port==port)&&(strcmp(n->host_ip,host_ip)==0)) return(0);
+                n=n->next;
+            }
+            sprintf(new_network_node->host_ip,"%s",host_ip);
+            #Info: "New node: %s:%d" new_network_node->host_ip,port
+            new_network_node->next=NULL;
+            // Reset the buffer content
+            new_network_node->port=port;
+            new_network_node->last=NULL;
+            
+            // Insert the new network node to the list
+            if (network_node_root==NULL) {
+                network_node_root=new_network_node;
+                return TCL_OK;
+            }
+            
+            network_node *previous_network_node=network_node_root;
+            while (previous_network_node->next) previous_network_node=previous_network_node->next;
+            previous_network_node->next=new_network_node;
+            new_network_node->last=previous_network_node;
+            
+            // Send all nodes the news
+            n=network_node_root;
+            char buffer[256];
+            sprintf(buffer,"add_network_node %s %d",new_network_node->host_ip,port);
+            while (n) {
+                if ((n->port==port)&&(strcmp(n->host_ip,new_network_node->host_ip)==0)) {
+                    network_node *m=network_node_root;
+                    char buffer[256];
+                    while (m) {
+                        if ((m->port==port)&&(strcmp(m->host_ip,new_network_node->host_ip)==0)) {
+                            m=m->next;
+                            continue;
+                        }
+                        sprintf(buffer,"add_network_node %s %d",m->host_ip,m->port);
+                        tcp_send_no_fork(n,buffer);
+                        m=m->next;
+                    }
+                    n=n->next;
+                    continue;
+                }    
+                tcp_send_no_fork(n,buffer);
+                n=n->next;
+            }
+            sprintf(buffer,"node_release");
+            tcp_send_no_fork(new_network_node,buffer);
+            return TCL_OK;
+        }
+        static int
+        node_release (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (network_node_type==net_mode_node) network_loop=0;
+            return TCL_OK;
+        }
+        static int
+        tcl_add_network_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=3) {
+                #Error: "Usage: %s <host> <port>" argv[0]
+            }
+            return (add_network_node(argv[1],atoi(argv[2])));
+        }
+        static int
+        tcp_send_no_fork(network_node *n,char *code) {
+            // Starting the socket
+            int sock=socket(AF_INET, SOCK_STREAM, 0);
+            //Creating the message:
+            char *msg=(char *)malloc(sizeof(char)*(strlen(code)+256));
+            sprintf(msg,"!%s!",code);
+            #Info: "(%d) sending %s to node %s %d" getpid(),msg,n->host_ip,n->port
+            // Updating the node IP structure
+            bzero(&node_addr,sizeof(node_addr));
+            node_addr.sin_family = AF_INET;
+            node_addr.sin_addr.s_addr=inet_addr(n->host_ip);
+            node_addr.sin_port=htons(n->port);
+            // Connecting to server
+            if (connect(sock, (struct sockaddr *)&node_addr, sizeof(node_addr))!=0) {
+                #Error: "(%d tcp_send_no_fork) Failed connecting to node." getpid()
+                return TCL_ERROR;
+            }
+            // Sending message
+            if(write(sock,msg,strlen(msg))==0) {
+                #Error: "(%d tcp_send_no_fork) Failed sending command to node." getpid()
+                return TCL_ERROR;
+            }
+            free(msg);
+            close(sock);
+            printf("Sent %s to %s:%d\n",code,n->host_ip,n->port);
+            return TCL_OK;
+        }
+        static int
+        tcp_send(network_node *n,char *code) {
+            // Starting the socket
+            int sock=socket(AF_INET, SOCK_STREAM, 0);
+            //Creating the message:
+            char *msg=(char *)malloc(sizeof(char)*(strlen(code)+256));
+            sprintf(msg,"!%% %s %d {%s} %d!",my_ip,my_port,code,network_task_handle);
+            #Info: "(%d) sending %s to node %s %d" getpid(),msg,n->host_ip,n->port
+            // Updating the node IP structure
+            bzero(&node_addr,sizeof(node_addr));
+            node_addr.sin_family = AF_INET;
+            node_addr.sin_addr.s_addr=inet_addr(n->host_ip);
+            node_addr.sin_port=htons(n->port);
+            // Connecting to server
+            if (connect(sock, (struct sockaddr *)&node_addr, sizeof(node_addr))!=0) {
+                #Error: "(%d tcp_send) Failed connecting to node." getpid()
+                return TCL_ERROR;
+            }
+            // Sending message
+            if(write(sock,msg,strlen(msg))==0) {
+                #Error: "(%d tcp_send) Failed sending command to node." getpid()
+                return TCL_ERROR;
+            }
+            free(msg);
+            close(sock);
+            printf("Sent %s to %s:%d\n",code,n->host_ip,n->port);
+            return TCL_OK;
+        }
+        static int
+        send_task_to_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if ((argc!=3)&&(argc!=2)) {
+                #Error: "Usage: %s [<node_num>] <code>" argv[0]
+                return TCL_ERROR;
+            }
+            int node_number;
+            char *code;
+            int node_list_size=0;
+            network_node *n=network_node_root;
+            while (n) {
+                node_list_size++;
+                n=n->next;
+            }
+            if (argc==2) {
+                node_number=rand()%node_list_size;
+                code=argv[1];
+            } else {
+                node_number=atoi(argv[1]);
+                if (node_number>=node_list_size) {
+                    #Error: "(%s) node index %d exceeds node list size %d" argv[0],node_number,node_list_size
+                }
+                code=argv[2];
+            }
+            n=network_node_root;
+            int i=node_number;
+            while ((n)&&(i)) {
+                i--;
+                n=n->next;
+            }
+            if (n==NULL) {
+                printf("Error: node %d does not exist.",node_number);
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            int good_nodes_count=node_list_size;
+            network_task_handle++;
+            while ((tcp_send(n,code)==TCL_ERROR)&&(good_nodes_count)) {
+                // Look for a different node
+                good_nodes_count--;
+                node_number=rand()%node_list_size;
+                n=network_node_root;
+                int i=node_number;
+                while ((n)&&(i)) {
+                    i--;
+                    n=n->next;
+                }
+            }
+            if (good_nodes_count) {
+                tcl_append_int(interp,network_task_handle);
+                network_task_handle++; 
+                return TCL_OK;
+            }
             return TCL_ERROR;
         }
-        if (argc<4) {
-            #Error: "(ctree) The root command requires a by-variable"
-            return TCL_ERROR;
-        }
-        float init=0;
-        if (argc==5) init=strtod(argv[4],NULL);
-        context *by=Context;
-        float *array_entry;
-        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
-            by=ctree;
-        }
-        float *array_context;
-        if (!resolve_context(argv[3],&by,&array_context)) {
-            #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
-            tcl_append_float(interp,0);
-            return TCL_OK;
-        }
-        void *by_var=&(by->value.s);
-        tcl_append_float(interp,root_POLY(c->value.v,by_var,init));
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"imp_derive")==0) {
-        if (c->value_type!=ctype_POLY) {
-            #Error: "(ctree) The root command is to be used with a polynomial only."
-            return TCL_ERROR;
-        }
-        if (argc<5) {
-            #Error: "(ctree) The implicit derivative command requires two by-variables"
-            return TCL_ERROR;
-        }
-        float init=0;
-        if (argc==6) init=strtod(argv[5],NULL);
-        float *array_context;
-        context *by=Context;
-        if ((argv[3][0]=='/')||(argv[3][0]==':')) {
-            by=ctree;
-        }
-        if (!resolve_context(argv[3],&by,&array_context)) {
-            #Warning: "(ctree) The root command was given a non-existent context %s" argv[3]
-            tcl_append_float(interp,0);
-            return TCL_OK;
-        }
-        void *by_var=&(by->value.s);
-        context *root=Context;
-        if ((argv[4][0]=='/')||(argv[4][0]==':')) {
-            root=ctree;
-        }
-        if (!resolve_context(argv[4],&root,&array_context)) {
-            #Warning: "(ctree) The root command was given a non-existent context %s" argv[4]
-            tcl_append_float(interp,0);
-            return TCL_OK;
-        }
-        void *root_var=&(root->value.s);
-        tcl_append_float(interp,imp_derive_POLY(c->value.v,by_var,root_var,init));
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"PAT")==0) {
-        if (c->value_type!=ctype_PAT) {
-            #Error: "(ctree) The PAT command is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-            return TCL_ERROR;
-        }
-        if (argc<4) {
-            #Error: "(ctree) The PAT command requires a sub-command: size, index, delete, foreach"
-            return TCL_ERROR;
-        }
-        PAT *p=(PAT *)c->value.v;
-        if (strcmp(argv[3],"size")==0) {
-            tcl_append_int(interp,p->content->num_of);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"properties")==0) {
-            ordinal i;
-            for (i=0;i<p->properties->num_of;i++) Tcl_AppendElement(interp,p->properties->content[i]);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"sizes")==0) {
-            ordinal i;
-            for (i=0;i<p->sizes->num_of;i++) Tcl_AppendElement(interp,p->sizes->content[i]);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"margins")==0) {
-            ordinal i;
-            for (i=0;i<p->margins->num_of;i++) tcl_append_float(interp,p->margins->content[i]);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"index")==0) {
+        static int
+        eval_task_from_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
             if (argc!=5) {
-                #Error: "(ctree) The PAT index sub-command requires an index"
+                #Error: "Usage: %s <base host> <base port> <code> <handle>" argv[0]
                 return TCL_ERROR;
             }
-            ordinal i,j;
-            j=atoi(argv[4]);
-            for (i=0;i<p->sizes->num_of;i++) tcl_append_float(interp,p->content->content[j]->sizes->content[i]);
-            for (i=0;i<p->properties->num_of;i++) {
-                float value=p->factors->content[i]*p->content->content[j]->properties->content[i];
-                tcl_append_float(interp,value);
+            // Fork the process and continue listening
+            if (fork()) {
+                return TCL_OK;
+            } 
+            Tcl_Eval(interp,"set ::network_node_event_code {}");
+            network_loop=0;
+            // The forked node has its own identity
+            //     Its base is the calling node
+            set_base_ip(argv[1],atoi(argv[2]));
+            //    close(node_sock);
+            //     And it has a new port
+            init_ip(atoi(argv[2]));
+            // And now it is ready to evaluate the command
+            if (Tcl_Eval(interp,argv[3])==TCL_ERROR) {
+                Tcl_Eval(interp,"puts $::errorInfo");
+            }
+            // and send update to the caller
+            char buffer[NETWORK_BEFFER_SIZE];
+            sprintf(buffer,"network_task_done %s",argv[4]);
+            send_task_to_base(buffer);
+            // ...after which it is no longer needed
+            #Info: "(%d) done!" getpid()
+            exit(0);
+        }
+        static int
+        network_task_done (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=2) {
+                #Error: "Usage: %s <task handle>" argv[0]
+                return TCL_ERROR;
+            }
+            
+            
+            return TCL_OK;
+        }
+        static int
+        send_task_to_base (char *code)
+        {
+            // Updating the server IP structure
+            bzero(&server_addr,sizeof(server_addr));
+            server_addr.sin_family = AF_INET;
+            server_addr.sin_addr.s_addr=inet_addr(base_ip);
+            server_addr.sin_port=htons(base_port);
+            #Info: "(%d) Sending {%s} to parent node: %s:%d" getpid(),code,base_ip,base_port
+            int sock=socket(AF_INET, SOCK_STREAM, 0);
+            // Connecting to server
+            if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr))!=0) {
+                #Error: "(send_task_to_base) Failed connecting to base station."
+                return TCL_ERROR;
+            }
+            // Sending message
+            if(write(sock,code,strlen(code))==0) {
+                #Error: "(send_task_to_base) Failed sending command to base station."
+                return TCL_ERROR;
+            }
+            close(sock);
+            #Info: "{%s} sent successfuly." code
+            return TCL_OK;
+        }
+        static int
+        tcl_send_task_to_base (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=2) {
+                #Error: "Usage: %s <code>" argv[0]
+                return TCL_ERROR;
+            }
+            return(send_task_to_base(argv[1]));
+        }
+        static int
+        tcl_resource_usage (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=3) {
+                #Error: "Usage: %s [self|children] <metric>" argv[0]
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            int who;
+            if (strcmp(argv[1],"self")==0) {
+                who=RUSAGE_SELF;
+            }
+            if (strcmp(argv[1],"children")==0) {
+                who=RUSAGE_CHILDREN;
+            }
+            if ((who!=RUSAGE_SELF)&&(who!=RUSAGE_CHILDREN)) {
+                #Error: "(usage) first argument must be either 'self' or 'children'"
+                return TCL_ERROR;
+            }
+            struct rusage usage;
+            getrusage(who,&usage);
+            if (strcmp(argv[2],"utime")==0) {
+                tcl_append_long(interp,usage.ru_utime.tv_sec*1000000+usage.ru_utime.tv_usec);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"stime")==0) {
+                tcl_append_long(interp,usage.ru_stime.tv_sec*1000000+usage.ru_stime.tv_usec);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"cputime")==0) {
+                tcl_append_long(interp,(long)clock());
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"maxrss")==0) {
+                tcl_append_long(interp,usage.ru_maxrss);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"ixrss")==0) {
+                tcl_append_long(interp,usage.ru_ixrss);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"idrss")==0) {
+                tcl_append_long(interp,usage.ru_idrss);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"isrss")==0) {
+                tcl_append_long(interp,usage.ru_isrss);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"minflt")==0) {
+                tcl_append_long(interp,usage.ru_minflt);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"majflt")==0) {
+                tcl_append_long(interp,usage.ru_majflt);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"nswap")==0) {
+                tcl_append_long(interp,usage.ru_nswap);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"inblock")==0) {
+                tcl_append_long(interp,usage.ru_inblock);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"oublock")==0) {
+                tcl_append_long(interp,usage.ru_oublock);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"msgsnd")==0) {
+                tcl_append_long(interp,usage.ru_msgsnd);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"msgrcv")==0) {
+                tcl_append_long(interp,usage.ru_msgrcv);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"nsignals")==0) {
+                tcl_append_long(interp,usage.ru_nsignals);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"nvcsw")==0) {
+                tcl_append_long(interp,usage.ru_nvcsw);
+                return TCL_OK;
+            }
+            if (strcmp(argv[2],"nivcsw")==0) {
+                tcl_append_long(interp,usage.ru_nivcsw);
+                return TCL_OK;
+            }
+            #Error: "(usage) unrecognized field: %s" argv[2]
+            return TCL_ERROR;
+            
+        }
+        #If: {[string match *regular $::target] || [string match *debug $::target]} {
+            #Foreach: type {Info Warning Error} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
+                        printf("%s ",argv[0]);
+                    }
+                    if (this_process_forked) printf("(forked process %d) ",getpid());
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    printf("\n");
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Print} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    printf("Info: ");
+                    if (this_process_forked) printf("(forked process %d) ",getpid());
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Token} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Nl} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    printf("\n");
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+        } 
+        #If: {[string match *silent $::target]} {
+            #Foreach: type {Info Warning Error Print Token Nl} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    return TCL_OK;
+                }
+            }
+        }
+        #If: {[string match *debug $::target]} {
+            #Foreach: type {Dinfo Dwarning Derror} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
+                        printf("%s ",argv[0]);
+                    }
+                    if (this_process_forked) printf("(forked process %d) ",getpid());
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    printf("\n");
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Dprint} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    printf("Info: ");
+                    if (this_process_forked) printf("(forked process %d) ",getpid());
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Dtoken} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    int i;
+                    for (i=1;i<argc;i++) printf("%s ",argv[i]);
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+            #Foreach: type {Dnl} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    printf("\n");
+                    fflush(stdout);
+                    return TCL_OK;
+                }
+            }
+        } 
+        #If: {[string match *regular $::target]||[string match *silent $::target]} {
+            #Foreach: type {Dinfo Dwarning Derror Dprint Dtoken Dnl} {
+                static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+                    return TCL_OK;
+                }
+            }
+        }
+        
+        static int
+        tcl_sizer (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            #tcl set arg_count 5 
+            #Foreach: input $::sizer_inputs {
+                float $input=NAN;
+                float min_$input;
+                float max_$input;
+                #tcl incr arg_count 3
+            } 
+            #Foreach: parameter $::sizer_parameters {
+                float $parameter=NAN;
+                LUT *${parameter}_LUT;
+                #tcl incr arg_count 2
+            }
+            float Gain=NAN;
+            float Area=NAN;
+            float fc=NAN;
+            if (argc!=$arg_count) {
+                #Error: "Usage: %s Ids_LUT gm_LUT go_LUT Nth_LUT Nflicker_LUT Vt_LUT sigmaVt_LUT Lmin Vds Ids Vt Vgs Vbs Nflicker Nth L W gm ro sigmaVt Tolerance" argv[0]
+                return TCL_ERROR;
+            }
+            Tcl_ResetResult(interp);
+            #tcl set arg_count 1 
+            #Foreach: input $::sizer_inputs {
+                if (argv[$arg_count][0]!=0) $input=atof(argv[$arg_count]);
+                #tcl incr arg_count 1
+                min_$input=atof(argv[$arg_count]);
+                #tcl incr arg_count 1
+                max_$input=atof(argv[$arg_count]);
+                #tcl incr arg_count 1
+            }
+            #Foreach: parameter $::sizer_parameters {
+                if (argv[$arg_count][0]!=0) $parameter=atof(argv[$arg_count]);
+                #tcl incr arg_count 1
+                ${parameter}_LUT=get_LUT(argv[$arg_count]);
+                #tcl incr arg_count 1
+            }
+            if (argv[$arg_count][0]!=0) Gain=atof(argv[$arg_count]);
+            #tcl incr arg_count 1
+            if (argv[$arg_count][0]!=0) Area=atof(argv[$arg_count]);
+            #tcl incr arg_count 1
+            if (argv[$arg_count][0]!=0) fc=atof(argv[$arg_count]);
+            #tcl incr arg_count 1
+            float tolerance=atof(argv[$arg_count])/100;
+            float distance=sizer(
+            #Foreach: input $::sizer_inputs {
+                &$input,min_$input,max_$input,
+            }
+            #Foreach: parameter $::sizer_parameters {
+                &$parameter,${parameter}_LUT,
+            } 
+            &Gain,&Area,&fc,tolerance
+            );
+            #Foreach: input $::sizer_inputs {
+                tcl_append_float(interp,$input);
+            }
+            #Foreach: parameter [concat $::sizer_parameters Gain Area fc] {
+                tcl_append_float(interp,$parameter);
+            }
+            tcl_append_float(interp,distance);
+            return TCL_OK;
+        }
+        static int
+        tcl_enable_hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if ((argc!=2)&&(argc!=1)) {
+                #Error: "Usage: %s on/off" argv[0]
+                return TCL_ERROR;
+            }
+            if (argc==1) hit_enabled=1;
+            if (argc==2) {
+                if (strcmp(argv[1],"on")) hit_enabled=1;
+                if (strcmp(argv[1],"off")) hit_enabled=0;
             }	
             return TCL_OK;
         }
-       if (strcmp(argv[3],"unique")==0) {
-            if (argc!=5) {
-                #Error: "(ctree) The PAT unique sub-command requires a factor"
-                return TCL_ERROR;
+        void list_hit(hit_node *hit,int level) {
+            if (hit==NULL) return;
+            char *indent=(char *)malloc(sizeof(char)*(level+1));
+            int i;
+            for (i=0;i<level;i++) indent[i]='.';
+            indent[level]=0;
+            if (hit[HIT_TYPE].o==HIT_DIVIDER) {
+                #Info: "%s DIM %d Level %g" indent hit[HIT_DIM].o hit[HIT_VALUES].s
+                list_hit((hit_node *)hit[HIT_VALUES+1].p,level+4);
+                list_hit((hit_node *)hit[HIT_VALUES+2].p,level+4);
+                return;
             }
-	    pat_unique(p,atof(argv[4]));
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"id")==0) {
-            if (argc!=5) {
-                #Error: "(ctree) The PAT id sub-command requires an index"
-                return TCL_ERROR;
-            }
-	    tcl_append_int(interp,p->content->content[atoi(argv[4])]->id);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"id2index")==0) {
-            if (argc!=5) {
-                #Error: "(ctree) The PAT id sub-command requires an index"
-                return TCL_ERROR;
-            }
-	    int id=atoi(argv[4]);
-	    int i;
-	    for (i=0;i<p->content->num_of;i++) if (p->content->content[i]->id==id) break;
-	    if (i==p->content->num_of) tcl_append_int(interp,-1); else tcl_append_int(interp,i);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"graph")==0) {
-            if (argc!=7) {
-                #Error: "(ctree) The PAT graph sub-command requires an output file, x and y axes"
-                return TCL_ERROR;
-            }
-	    int i,x=-1,y=-1;
-	    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[5])==0) x=i;
-	    for (i=0;i<p->properties->num_of;i++) if (strcmp(p->properties->content[i],argv[6])==0) y=i;
-	    if (x==-1) {
-	        #Error: "No such property %s in PAT %s" argv[5] c->name;
-		return TCL_ERROR;
-	    }
-	    if (y==-1) {
-	        #Error: "No such property %s in PAT %s" argv[6] c->name;
-		return TCL_ERROR;
-	    }
-	    FILE *O=fopen(argv[4],"w");
-	    fprintf(O,"%s,%s\n",argv[5],argv[6]);
-	    pat_graph(O,p,x,y);
-	    fclose(O);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"delete")==0) {
-            if (argc!=5) {
-                #Error: "(ctree) The PAT delete sub-command requires an index"
-                return TCL_ERROR;
-            }
-            ordinal j;
-            j=atoi(argv[4]);
-            delete_entry_vector_pointer_PAT_entry(p->content,j);
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"stars")==0) {
-            if (argc!=4) {
-                #Error: "(ctree) The PAT stars sub-command requires no more arguments"
-                return TCL_ERROR;
-            }
-	    pat_stars(p);
-            return TCL_OK;
-        }
-        #Error: "(ctree) Unrecognized PAT sub-command %s. It requires a sub-command: size, index, delete, foreach" argv[3]
-        return TCL_ERROR;
-    }
-    if (strcmp(argv[2],">>>")==0) {
-        if (c->value_type!=ctype_PAT) {
-            #Error: "(ctree) The >>> operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-            return TCL_ERROR;
-        }
-        if (argc!=4) {
-            #Error: "(ctree) The >>> operator requires a list of properties."
-            return TCL_ERROR;
-        }
-        ordinal i;
-	PAT *p=(PAT *)c->value.v;
-	if (strcmp(argv[3],"reset")==0) {
-            for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags=0;
-            return TCL_OK;
-	}
-	if (strcmp(argv[3],"undo")==0) {
-            for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags>>=1;
-            return TCL_OK;
-	}
-        int ARGC;
-        char **ARGV;
-	#Info: "SFSG1"
-        Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
-	#Info: "SFSG2"
-        vector_float *properties=new_vector_float();
-	#Info: "SFSG1"
-        for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
-	#Info: "SFSG3 %d" i 
-        //free(ARGV);
-	#Info: "SFSG4"
-	for (i=0;i<p->content->num_of;i++) p->content->content[i]->flags<<=1;
-	#Info: "SFSG5"
-        pat_front(p,properties);
-	#Info: "SFSG6"
-        Tcl_ResetResult(interp);
-        for (i=0;i<p->content->num_of;i++) if (!(p->content->content[i]->flags)) {
-	    #Info: "Appending %d" i
-	    tcl_append_int(interp,i);
-	}    
-	#Info: "SFSG7"
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"<<<")==0) {
-        if (c->value_type!=ctype_PAT) {
-            #Error: "(ctree) The <<< operator is to be used with a pareto-associative table only. Use double parentheses to declare one: @ PAT((size1,size2|prop1,prop2)) !"
-            return TCL_ERROR;
-        }
-        if (argc!=5) {
-            #Error: "(ctree) The <<< operator requires a list of sizes and a list of properties."
-            return TCL_ERROR;
-        }
-        int ARGC;
-        char **ARGV;
-        Tcl_SplitList(interp,argv[3],&ARGC,&ARGV);
-        vector_float *sizes=new_vector_float();
-        int i;
-        for (i=0;i<ARGC;i++) add_entry_vector_float(sizes,atof(ARGV[i]));
-        free(ARGV);
-        Tcl_SplitList(interp,argv[4],&ARGC,&ARGV);
-        vector_float *properties=new_vector_float();
-        for (i=0;i<ARGC;i++) add_entry_vector_float(properties,atof(ARGV[i]));
-        free(ARGV);
-        tcl_append_int(interp,add_pat_entry((PAT *)c->value.v,sizes,properties));
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"=")==0) {
-        #Dinfo: "%s gets assignemnt" argv[1]
-        if (argc==4) {
-            if (c->value_type==ctype_POLY) {
-                POLY *p=new_POLY();
-                p->expression=strdup(argv[3]);
-                link_POLY(p);
-                c->value.v=p;
-                return TCL_OK;
-            }
-            if (c->value_type==ctype_LUT) {
-                if (array_entry==NULL) {
-                    #Error: "(ctree) invalid array access %s" argv[1]
-                    return TCL_ERROR;
+            if (hit[HIT_TYPE].o==HIT_FULL_INTERP) {
+                #Info: "%s hypercube:" indent 
+                for (i=0;i<merge_dim;i++) {
+                    #Info: "%s %d) %g %g" indent i hit[HIT_VALUES+2*i].s 1/(hit[HIT_VALUES+2*i+1].s)
                 }
-                *array_entry=atof(argv[3]);
-                return TCL_OK;
+                #Info: "%s   corners" indent 
+                for (i=2*merge_dim;i<hit[HIT_DIM].o+2*merge_dim;i++) {
+                    #Info: "%s   %d) %g" indent i-2*merge_dim hit[HIT_VALUES+i].s 
+                }
             }
-            if (strcmp(c->name,"POLY")==0) {
-                POLY *p=new_POLY();
-                p->expression=strdup(argv[3]);
-                link_POLY(p);
-                c->value.v=p;
-                c->value_type=ctype_POLY;
-                return TCL_OK;
+        }
+        static int
+        tcl_list_bytecode (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if ((argc!=2)&&(argc!=3)) {
+                #Error: "Usage: %s <array name> <limit>" argv[0]
+                return TCL_ERROR;
             }
-            c->value.s=atof(argv[3]);
-            #Dinfo: "ASSIGNMENT %x=%s %g" &(c->value.s) argv[3] c->value.s
-            //         #Warning: "%s is getting typed real (%x=%g)" c->name &(c->value.s) c->value.s
-            c->value_type=ctype_real;
-            return TCL_OK;
-        }
-        if (argc<5) {
-            #Error: "(ctree) usage: @ <context> = [<type>] <value>"
-            return TCL_ERROR;
-        }
-        if (strcmp(argv[3],"real")==0) {
-            c->value.s=atof(argv[4]);
-            c->value_type=ctype_real;
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"integer")==0) {
-            c->value.o=atol(argv[4]);
-            c->value_type=ctype_integer;
-            return TCL_OK;
-        }
-        if (strcmp(argv[3],"string")==0) {
-            c->value.v=strdup(argv[4]);
-            c->value_type=ctype_string;
-            return TCL_OK;
-        }
-        return(copy_ctree_structure(interp,argv[1],argv[3],argv));	
-    }
-    if (strcmp(argv[2],"is_array")==0) {
-        if (argc!=3) {
-            #Error: "(ctree) usage: @ <context> is_array"
-            return TCL_ERROR;
-        }
-        if (c->value_type==ctype_LUT) {
-            tcl_append_int(interp,1);
-        } else {
-            tcl_append_int(interp,0);
-        }
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"delete")==0) {
-        if (argc!=3) {
-            #Error: "(ctree) usage: @ <context> delete"
-            return TCL_ERROR;
-        }
-        context *d=c->parent;
-        int i=0,j=0;
-        for (i=0;i<d->num_of_children;i++) {
-            if (d->children[i]==c) j++;
-            if (j>=d->num_of_children) break;
-            d->children[i]=d->children[j];
-            j++;
-        }
-        d->num_of_children--;
-        delete_context(c);
-        Context=Ctree;
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"cd")==0) {
-        if (argc!=3) {
-            #Error: "(ctree) usage: @ <context> cd"
-            return TCL_ERROR;
-        }
-        Context=c;
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"list")==0) {
-        if (argc!=3) {
-            #Error: "(ctree) usage: @ <context> list"
-            return TCL_ERROR;
-        }
-        int i;
-        for (i=0;i<c->num_of_children;i++) Tcl_AppendElement(interp,c->children[i]->name);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"foreach_child")==0) {
-        if (argc!=5) {
-            #Error: "(ctree) usage: @ <context> foreach_child <iterator> <code>"
-            return TCL_ERROR;
-        }
-        int i;
-        char buf[1024*1024];
-        for (i=0;i<c->num_of_children;i++)  {
-            sprintf(buf,"set %s %s",argv[3],c->children[i]->name);
-            Tcl_Eval(interp,buf);
-            Tcl_Eval(interp,argv[4]);
-        }
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"path")==0) {
-        if (argc!=3) {
-            #Error: "(ctree) usage: @ . path"
-            return TCL_ERROR;
-        }
-        context_print_path(interp,c);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"save")==0) {
-        if (argc!=4) {
-            #Error: "(ctree) usage: @ <array context> save <filename>"
-            return TCL_ERROR;
-        }
-        FILE *O=fopen(argv[3],"w");
-        context_save(c,O);
-        fclose(O);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"load")==0) {
-        if (argc!=4) {
-            #Error: "(ctree) usage: @ <array context> load <filename>"
-            return TCL_ERROR;
-        }
-        open_to_read(argv[3]);
-        context_load(c,0);
-        done_reading();
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"calc")==0) {
-        if (c->value_type!=ctype_LUT) {
-            #Error: "(ctree) @ calc requires an array context"
-            return TCL_ERROR;
-        }
-        LUT *a=(LUT *)c->value.v;
-        if (argc-3!=a->dim) {
-            #Error: "(ctree) Array %s has %d dimentions. Can't interpolate with %d coordinates." a->name a->dim argc-3
-            return TCL_ERROR;
-        }
-        int i;
-        for (i=0;i<a->dim;i++) global_coord[i]=atof(argv[i+3]);
-        tcl_append_float(interp,a->interpolate(a,global_coord));
-        return TCL_OK;
-    }
-    #Error: "(ctree) unsupported command %s" argv[2]
-    return TCL_ERROR;
-}
-static int
-init_ip(int temp_port) {
-    if (my_port) return 0;
-    // Create the socket
-    node_sock = socket(AF_INET, SOCK_STREAM, 0); 
-    bzero(my_ip,HOSTNAME_SIZE);
-    gethostname(my_ip,HOSTNAME_SIZE-1);
-    struct hostent *h;
-    int i;
-    if((h=gethostbyname(my_ip)) == NULL) {
-        sprintf(my_ip,"127.0.0.1");
-    } else {
-        // Converting 4 bytes to IP string
-        int host_ip_int[4];
-        for (i=0;i<4;i++) {
-            host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
-        }
-        sprintf(my_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
-    }
-    // Reset the buffer content
-    bzero((char *)&my_addr, sizeof(my_addr)); 
-    // Make it an INET connection
-    my_addr.sin_family = AF_INET;
-    // Get the port
-    my_addr.sin_port=htons(temp_port);
-    // Any address allocated to this machine
-    my_addr.sin_addr.s_addr = INADDR_ANY;
-    // Don't give up if the port's busy. Find an available one
-    while (bind(node_sock, &my_addr, sizeof(my_addr)) == -1){
-        #Info: "Skipping unavailable port %d" temp_port
-        temp_port++;
-        my_addr.sin_port=htons(temp_port);
-    }
-    my_port=temp_port;
-    #Info: "(%d) New node %s %d" getpid(),my_ip,my_port
-    return TCL_OK;
-}
-static int
-set_base_ip(char *host,int port) {
-    // Getting IP address of host from its name
-    struct hostent *h;
-    int i;
-    printf("Tryin to find host %s\n",host);
-    if((h=gethostbyname(host)) == NULL) {
-        printf("Host %s not found => using loopback address instead\n",host);
-        sprintf(base_ip,"127.0.0.1");
-    } else {
-        // Converting 4 bytes to IP string
-        int host_ip_int[4];
-        for (i=0;i<4;i++) {
-            host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
-        }
-        sprintf(base_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
-        printf("Host %s found => using IP address %s\n",host,base_ip);
-    }
-    base_port=port;
-    #Info: "(%d) Set base IP=%s port=%d" getpid(),base_ip,port
-}
-static int
-network_update (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    char buffer[NETWORK_BEFFER_SIZE];
-    struct sockaddr rem_addr; 
-    int length = sizeof(rem_addr);
-    signal(SIGCHLD, SIG_IGN);
-    int I;
-    while(1) {
-        I=accept(node_sock, &rem_addr, &length);
-        if (I!=-1) {
-            break;
-        }
-    }
-    char *rx=buffer;
-    int i=read(I, buffer, NETWORK_BEFFER_SIZE);
-    buffer[i]=0;
-    if (buffer[0]=='!') {
-        while (buffer[i-1]!='!') {
-            i+=read(I, &(buffer[i]), NETWORK_BEFFER_SIZE);
-            buffer[i]=0;
-        }
-        rx=&(buffer[1]);
-        buffer[i-1]=0;
-    }	
-    #Info: "(%d) received: %s" getpid(),rx
-    if (Tcl_Eval(interp,rx)==TCL_ERROR) {
-        Tcl_Eval(interp,"puts $::errorInfo");
-    }
-    close(I);
-    return TCL_OK;
-}
-static int network_wait_loop(Tcl_Interp *interp) {
-    char buffer[NETWORK_BEFFER_SIZE];
-    struct sockaddr_in addr;
-    // Reset the buffer content
-    bzero((char *)&addr, sizeof(addr)); 
-    // Make it an INET connection
-    addr.sin_family = AF_INET;
-    // Get the port
-    addr.sin_port=htons(my_port);
-    // Any address allocated to this machine
-    addr.sin_addr.s_addr = INADDR_ANY;
-    #Info: "Node: %s %d" my_ip,my_port
-    // Now LISTEN TO ME
-    if (listen(node_sock, CLIENT_COUNT) == -1) {
-        // or let me know you can't hear
-        perror("Listen error");
-        exit(1);
-    }
-    
-    struct sockaddr rem_addr; 
-    int length = sizeof(rem_addr);
-    signal(SIGCHLD, SIG_IGN);
-    Tcl_Eval(interp,"if {![info exists ::network_node_event_code]} {set ::network_node_event_code {}}");
-    Tcl_Eval(interp,"set ::network_mode 1");
-    // Start serving commands from nodes
-    int cnt=0;
-    network_loop=1;
-    Tcl_LinkVar(interp,"::network_mode",&network_loop,TCL_LINK_INT);
-    #Info: "(%d) Starting TCP event loop" getpid()
-    while (network_loop) {
-        Tcl_Eval(interp,"uplevel #0 $::network_node_event_code");
-        int I=accept(node_sock, &rem_addr, &length);
-        if (I==-1) {
-            continue;
-        }
-        char *rx=buffer;
-        int i=read(I, buffer, NETWORK_BEFFER_SIZE);
-        buffer[i]=0;
-        if (buffer[0]=='!') {
-            while (buffer[i-1]!='!') {
-                i+=read(I, &(buffer[i]), NETWORK_BEFFER_SIZE);
-                buffer[i]=0;
-            }
-            rx=&(buffer[1]);
-            buffer[i-1]=0;
-        }	
-        #Info: "(%d) received: %s" getpid(),rx
-        if (Tcl_Eval(interp,rx)==TCL_ERROR) {
-            Tcl_Eval(interp,"puts $::errorInfo");
-        }
-        close(I);
-    }
-    #Info: "(%d) Finished TCP event loop" getpid()
-    return TCL_OK;
-    
-}
-static int
-network_mode (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if ((argc!=1)&&(argc!=3)) {
-        #Error: "Usage: %s [<base-station> <base station port>]" argv[0]
-    } 
-    if (argc==3) {
-        network_node_type=net_mode_node;
-        set_base_ip(argv[1],atoi(argv[2]));
-    }
-    int i;
-    init_ip(atoi(argv[2]));
-    return(network_wait_loop(interp));
-}
-static int
-start_network_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=3) {
-        #Error: "Usage: %s <base-station> <base station port>" argv[0]
-    }
-    char buffer[NETWORK_BEFFER_SIZE];
-    int i;
-    // Create the socket
-    node_sock = socket(AF_INET, SOCK_STREAM, 0); 
-    // Getting IP address of host from its name
-    set_base_ip(argv[1],atoi(argv[2]));
-    bzero(my_ip,HOSTNAME_SIZE);
-    gethostname(my_ip,HOSTNAME_SIZE-1);
-    init_ip(atoi(argv[2]));
-    #Info: "New node: %s %d" my_ip,my_port
-    sprintf(buffer,"add_network_node %s %d",my_ip,my_port);
-    send_task_to_base(buffer);
-    struct sockaddr rem_addr; 
-    int length = sizeof(rem_addr);
-    signal(SIGCHLD, SIG_IGN);
-    Tcl_Eval(interp,"if {![info exists ::network_node_event_code]} {set ::network_node_event_code {}}");
-    // Start serving commands from BS
-    network_loop=1;
-    while (network_loop) {
-        Tcl_Eval(interp,"uplevel #0 $::network_node_event_code");
-        int I=accept(node_sock, &rem_addr, &length);
-        if (I==-1) {
-            continue;
-        }
-        
-        int i=read(I, buffer, NETWORK_BEFFER_SIZE);
-        buffer[i]=0;
-        if (Tcl_Eval(interp,buffer)==TCL_ERROR) {
-            Tcl_Eval(interp,"puts $::errorInfo");
-        }
-        close(I);
-    }
-    
-    return TCL_OK;
-}
-static int
-add_network_node (char *host,int port)
-{
-    struct hostent *h;
-    network_node *n=network_node_root;
-    char host_ip[32];
-    network_node *new_network_node=(network_node *)malloc(sizeof(network_node));
-    if((h=gethostbyname(host)) == NULL) {
-        sprintf(new_network_node->host_ip,"127.0.0.1");
-    } else {
-        // Converting 4 bytes to IP string
-        int host_ip_int[4],i;
-        for (i=0;i<4;i++) {
-            host_ip_int[i]=(h->h_addr_list[0][i]+256)%256;
-        }
-        sprintf(host_ip,"%i.%i.%i.%i",host_ip_int[0],host_ip_int[1],host_ip_int[2],host_ip_int[3]);
-    }
-    while (n) {
-        if ((n->port==port)&&(strcmp(n->host_ip,host_ip)==0)) return(0);
-        n=n->next;
-    }
-    sprintf(new_network_node->host_ip,"%s",host_ip);
-    #Info: "New node: %s:%d" new_network_node->host_ip,port
-    new_network_node->next=NULL;
-    // Reset the buffer content
-    new_network_node->port=port;
-    new_network_node->last=NULL;
-    
-    // Insert the new network node to the list
-    if (network_node_root==NULL) {
-        network_node_root=new_network_node;
-        return TCL_OK;
-    }
-    
-    network_node *previous_network_node=network_node_root;
-    while (previous_network_node->next) previous_network_node=previous_network_node->next;
-    previous_network_node->next=new_network_node;
-    new_network_node->last=previous_network_node;
-    
-    // Send all nodes the news
-    n=network_node_root;
-    char buffer[256];
-    sprintf(buffer,"add_network_node %s %d",new_network_node->host_ip,port);
-    while (n) {
-        if ((n->port==port)&&(strcmp(n->host_ip,new_network_node->host_ip)==0)) {
-            network_node *m=network_node_root;
-            char buffer[256];
-            while (m) {
-                if ((m->port==port)&&(strcmp(m->host_ip,new_network_node->host_ip)==0)) {
-                    m=m->next;
+            ordinal i,j;
+            bytecode_buffer_index=0;
+            LUT *a=get_LUT(argv[1]);
+            bc_start(a->hit_bytecode);
+            ordinal limit=a->hit_bytecode_size;
+            if (argc==3) limit=atoi(argv[2]);
+            if (limit>a->hit_bytecode_size) limit=a->hit_bytecode_size;
+            #Info: "(%016X) Listing Bytecode (%ld) " bytecode_buffer limit 
+            while (bytecode_buffer_index<limit) {
+                unsigned char bc=bc_byte();
+                if (bc&HIT_CELL) {
+                    #Info: "<%d> Corner=%g %08X" bytecode_buffer_index bc_float() bc_full_int()
+                    bc_step();
                     continue;
                 }
-                sprintf(buffer,"add_network_node %s %d",m->host_ip,m->port);
-                tcp_send_no_fork(n,buffer);
-                m=m->next;
+                float level=bc_float();
+                int32_t I0=bc_full_int();
+                bc_step();
+                int32_t I1=bc_full_int();
+                int32_t jump=bytecode_buffer_index+bc_int();
+                #Info: "<%d> Dim%d>=%g or jump to <%ld> %08X %08X" bytecode_buffer_index-1 bc level jump I0 I1
+                bc_step();
             }
-            n=n->next;
-            continue;
-        }    
-        tcp_send_no_fork(n,buffer);
-        n=n->next;
-    }
-    sprintf(buffer,"node_release");
-    tcp_send_no_fork(new_network_node,buffer);
-    return TCL_OK;
-}
-static int
-node_release (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (network_node_type==net_mode_node) network_loop=0;
-    return TCL_OK;
-}
-static int
-tcl_add_network_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=3) {
-        #Error: "Usage: %s <host> <port>" argv[0]
-    }
-    return (add_network_node(argv[1],atoi(argv[2])));
-}
-static int
-tcp_send_no_fork(network_node *n,char *code) {
-    // Starting the socket
-    int sock=socket(AF_INET, SOCK_STREAM, 0);
-    //Creating the message:
-    char *msg=(char *)malloc(sizeof(char)*(strlen(code)+256));
-    sprintf(msg,"!%s!",code);
-    #Info: "(%d) sending %s to node %s %d" getpid(),msg,n->host_ip,n->port
-    // Updating the node IP structure
-    bzero(&node_addr,sizeof(node_addr));
-    node_addr.sin_family = AF_INET;
-    node_addr.sin_addr.s_addr=inet_addr(n->host_ip);
-    node_addr.sin_port=htons(n->port);
-    // Connecting to server
-    if (connect(sock, (struct sockaddr *)&node_addr, sizeof(node_addr))!=0) {
-        #Error: "(%d tcp_send_no_fork) Failed connecting to node." getpid()
-        return TCL_ERROR;
-    }
-    // Sending message
-    if(write(sock,msg,strlen(msg))==0) {
-        #Error: "(%d tcp_send_no_fork) Failed sending command to node." getpid()
-        return TCL_ERROR;
-    }
-    free(msg);
-    close(sock);
-    printf("Sent %s to %s:%d\n",code,n->host_ip,n->port);
-    return TCL_OK;
-}
-static int
-tcp_send(network_node *n,char *code) {
-    // Starting the socket
-    int sock=socket(AF_INET, SOCK_STREAM, 0);
-    //Creating the message:
-    char *msg=(char *)malloc(sizeof(char)*(strlen(code)+256));
-    sprintf(msg,"!%% %s %d {%s} %d!",my_ip,my_port,code,network_task_handle);
-    #Info: "(%d) sending %s to node %s %d" getpid(),msg,n->host_ip,n->port
-    // Updating the node IP structure
-    bzero(&node_addr,sizeof(node_addr));
-    node_addr.sin_family = AF_INET;
-    node_addr.sin_addr.s_addr=inet_addr(n->host_ip);
-    node_addr.sin_port=htons(n->port);
-    // Connecting to server
-    if (connect(sock, (struct sockaddr *)&node_addr, sizeof(node_addr))!=0) {
-        #Error: "(%d tcp_send) Failed connecting to node." getpid()
-        return TCL_ERROR;
-    }
-    // Sending message
-    if(write(sock,msg,strlen(msg))==0) {
-        #Error: "(%d tcp_send) Failed sending command to node." getpid()
-        return TCL_ERROR;
-    }
-    free(msg);
-    close(sock);
-    printf("Sent %s to %s:%d\n",code,n->host_ip,n->port);
-    return TCL_OK;
-}
-static int
-send_task_to_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if ((argc!=3)&&(argc!=2)) {
-        #Error: "Usage: %s [<node_num>] <code>" argv[0]
-        return TCL_ERROR;
-    }
-    int node_number;
-    char *code;
-    int node_list_size=0;
-    network_node *n=network_node_root;
-    while (n) {
-        node_list_size++;
-        n=n->next;
-    }
-    if (argc==2) {
-        node_number=rand()%node_list_size;
-        code=argv[1];
-    } else {
-        node_number=atoi(argv[1]);
-        if (node_number>=node_list_size) {
-            #Error: "(%s) node index %d exceeds node list size %d" argv[0],node_number,node_list_size
+            bc_start(a->hit_bytecode);
+            return TCL_OK;
         }
-        code=argv[2];
-    }
-    n=network_node_root;
-    int i=node_number;
-    while ((n)&&(i)) {
-        i--;
-        n=n->next;
-    }
-    if (n==NULL) {
-        printf("Error: node %d does not exist.",node_number);
-        return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    int good_nodes_count=node_list_size;
-    network_task_handle++;
-    while ((tcp_send(n,code)==TCL_ERROR)&&(good_nodes_count)) {
-        // Look for a different node
-        good_nodes_count--;
-        node_number=rand()%node_list_size;
-        n=network_node_root;
-        int i=node_number;
-        while ((n)&&(i)) {
-            i--;
-            n=n->next;
-        }
-    }
-    if (good_nodes_count) {
-        tcl_append_int(interp,network_task_handle);
-        network_task_handle++; 
-        return TCL_OK;
-    }
-    return TCL_ERROR;
-}
-static int
-eval_task_from_node (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=5) {
-        #Error: "Usage: %s <base host> <base port> <code> <handle>" argv[0]
-        return TCL_ERROR;
-    }
-    // Fork the process and continue listening
-    if (fork()) {
-        return TCL_OK;
-    } 
-    Tcl_Eval(interp,"set ::network_node_event_code {}");
-    network_loop=0;
-    // The forked node has its own identity
-    //     Its base is the calling node
-    set_base_ip(argv[1],atoi(argv[2]));
-    //    close(node_sock);
-    //     And it has a new port
-    init_ip(atoi(argv[2]));
-    // And now it is ready to evaluate the command
-    if (Tcl_Eval(interp,argv[3])==TCL_ERROR) {
-        Tcl_Eval(interp,"puts $::errorInfo");
-    }
-    // and send update to the caller
-    char buffer[NETWORK_BEFFER_SIZE];
-    sprintf(buffer,"network_task_done %s",argv[4]);
-    send_task_to_base(buffer);
-    // ...after which it is no longer needed
-    #Info: "(%d) done!" getpid()
-    exit(0);
-}
-static int
-network_task_done (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=2) {
-        #Error: "Usage: %s <task handle>" argv[0]
-        return TCL_ERROR;
-    }
-    
-    
-    return TCL_OK;
-}
-static int
-send_task_to_base (char *code)
-{
-    // Updating the server IP structure
-    bzero(&server_addr,sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr=inet_addr(base_ip);
-    server_addr.sin_port=htons(base_port);
-    #Info: "(%d) Sending {%s} to parent node: %s:%d" getpid(),code,base_ip,base_port
-    int sock=socket(AF_INET, SOCK_STREAM, 0);
-    // Connecting to server
-    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr))!=0) {
-        #Error: "(send_task_to_base) Failed connecting to base station."
-        return TCL_ERROR;
-    }
-    // Sending message
-    if(write(sock,code,strlen(code))==0) {
-        #Error: "(send_task_to_base) Failed sending command to base station."
-        return TCL_ERROR;
-    }
-    close(sock);
-    #Info: "{%s} sent successfuly." code
-    return TCL_OK;
-}
-static int
-tcl_send_task_to_base (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=2) {
-        #Error: "Usage: %s <code>" argv[0]
-        return TCL_ERROR;
-    }
-    return(send_task_to_base(argv[1]));
-}
-static int
-tcl_resource_usage (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=3) {
-        #Error: "Usage: %s [self|children] <metric>" argv[0]
-        return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    int who;
-    if (strcmp(argv[1],"self")==0) {
-        who=RUSAGE_SELF;
-    }
-    if (strcmp(argv[1],"children")==0) {
-        who=RUSAGE_CHILDREN;
-    }
-    if ((who!=RUSAGE_SELF)&&(who!=RUSAGE_CHILDREN)) {
-        #Error: "(usage) first argument must be either 'self' or 'children'"
-        return TCL_ERROR;
-    }
-    struct rusage usage;
-    getrusage(who,&usage);
-    if (strcmp(argv[2],"utime")==0) {
-        tcl_append_long(interp,usage.ru_utime.tv_sec*1000000+usage.ru_utime.tv_usec);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"stime")==0) {
-        tcl_append_long(interp,usage.ru_stime.tv_sec*1000000+usage.ru_stime.tv_usec);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"cputime")==0) {
-        tcl_append_long(interp,(long)clock());
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"maxrss")==0) {
-        tcl_append_long(interp,usage.ru_maxrss);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"ixrss")==0) {
-        tcl_append_long(interp,usage.ru_ixrss);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"idrss")==0) {
-        tcl_append_long(interp,usage.ru_idrss);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"isrss")==0) {
-        tcl_append_long(interp,usage.ru_isrss);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"minflt")==0) {
-        tcl_append_long(interp,usage.ru_minflt);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"majflt")==0) {
-        tcl_append_long(interp,usage.ru_majflt);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"nswap")==0) {
-        tcl_append_long(interp,usage.ru_nswap);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"inblock")==0) {
-        tcl_append_long(interp,usage.ru_inblock);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"oublock")==0) {
-        tcl_append_long(interp,usage.ru_oublock);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"msgsnd")==0) {
-        tcl_append_long(interp,usage.ru_msgsnd);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"msgrcv")==0) {
-        tcl_append_long(interp,usage.ru_msgrcv);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"nsignals")==0) {
-        tcl_append_long(interp,usage.ru_nsignals);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"nvcsw")==0) {
-        tcl_append_long(interp,usage.ru_nvcsw);
-        return TCL_OK;
-    }
-    if (strcmp(argv[2],"nivcsw")==0) {
-        tcl_append_long(interp,usage.ru_nivcsw);
-        return TCL_OK;
-    }
-    #Error: "(usage) unrecognized field: %s" argv[2]
-    return TCL_ERROR;
-    
-}
-#If: {[string match *regular $::target] || [string match *debug $::target]} {
-    #Foreach: type {Info Warning Error} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
-                printf("%s ",argv[0]);
+        static int
+        LUT2hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+        {
+            if (argc!=2) {
+                #Error: "Usage: %s <array name>" argv[0]
+                return TCL_ERROR;
             }
-            if (this_process_forked) printf("(forked process %d) ",getpid());
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            printf("\n");
-            fflush(stdout);
+            LUT *a=get_LUT(argv[1]);
+            ordinal i,j;
+            for (i=0;i<a->dim;i++) array2hit_partial_legend_top[i]=a->size[i];
+            for (i=0;i<a->dim;i++) array2hit_partial_legend_bottom[i]=0;
+            ordinal *separation[$::MAXDIM];
+            map_slice_separation(a,separation);
+            a->hit=array2hit(a,separation,0);
+            for (i=0;i<a->dim;i++) free(separation[i]);
+            merge_dim=a->dim;
+            ordinal m=0;
+            m=merge_hit_leaves(&(a->hit));
+            
+            #Info: "Done merging %d cells" m
+            ordinal stats[3];
+            for (i=0;i<3;i++) stats[i]=0;
+            //    a->hit=linearize_hit_leaf(a->hit,stats);
+            ordinal sizer=1;
+            for (i=0;i<a->dim;i++) sizer*=(a->size[i]-1);
+            bc_start(a->hit_bytecode);
+            ordinal num_of_bc_words=count_hit_bytecode(a->hit);
+            
+            #Info: "Writing Byte Code in %ld Bytes" 4*num_of_bc_words
+            a->hit_bytecode=(FC *)malloc(sizeof(FC)*num_of_bc_words);
+            a->hit_bytecode_size=num_of_bc_words;
+            bc_start(a->hit_bytecode);
+            compile_bytecode(a->hit);
+            
+            hit_enabled=1;
+            free(a->content);
+            bc_start(a->hit_bytecode);
             return TCL_OK;
-        }
-    }
-    #Foreach: type {Print} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            printf("Info: ");
-            if (this_process_forked) printf("(forked process %d) ",getpid());
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-    #Foreach: type {Token} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-    #Foreach: type {Nl} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            printf("\n");
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-} 
-#If: {[string match *silent $::target]} {
-    #Foreach: type {Info Warning Error Print Token Nl} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            return TCL_OK;
-        }
-    }
-}
-#If: {[string match *debug $::target]} {
-    #Foreach: type {Dinfo Dwarning Derror} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            #If: {![string equal ${type} "Nl"] && ![string equal ${type} "Token"] } {
-                printf("%s ",argv[0]);
-            }
-            if (this_process_forked) printf("(forked process %d) ",getpid());
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            printf("\n");
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-    #Foreach: type {Dprint} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            printf("Info: ");
-            if (this_process_forked) printf("(forked process %d) ",getpid());
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-    #Foreach: type {Dtoken} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            int i;
-            for (i=1;i<argc;i++) printf("%s ",argv[i]);
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-    #Foreach: type {Dnl} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            printf("\n");
-            fflush(stdout);
-            return TCL_OK;
-        }
-    }
-} 
-#If: {[string match *regular $::target]||[string match *silent $::target]} {
-    #Foreach: type {Dinfo Dwarning Derror Dprint Dtoken Dnl} {
-        static int tcl_$type (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-            return TCL_OK;
-        }
-    }
-}
-
-static int
-tcl_sizer (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    #tcl set arg_count 5 
-    #Foreach: input $::sizer_inputs {
-        float $input=NAN;
-        float min_$input;
-        float max_$input;
-        #tcl incr arg_count 3
-    } 
-    #Foreach: parameter $::sizer_parameters {
-        float $parameter=NAN;
-        LUT *${parameter}_LUT;
-        #tcl incr arg_count 2
-    }
-    float Gain=NAN;
-    float Area=NAN;
-    float fc=NAN;
-    if (argc!=$arg_count) {
-        #Error: "Usage: %s Ids_LUT gm_LUT go_LUT Nth_LUT Nflicker_LUT Vt_LUT sigmaVt_LUT Lmin Vds Ids Vt Vgs Vbs Nflicker Nth L W gm ro sigmaVt Tolerance" argv[0]
-        return TCL_ERROR;
-    }
-    Tcl_ResetResult(interp);
-    #tcl set arg_count 1 
-    #Foreach: input $::sizer_inputs {
-        if (argv[$arg_count][0]!=0) $input=atof(argv[$arg_count]);
-        #tcl incr arg_count 1
-        min_$input=atof(argv[$arg_count]);
-        #tcl incr arg_count 1
-        max_$input=atof(argv[$arg_count]);
-        #tcl incr arg_count 1
-    }
-    #Foreach: parameter $::sizer_parameters {
-        if (argv[$arg_count][0]!=0) $parameter=atof(argv[$arg_count]);
-        #tcl incr arg_count 1
-        ${parameter}_LUT=get_LUT(argv[$arg_count]);
-        #tcl incr arg_count 1
-    }
-    if (argv[$arg_count][0]!=0) Gain=atof(argv[$arg_count]);
-    #tcl incr arg_count 1
-    if (argv[$arg_count][0]!=0) Area=atof(argv[$arg_count]);
-    #tcl incr arg_count 1
-    if (argv[$arg_count][0]!=0) fc=atof(argv[$arg_count]);
-    #tcl incr arg_count 1
-    float tolerance=atof(argv[$arg_count])/100;
-    float distance=sizer(
-    #Foreach: input $::sizer_inputs {
-        &$input,min_$input,max_$input,
-    }
-    #Foreach: parameter $::sizer_parameters {
-        &$parameter,${parameter}_LUT,
-    } 
-    &Gain,&Area,&fc,tolerance
-    );
-    #Foreach: input $::sizer_inputs {
-        tcl_append_float(interp,$input);
-    }
-    #Foreach: parameter [concat $::sizer_parameters Gain Area fc] {
-        tcl_append_float(interp,$parameter);
-    }
-    tcl_append_float(interp,distance);
-    return TCL_OK;
-}
-static int
-tcl_enable_hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if ((argc!=2)&&(argc!=1)) {
-        #Error: "Usage: %s on/off" argv[0]
-        return TCL_ERROR;
-    }
-    if (argc==1) hit_enabled=1;
-    if (argc==2) {
-        if (strcmp(argv[1],"on")) hit_enabled=1;
-        if (strcmp(argv[1],"off")) hit_enabled=0;
-    }	
-    return TCL_OK;
-}
-void list_hit(hit_node *hit,int level) {
-    if (hit==NULL) return;
-    char *indent=(char *)malloc(sizeof(char)*(level+1));
-    int i;
-    for (i=0;i<level;i++) indent[i]='.';
-    indent[level]=0;
-    if (hit[HIT_TYPE].o==HIT_DIVIDER) {
-        #Info: "%s DIM %d Level %g" indent hit[HIT_DIM].o hit[HIT_VALUES].s
-        list_hit((hit_node *)hit[HIT_VALUES+1].p,level+4);
-        list_hit((hit_node *)hit[HIT_VALUES+2].p,level+4);
-        return;
-    }
-    if (hit[HIT_TYPE].o==HIT_FULL_INTERP) {
-        #Info: "%s hypercube:" indent 
-        for (i=0;i<merge_dim;i++) {
-            #Info: "%s %d) %g %g" indent i hit[HIT_VALUES+2*i].s 1/(hit[HIT_VALUES+2*i+1].s)
-        }
-        #Info: "%s   corners" indent 
-        for (i=2*merge_dim;i<hit[HIT_DIM].o+2*merge_dim;i++) {
-            #Info: "%s   %d) %g" indent i-2*merge_dim hit[HIT_VALUES+i].s 
-        }
-    }
-}
-static int
-tcl_list_bytecode (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if ((argc!=2)&&(argc!=3)) {
-        #Error: "Usage: %s <array name> <limit>" argv[0]
-        return TCL_ERROR;
-    }
-    ordinal i,j;
-    bytecode_buffer_index=0;
-    LUT *a=get_LUT(argv[1]);
-    bc_start(a->hit_bytecode);
-    ordinal limit=a->hit_bytecode_size;
-    if (argc==3) limit=atoi(argv[2]);
-    if (limit>a->hit_bytecode_size) limit=a->hit_bytecode_size;
-    #Info: "(%016X) Listing Bytecode (%ld) " bytecode_buffer limit 
-    while (bytecode_buffer_index<limit) {
-        unsigned char bc=bc_byte();
-        if (bc&HIT_CELL) {
-            #Info: "<%d> Corner=%g %08X" bytecode_buffer_index bc_float() bc_full_int()
-            bc_step();
-            continue;
-        }
-        float level=bc_float();
-        int32_t I0=bc_full_int();
-        bc_step();
-        int32_t I1=bc_full_int();
-        int32_t jump=bytecode_buffer_index+bc_int();
-        #Info: "<%d> Dim%d>=%g or jump to <%ld> %08X %08X" bytecode_buffer_index-1 bc level jump I0 I1
-        bc_step();
-    }
-    bc_start(a->hit_bytecode);
-    return TCL_OK;
-}
-static int
-LUT2hit (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
-{
-    if (argc!=2) {
-        #Error: "Usage: %s <array name>" argv[0]
-        return TCL_ERROR;
-    }
-    LUT *a=get_LUT(argv[1]);
-    ordinal i,j;
-    for (i=0;i<a->dim;i++) array2hit_partial_legend_top[i]=a->size[i];
-    for (i=0;i<a->dim;i++) array2hit_partial_legend_bottom[i]=0;
-    ordinal *separation[$::MAXDIM];
-    map_slice_separation(a,separation);
-    a->hit=array2hit(a,separation,0);
-    for (i=0;i<a->dim;i++) free(separation[i]);
-    merge_dim=a->dim;
-    ordinal m=0;
-    m=merge_hit_leaves(&(a->hit));
-    
-    #Info: "Done merging %d cells" m
-    ordinal stats[3];
-    for (i=0;i<3;i++) stats[i]=0;
-    //    a->hit=linearize_hit_leaf(a->hit,stats);
-    ordinal sizer=1;
-    for (i=0;i<a->dim;i++) sizer*=(a->size[i]-1);
-    bc_start(a->hit_bytecode);
-    ordinal num_of_bc_words=count_hit_bytecode(a->hit);
-    
-    #Info: "Writing Byte Code in %ld Bytes" 4*num_of_bc_words
-    a->hit_bytecode=(FC *)malloc(sizeof(FC)*num_of_bc_words);
-    a->hit_bytecode_size=num_of_bc_words;
-    bc_start(a->hit_bytecode);
-    compile_bytecode(a->hit);
-    
-    hit_enabled=1;
-    free(a->content);
-    bc_start(a->hit_bytecode);
-    return TCL_OK;
-}  
-void map_slice_separation(LUT *a,ordinal **separation) {
-    ordinal *total[$::MAXDIM];
-    int i,j;
-    for (i=0;i<a->dim;i++) {
-        separation[i]=(ordinal *)malloc(sizeof(ordinal)*a->size[i]);
-        total[i]=(ordinal *)malloc(sizeof(ordinal)*a->size[i]);
-        for (j=0;j<a->size[i];j++) separation[i][j]=0;
-        for (j=0;j<a->size[i];j++) total[i][j]=0;
-    }
-    ordinal sizer=1,index;
-    for (i=0;i<a->dim;i++) {
-        //        a->neighbors[i]=sizer;
-        sizer*=a->size[i];
-    }	
-    for (index=0;index<sizer;index++) {
-        ordinal key[$::MAXDIM];
-        ordinal partial_index=index;
-        int skip_point=0;
-        for (j=0;j<a->dim;j++) {
-            key[j]=partial_index%a->size[j];
-            if (key[j]==0) skip_point=1;
-            if (key[j]==a->size[j]-1) skip_point=1;
-            partial_index/=a->size[j];
-        }
-        if (skip_point) continue;
-        for (j=0;j<a->dim;j++) {
-            ordinal slice=key[j];
-            float weight=(a->legend[j][slice+1]-a->legend[j][slice])/(a->legend[j][slice+1]-a->legend[j][slice-1]);
-            float pre=a->content[index-a->neighbors[j]];
-            float post=a->content[index+a->neighbors[j]];
-            float M=a->content[index];
-            float I=pre*weight+post*(1-weight);
-            float Error=fabs(I/M-1)*100;
-            if (Error>1.0) separation[j][slice]+=1000;
-            total[j][slice]++;
-        }
-    }
-    for (i=0;i<a->dim;i++) for (j=1;j<a->size[i]-1;j++) {
-        if (total[i][j]==0) continue;
-        separation[i][j]/=total[i][j];
-        #Dinfo: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
-    }
-    for (i=0;i<a->dim;i++) {
-        free(total[i]);
-    }
-    
-}
-ordinal count_hit_bytecode(hit_node *hit) {
-    ordinal retval=0;
-    if (hit[HIT_TYPE].o&HIT_CELL) {
-        retval++;
-        return(retval);
-    }	
-    retval+=2;
-    retval+=count_hit_bytecode((hit_node *)hit[HIT_VALUES+1].p);
-    retval+=count_hit_bytecode((hit_node *)hit[HIT_VALUES+2].p);
-    return(retval);
-}
-void compile_bytecode(hit_node *hit) {
-    int i,j;
-    if (hit[HIT_TYPE].o==HIT_FULL_INTERP) {
-        // bc command
-        bc_put_byte(HIT_FULL_INTERP);
-        // corners (skipping the scafold information about starting value and factor per dimension)
-        bc_put_scalar(hit[HIT_VALUES+2*merge_dim].s);
-        bc_step();
-        return;
-    }
-    // bc command
-    bc_put_byte((unsigned char)hit[HIT_DIM].o);
-    // slice level
-    float level=hit[HIT_VALUES+i++].s;
-    bc_put_scalar(level);
-    bc_step();
-    // This little dance is necessary to create the jump entry in the divider command. The steps are: 
-    ordinal this_index=bytecode_buffer_index;
-    // 1. writing  a placeholder 0
-    bc_put_full_int(0);
-    bc_step();
-    // 2. compiling one side of the tree
-    compile_bytecode((hit_node *)hit[HIT_VALUES+1].p);
-    // 3. returning to the place-holder and changing it to the size of that half tree
-    ordinal next_index=bytecode_buffer_index;
-    bytecode_buffer_index=this_index;
-    bc_put_full_int(next_index-this_index);
-    bc_step();
-    // 4. returning to the end of the bc buffer and compiling the other half.
-    bytecode_buffer_index=next_index;
-    compile_bytecode((hit_node *)hit[HIT_VALUES+2].p);
-    return;
-}
-hit_node *linearize_hit_leaf(hit_node *hit,ordinal *stats) {
-    if (!(hit[HIT_TYPE].o&HIT_CELL)) {
-        hit[HIT_VALUES+1].p=linearize_hit_leaf((hit_node *)hit[HIT_VALUES+1].p,stats);
-        hit[HIT_VALUES+2].p=linearize_hit_leaf((hit_node *)hit[HIT_VALUES+2].p,stats);
-        return(hit);
-    }
-    if (!(hit[HIT_TYPE].o==HIT_FULL_INTERP)) return(hit);
-    float constant=0;
-    float midpoint[$::MAXDIM];
-    float slopes[$::MAXDIM];
-    ordinal l=1;
-    int i;
-    for (i=0;i<merge_dim;i++) {
-        slopes[i]=0;
-        l*=2;
-        midpoint[i]=-hit[HIT_VALUES+i*2].s+0.5*1/(hit[HIT_VALUES+i*2+1].s);
-    }    
-    l/=2;
-    ordinal corner=0;
-    ordinal num_of_corners;
-    num_of_corners=1<<merge_dim;
-    for (corner=0;corner<num_of_corners;corner++) {
-        float corner_value=hit[HIT_VALUES+merge_dim*2+corner].s;
-        // constant is pre-loaded with the average between all points
-        constant+=corner_value;
-        ordinal tmp_corner=corner;
-        for (i=0;i<merge_dim;i++) {
-            if (tmp_corner&1) {
-                slopes[i]+=corner_value;
-            } else {
-                slopes[i]-=corner_value;
-            }
-            // next bit
-            tmp_corner>>=1;
-        }
-    } 
-    // Normalizing constant to the average
-    constant/=l;
-    constant/=2;
-    for (i=0;i<merge_dim;i++) {
-        // Normalizing each slope
-        slopes[i]/=l;
-        slopes[i]*=hit[HIT_VALUES+i*2+1].s;
-        // subtracting the regression from the average -> the midpoint regression is now anchored to the average between hypercube's points.
-        constant-=slopes[i]*midpoint[i];
-    }  
-    slopes[merge_dim]=constant;
-    ////////////////////////////////////// Testing:
-    float max_error=0;
-    for (corner=0;corner<num_of_corners;corner++) {
-        ordinal index=0;
-        // scratch 'tmp' to roll the corner bits without destroying corner itself:
-        ordinal tmp_corner=corner;
-        float interpolated_value=slopes[merge_dim];
-        tmp_corner=corner;
-        for (i=0;i<merge_dim;i++) {
-            interpolated_value+=slopes[i]*(-hit[HIT_VALUES+i*2].s+(tmp_corner&1)/(hit[HIT_VALUES+i*2+1].s));
-            tmp_corner>>=1;
         }  
-        float original_value=hit[HIT_VALUES+merge_dim*2+corner].s;
-        float error=100*fabs((original_value-interpolated_value)/original_value);
-        if (fabs((original_value-interpolated_value))<1e-12) error=0.1;
-        if (error>max_error) max_error=error;
-    }
-    if (max_error>1.0) {
-        // Try cLUT
-        float baseline=1e99;
-        float top_value=-1e99;
-        for (corner=0;corner<num_of_corners;corner++) if (baseline>hit[HIT_VALUES+merge_dim*2+corner].s) baseline=hit[HIT_VALUES+merge_dim*2+corner].s;
-        for (corner=0;corner<num_of_corners;corner++) if (top_value<hit[HIT_VALUES+merge_dim*2+corner].s) top_value=hit[HIT_VALUES+merge_dim*2+corner].s;
-        float resolution_step=(top_value-baseline)/255;
-        if (fabs(resolution_step/baseline)*100>1) {
-            stats[0]++;
+        void map_slice_separation(LUT *a,ordinal **separation) {
+            ordinal *total[$::MAXDIM];
+            int i,j;
+            for (i=0;i<a->dim;i++) {
+                separation[i]=(ordinal *)malloc(sizeof(ordinal)*a->size[i]);
+                total[i]=(ordinal *)malloc(sizeof(ordinal)*a->size[i]);
+                for (j=0;j<a->size[i];j++) separation[i][j]=0;
+                for (j=0;j<a->size[i];j++) total[i][j]=0;
+            }
+            ordinal sizer=1,index;
+            for (i=0;i<a->dim;i++) {
+                //        a->neighbors[i]=sizer;
+                sizer*=a->size[i];
+            }	
+            for (index=0;index<sizer;index++) {
+                ordinal key[$::MAXDIM];
+                ordinal partial_index=index;
+                int skip_point=0;
+                for (j=0;j<a->dim;j++) {
+                    key[j]=partial_index%a->size[j];
+                    if (key[j]==0) skip_point=1;
+                    if (key[j]==a->size[j]-1) skip_point=1;
+                    partial_index/=a->size[j];
+                }
+                if (skip_point) continue;
+                for (j=0;j<a->dim;j++) {
+                    ordinal slice=key[j];
+                    float weight=(a->legend[j][slice+1]-a->legend[j][slice])/(a->legend[j][slice+1]-a->legend[j][slice-1]);
+                    float pre=a->content[index-a->neighbors[j]];
+                    float post=a->content[index+a->neighbors[j]];
+                    float M=a->content[index];
+                    float I=pre*weight+post*(1-weight);
+                    float Error=fabs(I/M-1)*100;
+                    if (Error>1.0) separation[j][slice]+=1000;
+                    total[j][slice]++;
+                }
+            }
+            for (i=0;i<a->dim;i++) for (j=1;j<a->size[i]-1;j++) {
+                if (total[i][j]==0) continue;
+                separation[i][j]/=total[i][j];
+                #Dinfo: "Separation in Slice %d, Dim %d equals %d" j i  separation[i][j]
+            }
+            for (i=0;i<a->dim;i++) {
+                free(total[i]);
+            }
+            
+        }
+        ordinal count_hit_bytecode(hit_node *hit) {
+            ordinal retval=0;
+            if (hit[HIT_TYPE].o&HIT_CELL) {
+                retval++;
+                return(retval);
+            }	
+            retval+=2;
+            retval+=count_hit_bytecode((hit_node *)hit[HIT_VALUES+1].p);
+            retval+=count_hit_bytecode((hit_node *)hit[HIT_VALUES+2].p);
+            return(retval);
+        }
+        void compile_bytecode(hit_node *hit) {
+            int i,j;
+            if (hit[HIT_TYPE].o==HIT_FULL_INTERP) {
+                // bc command
+                bc_put_byte(HIT_FULL_INTERP);
+                // corners (skipping the scafold information about starting value and factor per dimension)
+                bc_put_scalar(hit[HIT_VALUES+2*merge_dim].s);
+                bc_step();
+                return;
+            }
+            // bc command
+            bc_put_byte((unsigned char)hit[HIT_DIM].o);
+            // slice level
+            float level=hit[HIT_VALUES+i++].s;
+            bc_put_scalar(level);
+            bc_step();
+            // This little dance is necessary to create the jump entry in the divider command. The steps are: 
+            ordinal this_index=bytecode_buffer_index;
+            // 1. writing  a placeholder 0
+            bc_put_full_int(0);
+            bc_step();
+            // 2. compiling one side of the tree
+            compile_bytecode((hit_node *)hit[HIT_VALUES+1].p);
+            // 3. returning to the place-holder and changing it to the size of that half tree
+            ordinal next_index=bytecode_buffer_index;
+            bytecode_buffer_index=this_index;
+            bc_put_full_int(next_index-this_index);
+            bc_step();
+            // 4. returning to the end of the bc buffer and compiling the other half.
+            bytecode_buffer_index=next_index;
+            compile_bytecode((hit_node *)hit[HIT_VALUES+2].p);
+            return;
+        }
+        hit_node *linearize_hit_leaf(hit_node *hit,ordinal *stats) {
+            if (!(hit[HIT_TYPE].o&HIT_CELL)) {
+                hit[HIT_VALUES+1].p=linearize_hit_leaf((hit_node *)hit[HIT_VALUES+1].p,stats);
+                hit[HIT_VALUES+2].p=linearize_hit_leaf((hit_node *)hit[HIT_VALUES+2].p,stats);
+                return(hit);
+            }
+            if (!(hit[HIT_TYPE].o==HIT_FULL_INTERP)) return(hit);
+            float constant=0;
+            float midpoint[$::MAXDIM];
+            float slopes[$::MAXDIM];
+            ordinal l=1;
+            int i;
+            for (i=0;i<merge_dim;i++) {
+                slopes[i]=0;
+                l*=2;
+                midpoint[i]=-hit[HIT_VALUES+i*2].s+0.5*1/(hit[HIT_VALUES+i*2+1].s);
+            }    
+            l/=2;
+            ordinal corner=0;
+            ordinal num_of_corners;
+            num_of_corners=1<<merge_dim;
+            for (corner=0;corner<num_of_corners;corner++) {
+                float corner_value=hit[HIT_VALUES+merge_dim*2+corner].s;
+                // constant is pre-loaded with the average between all points
+                constant+=corner_value;
+                ordinal tmp_corner=corner;
+                for (i=0;i<merge_dim;i++) {
+                    if (tmp_corner&1) {
+                        slopes[i]+=corner_value;
+                    } else {
+                        slopes[i]-=corner_value;
+                    }
+                    // next bit
+                    tmp_corner>>=1;
+                }
+            } 
+            // Normalizing constant to the average
+            constant/=l;
+            constant/=2;
+            for (i=0;i<merge_dim;i++) {
+                // Normalizing each slope
+                slopes[i]/=l;
+                slopes[i]*=hit[HIT_VALUES+i*2+1].s;
+                // subtracting the regression from the average -> the midpoint regression is now anchored to the average between hypercube's points.
+                constant-=slopes[i]*midpoint[i];
+            }  
+            slopes[merge_dim]=constant;
+            ////////////////////////////////////// Testing:
+            float max_error=0;
+            for (corner=0;corner<num_of_corners;corner++) {
+                ordinal index=0;
+                // scratch 'tmp' to roll the corner bits without destroying corner itself:
+                ordinal tmp_corner=corner;
+                float interpolated_value=slopes[merge_dim];
+                tmp_corner=corner;
+                for (i=0;i<merge_dim;i++) {
+                    interpolated_value+=slopes[i]*(-hit[HIT_VALUES+i*2].s+(tmp_corner&1)/(hit[HIT_VALUES+i*2+1].s));
+                    tmp_corner>>=1;
+                }  
+                float original_value=hit[HIT_VALUES+merge_dim*2+corner].s;
+                float error=100*fabs((original_value-interpolated_value)/original_value);
+                if (fabs((original_value-interpolated_value))<1e-12) error=0.1;
+                if (error>max_error) max_error=error;
+            }
+            if (max_error>1.0) {
+                // Try cLUT
+                float baseline=1e99;
+                float top_value=-1e99;
+                for (corner=0;corner<num_of_corners;corner++) if (baseline>hit[HIT_VALUES+merge_dim*2+corner].s) baseline=hit[HIT_VALUES+merge_dim*2+corner].s;
+                for (corner=0;corner<num_of_corners;corner++) if (top_value<hit[HIT_VALUES+merge_dim*2+corner].s) top_value=hit[HIT_VALUES+merge_dim*2+corner].s;
+                float resolution_step=(top_value-baseline)/255;
+                if (fabs(resolution_step/baseline)*100>1) {
+                    stats[0]++;
+                    return(hit);
+                }
+                stats[1]++;
+                // Go ahead and convert the entries to 8bit representation
+                hit_node *new_hit=(hit_node *)malloc(sizeof(hit_node)*(4+num_of_corners));
+                new_hit[HIT_TYPE].o=HIT_CFULL_INTERP;
+                new_hit[HIT_DIM].o=num_of_corners;
+                new_hit[HIT_VALUES].s=baseline;
+                new_hit[HIT_VALUES+1].s=resolution_step;
+                for (corner=0;corner<num_of_corners;corner++) new_hit[HIT_VALUES+2+corner].o=s2o((hit[HIT_VALUES+merge_dim*2+corner].s-baseline)/resolution_step);
+                free(hit);
+                return(new_hit);
+            }
+            stats[2]++;
+            free(hit); 
+            hit=(hit_node *)malloc(sizeof(hit_node)*(3+merge_dim));
+            hit[HIT_TYPE].o=HIT_LIN_INTERP;
+            hit[HIT_DIM].o=merge_dim;
+            hit[HIT_VALUES].s=slopes[merge_dim];
+            for (i=0;i<merge_dim;i++) hit[HIT_VALUES+1+i].s=slopes[i];
             return(hit);
         }
-        stats[1]++;
-        // Go ahead and convert the entries to 8bit representation
-        hit_node *new_hit=(hit_node *)malloc(sizeof(hit_node)*(4+num_of_corners));
-        new_hit[HIT_TYPE].o=HIT_CFULL_INTERP;
-        new_hit[HIT_DIM].o=num_of_corners;
-        new_hit[HIT_VALUES].s=baseline;
-        new_hit[HIT_VALUES+1].s=resolution_step;
-        for (corner=0;corner<num_of_corners;corner++) new_hit[HIT_VALUES+2+corner].o=s2o((hit[HIT_VALUES+merge_dim*2+corner].s-baseline)/resolution_step);
-        free(hit);
-        return(new_hit);
-    }
-    stats[2]++;
-    free(hit); 
-    hit=(hit_node *)malloc(sizeof(hit_node)*(3+merge_dim));
-    hit[HIT_TYPE].o=HIT_LIN_INTERP;
-    hit[HIT_DIM].o=merge_dim;
-    hit[HIT_VALUES].s=slopes[merge_dim];
-    for (i=0;i<merge_dim;i++) hit[HIT_VALUES+1+i].s=slopes[i];
-    return(hit);
-}
-hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
-    ordinal seperation_dim=-1;
-    ordinal separation_slice;
-    ordinal separation_slice_loss=0;
-    int i,j;
-    char indent[1024];
-    for (i=0;i<degree;i++) indent[i]='.';
-    indent[degree]=0;
-    for (i=0;i<a->dim;i++) {
-        if (array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]<2) continue;
-        ordinal total_separation=0;
-        for (j=array2hit_partial_legend_bottom[i]+1;j<array2hit_partial_legend_top[i];j++) total_separation+=separation[i][j];
-        total_separation/=(array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]-1);
-        if (total_separation>separation_slice_loss) {
-            separation_slice_loss=total_separation;
-            seperation_dim=i;
-            separation_slice=(array2hit_partial_legend_top[i]+array2hit_partial_legend_bottom[i])/2;
-        }
-    }
-    seperation_dim=-1;
-    if (seperation_dim<0) {
-        ordinal max_width=1;
-        for (i=0;i<a->dim;i++) if (array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]>max_width) {
-            seperation_dim=i;
-            separation_slice=(array2hit_partial_legend_top[i]+array2hit_partial_legend_bottom[i])/2;
-            max_width=array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i];
-        }
-    }
-    if (seperation_dim>=0) {
-        #Dinfo: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
-        hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*5);
-        hit[HIT_TYPE].o=HIT_DIVIDER;
-        hit[HIT_DIM].o=seperation_dim;
-        float orig_top=array2hit_partial_legend_top[seperation_dim];
-        float orig_bottom=array2hit_partial_legend_bottom[seperation_dim];
-        hit[HIT_VALUES+0].s=a->legend[seperation_dim][separation_slice];
-        array2hit_partial_legend_bottom[seperation_dim]=separation_slice;
-        hit[HIT_VALUES+1].p=(void *)array2hit(a,separation,degree+1);
-        array2hit_partial_legend_bottom[seperation_dim]=orig_bottom;
-        array2hit_partial_legend_top[seperation_dim]=separation_slice;
-        hit[HIT_VALUES+2].p=(void *)array2hit(a,separation,degree+1);
-        array2hit_partial_legend_top[seperation_dim]=orig_top;
-        return(hit);
-    }
-    #Dinfo: "%s Cell" indent
-    ordinal num_of_corners;
-    num_of_corners=1<<a->dim;
-    ordinal index=0;
-    ordinal sizer=1;
-    for (i=0;i<a->dim;i++) {
-        index+=sizer*array2hit_partial_legend_bottom[i];
-        sizer*=a->size[i];
-    } 	 
-    hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*(2+num_of_corners+a->dim*2));
-    hit[HIT_TYPE].o=HIT_FULL_INTERP;
-    hit[HIT_DIM].o=num_of_corners;
-    for (i=0;i<a->dim;i++) {
-        hit[HIT_VALUES+i*2].s=-a->legend[i][array2hit_partial_legend_bottom[i]];
-        hit[HIT_VALUES+i*2+1].s=1.0/(a->legend[i][array2hit_partial_legend_top[i]]-a->legend[i][array2hit_partial_legend_bottom[i]]);
-    }
-    for (i=0;i<num_of_corners;i++) {
-        int outsider=0; 
-        for (j=0;j<a->dim;j++) if (i&(1<<j)) if (array2hit_partial_legend_top[j]>=a->size[j]) outsider=1;
-        if (outsider) {
-            hit[HIT_VALUES+i+a->dim*2].s=NAN;
-        } else {
-            hit[HIT_VALUES+i+a->dim*2].s=a->content[index+a->neighbors[i]]; 
-        }    
-    }	
-    return(hit);  
-}
-ordinal merge_hit_leaves(hit_node **hit) {
-    if ((*hit)[HIT_TYPE].o&HIT_CELL) return 0;
-    hit_node *hit_t=(hit_node *)(*hit)[HIT_VALUES+1].p;
-    hit_node *hit_b=(hit_node *)(*hit)[HIT_VALUES+2].p;
-    ordinal retval=0;
-    if (hit_t[HIT_TYPE].o==HIT_DIVIDER) retval+=merge_hit_leaves((hit_node **)&((*hit)[HIT_VALUES+1].p));
-    if (hit_b[HIT_TYPE].o==HIT_DIVIDER) retval+=merge_hit_leaves((hit_node **)&((*hit)[HIT_VALUES+2].p));
-    hit_t=(hit_node *)(*hit)[HIT_VALUES+1].p;
-    hit_b=(hit_node *)(*hit)[HIT_VALUES+2].p;
-    if (hit_t[HIT_TYPE].o!=HIT_FULL_INTERP) return(retval);
-    if (hit_b[HIT_TYPE].o!=HIT_FULL_INTERP) return(retval);
-    int i;
-    int boundary_cell=0;
-    ordinal num_of_corners;
-    num_of_corners=1<<merge_dim;
-    for (i=0;i<num_of_corners;i++) if (isnan(hit_t[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
-    for (i=0;i<num_of_corners;i++) if (isnan(hit_b[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
-    if (boundary_cell) return(retval);
-    #Dinfo: "   Cells!" 
-    #Dinfo: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
-    float max_error=0;
-    ordinal split_dim=(*hit)[HIT_DIM].o;
-    float b=1/(hit_t[HIT_VALUES+2*split_dim+1].s);
-    float a=1/(hit_b[HIT_VALUES+2*split_dim+1].s);
-    float weight_top=a/(a+b);
-    float weight_bottom=b/(a+b);
-    int mask=1<<split_dim;
-    float failed_M,failed_I;
-    #Dinfo: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
-    for (i=0;i<num_of_corners;i++) {
-        if (!(i&mask)) continue;
-        int j=i-mask;
-        float T=hit_t[HIT_VALUES+2*merge_dim+i].s;
-        float B=hit_b[HIT_VALUES+2*merge_dim+j].s;
-        float M=hit_b[HIT_VALUES+2*merge_dim+i].s;
-        float I=T*weight_top+B*weight_bottom;
-        if (M!=hit_t[HIT_VALUES+2*merge_dim+j].s) {
-            #Error: "Mismatched hypercubes: %g!=%g" M hit_t[HIT_VALUES+2*merge_dim+j].s
-        }
-        float error=fabs(I/M-1)*100;
-        #Dinfo: "T=%g B=%g M=%g I=%g E=%g" T B M I error
-        //if (fabs(I-M)<1e-9) error=0;
-        if (error>max_error) max_error=error;
-    }
-    #Dinfo: "max_error=%g" max_error
-    if (max_error>1) return retval;
-    free(*hit);
-    *hit=(hit_node *)malloc(sizeof(hit_node)*(2+2*merge_dim+num_of_corners));
-    (*hit)[HIT_TYPE].o=HIT_FULL_INTERP;
-    (*hit)[HIT_DIM].o=num_of_corners;
-    for (i=0;i<merge_dim;i++) {
-        (*hit)[HIT_VALUES+i*2].s=hit_b[HIT_VALUES+i*2].s;
-        if (i==split_dim) {
-            (*hit)[HIT_VALUES+i*2+1].s=1/(1/hit_b[HIT_VALUES+i*2+1].s+1/hit_t[HIT_VALUES+i*2+1].s);
-        } else {
-            (*hit)[HIT_VALUES+i*2+1].s=hit_b[HIT_VALUES+i*2+1].s;
-        }
-    }	
-    for (i=0;i<num_of_corners;i++) {
-        if (i&mask) {
-            (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_t[HIT_VALUES+2*merge_dim+i].s;
-        } else {
-            (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_b[HIT_VALUES+2*merge_dim+i].s;
-        }
-    }
-    #Dinfo: "MERGED!"
-    for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
-        #Dinfo: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
-    }
-    free(hit_t);
-    free(hit_b);
-    retval++;
-    return(retval);
-}
-static int tcl_heatmap (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=4) {
-        #Error: "heatmap requires list of coordinates, list of pallete and output file name"
-        return TCL_ERROR;
-    }
-    int ARGC;
-    char **ARGV;
-    Tcl_SplitList(interp,argv[1],&ARGC,&ARGV);
-    if (ARGC%3) {
-        #Error: "heatmap list of coordinates size must divide by 3"
-        return TCL_ERROR;
-    }
-    int count=ARGC/3;
-    float *data=(float *)malloc(sizeof(float)*ARGC);
-    int i;
-    for (i=0;i<ARGC;i++) data[i]=atof(ARGV[i]);
-    free(ARGV);
-    Tcl_SplitList(interp,argv[2],&ARGC,&ARGV);
-    int *pal=(int *)malloc(sizeof(int)*ARGC);
-    float *key=(float *)malloc(sizeof(float)*(ARGC+1));
-    for (i=0;i<ARGC;i++) pal[i]=strtol(ARGV[i],NULL,16);
-    create_heatmap(data,count,pal,ARGC,key,argv[3]);
-    free(data);
-    free(ARGV);
-    for (i=0;i<=ARGC;i++) tcl_append_float(interp,key[i]);
-    free(key);
-    return TCL_OK;
-}
-int register_tcl_functions(Tcl_Interp *interp) {
-    ctree=new_node(NULL,0);
-    Ctree=new_context(NULL,NULL,0);
-    Context=Ctree;
-    ctree->ctype=ctype_string;
-    //context=ctree;
-    context_stack_pointer=0;
-    Tcl_CreateCommand(interp, "DET", tcl_det, NULL, NULL);
-    Tcl_CreateCommand(interp, "DERIVE", tcl_derive, NULL, NULL);
-    Tcl_CreateCommand(interp, "polish2expr", tcl_polish2expr, NULL, NULL);
-    Tcl_CreateCommand(interp, "polish", tcl_polish, NULL, NULL);
-    Tcl_CreateCommand(interp, "peel", tcl_peel, NULL, NULL);
-    Tcl_CreateCommand(interp, "fork", tcl_fork, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_set", array_set, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_get", array_get, NULL, NULL);
-    Tcl_CreateCommand(interp, "LUT_list", LUT_list, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_data", array_data, NULL, NULL);
-    Tcl_CreateCommand(interp, "timer_report", tcl_timer_report, NULL, NULL);
-    Tcl_CreateCommand(interp, "LUT_set_legend", LUT_set_legend, NULL, NULL);
-    Tcl_CreateCommand(interp, "LUT_get_legend", LUT_get_legend, NULL, NULL);
-    Tcl_CreateCommand(interp, "LUT_get_dim", LUT_get_dim, NULL, NULL);
-    Tcl_CreateCommand(interp, "LUT_get_size", LUT_get_size, NULL, NULL);
-    Tcl_CreateCommand(interp, "list_bytecode", tcl_list_bytecode, NULL, NULL);
-    Tcl_CreateCommand(interp, "array2hit", LUT2hit, NULL, NULL);
-    Tcl_CreateCommand(interp, "enable_hit", tcl_enable_hit, NULL, NULL);
-    Tcl_CreateCommand(interp, "sizer", tcl_sizer, NULL, NULL);
-    Tcl_CreateCommand(interp, "verbose", tcl_verbose, NULL, NULL);
-    Tcl_CreateCommand(interp, "network_mode", network_mode, NULL, NULL);
-    Tcl_CreateCommand(interp, "network_update", network_update, NULL, NULL);
-    Tcl_CreateCommand(interp, "add_network_node", tcl_add_network_node, NULL, NULL);
-    Tcl_CreateCommand(interp, ">>", send_task_to_node, NULL, NULL);
-    Tcl_CreateCommand(interp, "<<", tcl_send_task_to_base, NULL, NULL);
-    Tcl_CreateCommand(interp, "@", tcl_ctree, NULL, NULL);
-    Tcl_CreateCommand(interp, "%", eval_task_from_node, NULL, NULL);
-    Tcl_CreateCommand(interp, "node_release", node_release, NULL, NULL);
-    Tcl_CreateCommand(interp, "network_task_done", network_task_done, NULL, NULL);
-    Tcl_CreateCommand(interp, "usage",tcl_resource_usage , NULL, NULL);
-    Tcl_CreateCommand(interp, "array_save", LUT_save, NULL, NULL);
-    Tcl_CreateCommand(interp, "comp_interpolate", tcl_composite_interpolate, NULL, NULL);
-    Tcl_CreateCommand(interp, "array_load", LUT_load, NULL, NULL);
-    #ifdef SPICE_COMPILATION
-    Tcl_CreateCommand(interp, "dc_analysis", tcl_dc_analysis, NULL, NULL);
-    Tcl_CreateCommand(interp, "alter_param", alter_param, NULL, NULL);
-    Tcl_CreateCommand(interp, "set_param", set_param, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_circuits", get_circuits, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_ckt_tree", get_ckt_tree, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_ckt_lines", get_ckt_lines, NULL, NULL);
-    Tcl_CreateCommand(interp, "set_ckt_lines", set_ckt_lines, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_ckt_devices", get_ckt_devices, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_spice_data", get_spice_data, NULL, NULL);
-    Tcl_CreateCommand(interp, "set_spice_var", set_spice_var, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_vectors", get_vectors, NULL, NULL);
-    Tcl_CreateCommand(interp, "get_var", get_var, NULL, NULL);
-    Tcl_CreateCommand(interp, "set_var", set_var, NULL, NULL);
-    Tcl_CreateCommand(interp, "baseline_characterization_slice", baseline_characterization_slice, NULL, NULL);
-    Tcl_CreateCommand(interp, "save_characterization_slice", save_characterization_slice, NULL, NULL);
-    Tcl_CreateCommand(interp, "save_characterization_slice_differential", save_characterization_slice_differential, NULL, NULL);
-    Tcl_CreateCommand(interp, "save_characterization_slice_delta", save_characterization_slice_delta, NULL, NULL);
-    Tcl_CreateCommand(interp, "save_characterization_slice_delta_differential", save_characterization_slice_delta_differential, NULL, NULL);
-    Tcl_CreateCommand(interp, "load_characterization_slice", load_characterization_slice, NULL, NULL);
-    #endif
-    Tcl_CreateCommand(interp, "generate_lit", tcl_generate_lit, NULL, NULL);
-    Tcl_CreateCommand(interp, "normalize_ids", normalize_ids, NULL, NULL);
-    Tcl_CreateCommand(interp, "open_bin", tcl_open_bin, NULL, NULL);
-    Tcl_CreateCommand(interp, "close_bin", tcl_close_bin, NULL, NULL);
-    Tcl_CreateCommand(interp, "write_bin", tcl_write_bin, NULL, NULL);
-    Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
-    Tcl_CreateCommand(interp, "ginfo", gamma_info, NULL, NULL);
-    Tcl_CreateCommand(interp, "heatmap", tcl_heatmap, NULL, NULL);
-    OpenFileForReading=NULL;
-    OpenFileForWriting=NULL;
-    #Foreach: type {Info Warning Error Print Nl Token Dinfo Dwarning Derror Dprint Dtoken Dnl} {
-        Tcl_CreateCommand(interp, "$type:", tcl_$type, NULL, NULL);
-    }
-    #Foreach: global_var $::global_c_variables {
-        $global_var=0.0;
-    }
-}
-int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
-    int i;
-    this_process_forked=0;
-    int this_is_a_network_node=0;
-    for (i=1;i<argc;i++) {
-        if (argv[i][0]=='-') {
-            if (strcmp(argv[i],"-base")==0) {
-                this_is_a_network_node=1;
-                if (i+1>=argc) {
-                    #Error: "-base requires port"
-                    exit(1);
+        hit_node *array2hit(LUT *a,ordinal **separation,int degree) {
+            ordinal seperation_dim=-1;
+            ordinal separation_slice;
+            ordinal separation_slice_loss=0;
+            int i,j;
+            char indent[1024];
+            for (i=0;i<degree;i++) indent[i]='.';
+            indent[degree]=0;
+            for (i=0;i<a->dim;i++) {
+                if (array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]<2) continue;
+                ordinal total_separation=0;
+                for (j=array2hit_partial_legend_bottom[i]+1;j<array2hit_partial_legend_top[i];j++) total_separation+=separation[i][j];
+                total_separation/=(array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]-1);
+                if (total_separation>separation_slice_loss) {
+                    separation_slice_loss=total_separation;
+                    seperation_dim=i;
+                    separation_slice=(array2hit_partial_legend_top[i]+array2hit_partial_legend_bottom[i])/2;
                 }
-                init_ip(atoi(argv[i+1]));
-                i++;
-                network_node_type=net_mode_base;
-                if (Tcl_EvalFile(interp,"src/base.tcl")==TCL_ERROR) {
+            }
+            seperation_dim=-1;
+            if (seperation_dim<0) {
+                ordinal max_width=1;
+                for (i=0;i<a->dim;i++) if (array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i]>max_width) {
+                    seperation_dim=i;
+                    separation_slice=(array2hit_partial_legend_top[i]+array2hit_partial_legend_bottom[i])/2;
+                    max_width=array2hit_partial_legend_top[i]-array2hit_partial_legend_bottom[i];
+                }
+            }
+            if (seperation_dim>=0) {
+                #Dinfo: "%s %d) Dividing along dim=%d, slice=%d" indent degree seperation_dim separation_slice
+                hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*5);
+                hit[HIT_TYPE].o=HIT_DIVIDER;
+                hit[HIT_DIM].o=seperation_dim;
+                float orig_top=array2hit_partial_legend_top[seperation_dim];
+                float orig_bottom=array2hit_partial_legend_bottom[seperation_dim];
+                hit[HIT_VALUES+0].s=a->legend[seperation_dim][separation_slice];
+                array2hit_partial_legend_bottom[seperation_dim]=separation_slice;
+                hit[HIT_VALUES+1].p=(void *)array2hit(a,separation,degree+1);
+                array2hit_partial_legend_bottom[seperation_dim]=orig_bottom;
+                array2hit_partial_legend_top[seperation_dim]=separation_slice;
+                hit[HIT_VALUES+2].p=(void *)array2hit(a,separation,degree+1);
+                array2hit_partial_legend_top[seperation_dim]=orig_top;
+                return(hit);
+            }
+            #Dinfo: "%s Cell" indent
+            ordinal num_of_corners;
+            num_of_corners=1<<a->dim;
+            ordinal index=0;
+            ordinal sizer=1;
+            for (i=0;i<a->dim;i++) {
+                index+=sizer*array2hit_partial_legend_bottom[i];
+                sizer*=a->size[i];
+            } 	 
+            hit_node *hit=(hit_node *)malloc(sizeof(hit_node)*(2+num_of_corners+a->dim*2));
+            hit[HIT_TYPE].o=HIT_FULL_INTERP;
+            hit[HIT_DIM].o=num_of_corners;
+            for (i=0;i<a->dim;i++) {
+                hit[HIT_VALUES+i*2].s=-a->legend[i][array2hit_partial_legend_bottom[i]];
+                hit[HIT_VALUES+i*2+1].s=1.0/(a->legend[i][array2hit_partial_legend_top[i]]-a->legend[i][array2hit_partial_legend_bottom[i]]);
+            }
+            for (i=0;i<num_of_corners;i++) {
+                int outsider=0; 
+                for (j=0;j<a->dim;j++) if (i&(1<<j)) if (array2hit_partial_legend_top[j]>=a->size[j]) outsider=1;
+                if (outsider) {
+                    hit[HIT_VALUES+i+a->dim*2].s=NAN;
+                } else {
+                    hit[HIT_VALUES+i+a->dim*2].s=a->content[index+a->neighbors[i]]; 
+                }    
+            }	
+            return(hit);  
+        }
+        ordinal merge_hit_leaves(hit_node **hit) {
+            if ((*hit)[HIT_TYPE].o&HIT_CELL) return 0;
+            hit_node *hit_t=(hit_node *)(*hit)[HIT_VALUES+1].p;
+            hit_node *hit_b=(hit_node *)(*hit)[HIT_VALUES+2].p;
+            ordinal retval=0;
+            if (hit_t[HIT_TYPE].o==HIT_DIVIDER) retval+=merge_hit_leaves((hit_node **)&((*hit)[HIT_VALUES+1].p));
+            if (hit_b[HIT_TYPE].o==HIT_DIVIDER) retval+=merge_hit_leaves((hit_node **)&((*hit)[HIT_VALUES+2].p));
+            hit_t=(hit_node *)(*hit)[HIT_VALUES+1].p;
+            hit_b=(hit_node *)(*hit)[HIT_VALUES+2].p;
+            if (hit_t[HIT_TYPE].o!=HIT_FULL_INTERP) return(retval);
+            if (hit_b[HIT_TYPE].o!=HIT_FULL_INTERP) return(retval);
+            int i;
+            int boundary_cell=0;
+            ordinal num_of_corners;
+            num_of_corners=1<<merge_dim;
+            for (i=0;i<num_of_corners;i++) if (isnan(hit_t[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
+            for (i=0;i<num_of_corners;i++) if (isnan(hit_b[HIT_VALUES+2*merge_dim+i].s)) boundary_cell=1;
+            if (boundary_cell) return(retval);
+            #Dinfo: "   Cells!" 
+            #Dinfo: "Trying to merge: %d (type1=%d, type2=%d)" (*hit)[HIT_DIM].o hit_t[HIT_TYPE].o hit_b[HIT_TYPE].o
+            float max_error=0;
+            ordinal split_dim=(*hit)[HIT_DIM].o;
+            float b=1/(hit_t[HIT_VALUES+2*split_dim+1].s);
+            float a=1/(hit_b[HIT_VALUES+2*split_dim+1].s);
+            float weight_top=a/(a+b);
+            float weight_bottom=b/(a+b);
+            int mask=1<<split_dim;
+            float failed_M,failed_I;
+            #Dinfo: "   a=%g b=%g split_dim=%d mask=%d" a b split_dim mask
+            for (i=0;i<num_of_corners;i++) {
+                if (!(i&mask)) continue;
+                int j=i-mask;
+                float T=hit_t[HIT_VALUES+2*merge_dim+i].s;
+                float B=hit_b[HIT_VALUES+2*merge_dim+j].s;
+                float M=hit_b[HIT_VALUES+2*merge_dim+i].s;
+                float I=T*weight_top+B*weight_bottom;
+                if (M!=hit_t[HIT_VALUES+2*merge_dim+j].s) {
+                    #Error: "Mismatched hypercubes: %g!=%g" M hit_t[HIT_VALUES+2*merge_dim+j].s
+                }
+                float error=fabs(I/M-1)*100;
+                #Dinfo: "T=%g B=%g M=%g I=%g E=%g" T B M I error
+                //if (fabs(I-M)<1e-9) error=0;
+                if (error>max_error) max_error=error;
+            }
+            #Dinfo: "max_error=%g" max_error
+            if (max_error>1) return retval;
+            free(*hit);
+            *hit=(hit_node *)malloc(sizeof(hit_node)*(2+2*merge_dim+num_of_corners));
+            (*hit)[HIT_TYPE].o=HIT_FULL_INTERP;
+            (*hit)[HIT_DIM].o=num_of_corners;
+            for (i=0;i<merge_dim;i++) {
+                (*hit)[HIT_VALUES+i*2].s=hit_b[HIT_VALUES+i*2].s;
+                if (i==split_dim) {
+                    (*hit)[HIT_VALUES+i*2+1].s=1/(1/hit_b[HIT_VALUES+i*2+1].s+1/hit_t[HIT_VALUES+i*2+1].s);
+                } else {
+                    (*hit)[HIT_VALUES+i*2+1].s=hit_b[HIT_VALUES+i*2+1].s;
+                }
+            }	
+            for (i=0;i<num_of_corners;i++) {
+                if (i&mask) {
+                    (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_t[HIT_VALUES+2*merge_dim+i].s;
+                } else {
+                    (*hit)[HIT_VALUES+2*merge_dim+i].s=hit_b[HIT_VALUES+2*merge_dim+i].s;
+                }
+            }
+            #Dinfo: "MERGED!"
+            for (i=0;i<2+2*merge_dim+num_of_corners;i++) {
+                #Dinfo: "%d) %g   %g   =>   %g" i hit_b[i].s hit_t[i].s (*hit)[i].s
+            }
+            free(hit_t);
+            free(hit_b);
+            retval++;
+            return(retval);
+        }
+        static int tcl_heatmap (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+            if (argc!=4) {
+                #Error: "heatmap requires list of coordinates, list of pallete and output file name"
+                return TCL_ERROR;
+            }
+            int ARGC;
+            char **ARGV;
+            Tcl_SplitList(interp,argv[1],&ARGC,&ARGV);
+            if (ARGC%3) {
+                #Error: "heatmap list of coordinates size must divide by 3"
+                return TCL_ERROR;
+            }
+            int count=ARGC/3;
+            float *data=(float *)malloc(sizeof(float)*ARGC);
+            int i;
+            for (i=0;i<ARGC;i++) data[i]=atof(ARGV[i]);
+            free(ARGV);
+            Tcl_SplitList(interp,argv[2],&ARGC,&ARGV);
+            int *pal=(int *)malloc(sizeof(int)*ARGC);
+            float *key=(float *)malloc(sizeof(float)*(ARGC+1));
+            for (i=0;i<ARGC;i++) pal[i]=strtol(ARGV[i],NULL,16);
+            create_heatmap(data,count,pal,ARGC,key,argv[3]);
+            free(data);
+            free(ARGV);
+            for (i=0;i<=ARGC;i++) tcl_append_float(interp,key[i]);
+            free(key);
+            return TCL_OK;
+        }
+        int register_tcl_functions(Tcl_Interp *interp) {
+            ctree=new_node(NULL,0);
+            Ctree=new_context(NULL,NULL,0);
+            Context=Ctree;
+            ctree->ctype=ctype_string;
+            //context=ctree;
+            context_stack_pointer=0;
+            Tcl_CreateCommand(interp, "DET", tcl_det, NULL, NULL);
+            Tcl_CreateCommand(interp, "DERIVE", tcl_derive, NULL, NULL);
+            Tcl_CreateCommand(interp, "polish2expr", tcl_polish2expr, NULL, NULL);
+            Tcl_CreateCommand(interp, "polish", tcl_polish, NULL, NULL);
+            Tcl_CreateCommand(interp, "peel", tcl_peel, NULL, NULL);
+            Tcl_CreateCommand(interp, "fork", tcl_fork, NULL, NULL);
+            Tcl_CreateCommand(interp, "array_set", array_set, NULL, NULL);
+            Tcl_CreateCommand(interp, "array_get", array_get, NULL, NULL);
+            Tcl_CreateCommand(interp, "LUT_list", LUT_list, NULL, NULL);
+            Tcl_CreateCommand(interp, "array_data", array_data, NULL, NULL);
+            Tcl_CreateCommand(interp, "timer_report", tcl_timer_report, NULL, NULL);
+            Tcl_CreateCommand(interp, "LUT_set_legend", LUT_set_legend, NULL, NULL);
+            Tcl_CreateCommand(interp, "LUT_get_legend", LUT_get_legend, NULL, NULL);
+            Tcl_CreateCommand(interp, "LUT_get_dim", LUT_get_dim, NULL, NULL);
+            Tcl_CreateCommand(interp, "LUT_get_size", LUT_get_size, NULL, NULL);
+            Tcl_CreateCommand(interp, "list_bytecode", tcl_list_bytecode, NULL, NULL);
+            Tcl_CreateCommand(interp, "array2hit", LUT2hit, NULL, NULL);
+            Tcl_CreateCommand(interp, "enable_hit", tcl_enable_hit, NULL, NULL);
+            Tcl_CreateCommand(interp, "sizer", tcl_sizer, NULL, NULL);
+            Tcl_CreateCommand(interp, "verbose", tcl_verbose, NULL, NULL);
+            Tcl_CreateCommand(interp, "network_mode", network_mode, NULL, NULL);
+            Tcl_CreateCommand(interp, "network_update", network_update, NULL, NULL);
+            Tcl_CreateCommand(interp, "add_network_node", tcl_add_network_node, NULL, NULL);
+            Tcl_CreateCommand(interp, ">>", send_task_to_node, NULL, NULL);
+            Tcl_CreateCommand(interp, "<<", tcl_send_task_to_base, NULL, NULL);
+            Tcl_CreateCommand(interp, "@", tcl_ctree, NULL, NULL);
+            Tcl_CreateCommand(interp, "%", eval_task_from_node, NULL, NULL);
+            Tcl_CreateCommand(interp, "node_release", node_release, NULL, NULL);
+            Tcl_CreateCommand(interp, "network_task_done", network_task_done, NULL, NULL);
+            Tcl_CreateCommand(interp, "usage",tcl_resource_usage , NULL, NULL);
+            Tcl_CreateCommand(interp, "array_save", LUT_save, NULL, NULL);
+            Tcl_CreateCommand(interp, "comp_interpolate", tcl_composite_interpolate, NULL, NULL);
+            Tcl_CreateCommand(interp, "array_load", LUT_load, NULL, NULL);
+            #ifdef SPICE_COMPILATION
+            Tcl_CreateCommand(interp, "dc_analysis", tcl_dc_analysis, NULL, NULL);
+            Tcl_CreateCommand(interp, "alter_param", alter_param, NULL, NULL);
+            Tcl_CreateCommand(interp, "set_param", set_param, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_circuits", get_circuits, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_ckt_tree", get_ckt_tree, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_ckt_lines", get_ckt_lines, NULL, NULL);
+            Tcl_CreateCommand(interp, "set_ckt_lines", set_ckt_lines, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_ckt_devices", get_ckt_devices, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_spice_data", get_spice_data, NULL, NULL);
+            Tcl_CreateCommand(interp, "set_spice_var", set_spice_var, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_vectors", get_vectors, NULL, NULL);
+            Tcl_CreateCommand(interp, "get_var", get_var, NULL, NULL);
+            Tcl_CreateCommand(interp, "set_var", set_var, NULL, NULL);
+            Tcl_CreateCommand(interp, "baseline_characterization_slice", baseline_characterization_slice, NULL, NULL);
+            Tcl_CreateCommand(interp, "save_characterization_slice", save_characterization_slice, NULL, NULL);
+            Tcl_CreateCommand(interp, "save_characterization_slice_differential", save_characterization_slice_differential, NULL, NULL);
+            Tcl_CreateCommand(interp, "save_characterization_slice_delta", save_characterization_slice_delta, NULL, NULL);
+            Tcl_CreateCommand(interp, "save_characterization_slice_delta_differential", save_characterization_slice_delta_differential, NULL, NULL);
+            Tcl_CreateCommand(interp, "load_characterization_slice", load_characterization_slice, NULL, NULL);
+            #endif
+            Tcl_CreateCommand(interp, "generate_lit", tcl_generate_lit, NULL, NULL);
+            Tcl_CreateCommand(interp, "normalize_ids", normalize_ids, NULL, NULL);
+            Tcl_CreateCommand(interp, "open_bin", tcl_open_bin, NULL, NULL);
+            Tcl_CreateCommand(interp, "close_bin", tcl_close_bin, NULL, NULL);
+            Tcl_CreateCommand(interp, "write_bin", tcl_write_bin, NULL, NULL);
+            Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
+            Tcl_CreateCommand(interp, "ginfo", gamma_info, NULL, NULL);
+            Tcl_CreateCommand(interp, "heatmap", tcl_heatmap, NULL, NULL);
+            OpenFileForReading=NULL;
+            OpenFileForWriting=NULL;
+            #Foreach: type {Info Warning Error Print Nl Token Dinfo Dwarning Derror Dprint Dtoken Dnl} {
+                Tcl_CreateCommand(interp, "$type:", tcl_$type, NULL, NULL);
+            }
+            #Foreach: global_var $::global_c_variables {
+                $global_var=0.0;
+            }
+        }
+        int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
+            int i;
+            this_process_forked=0;
+            int this_is_a_network_node=0;
+            for (i=1;i<argc;i++) {
+                if (argv[i][0]=='-') {
+                    if (strcmp(argv[i],"-base")==0) {
+                        this_is_a_network_node=1;
+                        if (i+1>=argc) {
+                            #Error: "-base requires port"
+                            exit(1);
+                        }
+                        init_ip(atoi(argv[i+1]));
+                        i++;
+                        network_node_type=net_mode_base;
+                        if (Tcl_EvalFile(interp,"src/base.tcl")==TCL_ERROR) {
+                            Tcl_Eval(interp,"puts $errorInfo");
+                            exit(1);
+                        }
+                        continue;
+                    }
+                    if (strcmp(argv[i],"-node")==0) {
+                        this_is_a_network_node=1;
+                        if (i+2>=argc) {
+                            #Error: "-node requires host name and port"
+                            exit(1);
+                        }
+                        network_node_type=net_mode_node;
+                        set_base_ip(argv[i+1],atoi(argv[i+2]));
+                        init_ip(atoi(argv[i+2]));
+                        i+=2;
+                        char buffer[NETWORK_BEFFER_SIZE];
+                        sprintf(buffer,"add_network_node %s %d",my_ip,my_port);
+                        send_task_to_base(buffer);
+                        network_wait_loop(interp);
+                        continue;
+                    }
+                }
+                if (argv[i][0]=='-') break;
+                #Info: "Running RAMSpice Script: %s start: \[clock format \[clock seconds\]\]" argv[i]
+                if (Tcl_EvalFile(interp,argv[i])==TCL_ERROR) {
                     Tcl_Eval(interp,"puts $errorInfo");
-                    exit(1);
                 }
-                continue;
+                #Info: "Done sourcing Tcl script: %s" argv[i]
+                if (get_Tcl_counter) {
+                    #Info: "Average Interpolation CPU time: %ld ns" (1e3*get_Tcl_timer)/get_Tcl_counter
+                }
             }
-            if (strcmp(argv[i],"-node")==0) {
-                this_is_a_network_node=1;
-                if (i+2>=argc) {
-                    #Error: "-node requires host name and port"
-                    exit(1);
-                }
-                network_node_type=net_mode_node;
-                set_base_ip(argv[i+1],atoi(argv[i+2]));
-                init_ip(atoi(argv[i+2]));
-                i+=2;
-                char buffer[NETWORK_BEFFER_SIZE];
-                sprintf(buffer,"add_network_node %s %d",my_ip,my_port);
-                send_task_to_base(buffer);
+            if ((network_node_type!=net_mode_null)&&(this_is_a_network_node)) {
+                init_ip(my_port);
                 network_wait_loop(interp);
-                continue;
             }
         }
-        if (argv[i][0]=='-') break;
-        #Info: "Running RAMSpice Script: %s start: \[clock format \[clock seconds\]\]" argv[i]
-        if (Tcl_EvalFile(interp,argv[i])==TCL_ERROR) {
-            Tcl_Eval(interp,"puts $errorInfo");
-        }
-        #Info: "Done sourcing Tcl script: %s" argv[i]
-        if (get_Tcl_counter) {
-            #Info: "Average Interpolation CPU time: %ld ns" (1e3*get_Tcl_timer)/get_Tcl_counter
-        }
-    }
-    if ((network_node_type!=net_mode_null)&&(this_is_a_network_node)) {
-        init_ip(my_port);
-        network_wait_loop(interp);
-    }
-}
-
-
+        
+        

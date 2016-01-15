@@ -18,12 +18,13 @@ default ::opt(step_limit) 1000
 default ::opt(step_count) 10
 default ::opt(np) 1
 default ::opt(mode) dc
-default ::opt(rez) 5:5:3:6
+default ::opt(rez) 5:5:3:1:1
+default ::opt(dim) 2p3
 
 set ::opt(mode) [string tolower $::opt(mode)]
 default EPS0 8.85418e-12
 default ::opt(epsrox) 3.9
-default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/$::opt(rez)/
+default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/$::opt(dim)d/$::opt(rez)/
 source $::env(RAMSPICE)/Sizer/simplify.tcl
 source $::env(RAMSPICE)/Sizer/matrices.tcl
 source $::env(RAMSPICE)/Sizer/derivatives.tcl
@@ -59,15 +60,24 @@ foreach dev {nch pch} dtox {2.7e-10 3.91e-10} toxe {2.47e-9 2.71e-9} {
     set toxp [expr $toxe-$dtox]
     @ /look_up_tables/$dev/cox = [expr $::opt(epsrox)*$EPS0/$toxp]
     @ /look_up_tables/$dev !
-    foreach param {ids gm ro} {
-     @ /look_up_tables/$dev load $::opt(source)/$::opt(tech)_${dev}_${param}.db
+    foreach param {ids gm go gb} {
+        foreach file [glob -nocomplain $::opt(source)/$::opt(tech)_${dev}_*_${param}.db] {
+	     regexp {_([0-9]+)_} [file tail $file] -> section
+             @ /look_up_tables/$dev/$section load $file
+        }
     }
-    @ /look_up_tables/$dev/thermal_noise/ !
-    @ /look_up_tables/$dev/flicker_noise/ !
-    @ /look_up_tables/$dev/thermal_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_thermal_noise.db
-    @ /look_up_tables/$dev/flicker_noise/ load $::opt(source)/$::opt(tech)_${dev}_ss_flicker_noise.db
+    foreach param {thermal_noise flicker_noise} {
+        @ /look_up_tables/$dev/$param !
+        foreach file [glob -nocomplain $::opt(source)/$::opt(tech)_${dev}_*_${param}.db] {
+	     regexp {_([0-9]+)_} [file tail $file] -> section
+             @ /look_up_tables/$dev/$section/$param load $file
+        }
+    }
     foreach cap {cgg cgd cgs cgb cdd cdg cdb cds csd csg css csb cbd cbg cbs cbb} {
-        @ /look_up_tables/$dev/$cap/ load $::opt(source)/$::opt(tech)_${dev}_ss_$cap.db
+        foreach file [glob -nocomplain $::opt(source)/$::opt(tech)_${dev}_ss_*_$cap.db] {
+	    regexp {_([0-9]+)_} [file tail $file] -> section
+            @ /look_up_tables/$dev/$section/$cap/ load $file
+	}    
     }	
 }
 
