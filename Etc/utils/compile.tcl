@@ -308,7 +308,7 @@ foreach binary $::opt(bins) {
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         puts $O "echo \"Info: $object_files links to $target_name\""
-        puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl  -ldb-4.7  $object_files/*.o -o $target_name | & tee -a log"
+        puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl $object_files/*.o -o $target_name | & tee -a log"
         puts $O exit
         close $O
         if {![file exists $object_files]} {
