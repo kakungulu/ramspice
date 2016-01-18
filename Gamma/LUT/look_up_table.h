@@ -3,6 +3,7 @@
 #define SLOPES_BUFFER_SIZE 1024*1024
 #include "Gamma/Data/ctree.h"
 #include "Gamma/virtual_machine.h"
+int get_transistor_bin(LUT *i_a,float L,float W);
 struct linear_interpolation_table{
     ordinal dim;    // the number of dimensions or the length of size[]
     ordinal *size; // an array of integers, the number of bits per dimension. 
@@ -54,6 +55,7 @@ typedef struct {
     );
 }
 void composite_gamma_gcc_interpolate_4(void *i_a_ids,void *i_a_gm,void *i_a_ro,float *gm, float *go, float *Ids,float c0,float c1,float c2,float c3, float c4);
+void composite_gamma_gcc_interpolate_2p3(int bin,void *i_a_ids,void *i_a_gm,void *i_a_go,void *i_a_gb,float *gb,float *gm, float *go, float *Ids,float c0,float c1,float c2,float c3, float c4);
 float feasibility(
 #Foreach: input $::sizer_inputs {
     float $input, 

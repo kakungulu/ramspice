@@ -32,6 +32,9 @@
     *c "int op_it=0;"
     *c "@status:fail=-1;"
     *c "@design_feedback=1000;"
+    foreach transistor $::all_transistors {
+        *c "@$transistor:bin=get_transistor_bin(&@look_up_tables:$::transistors($transistor,type):binning:LUT,@$transistor:L,@$transistor:W);"
+    }	
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
     if {$::debug_mode} {*c "printf(\"======%g Operating Point Iterations. ======\\n\",@config:op_iterations);"}
     if {$::debug_mode} {*c "printf(\"==================================================\\n\");"}
@@ -48,7 +51,7 @@
 	    set $field $::transistors($key)
 	}    
  #       *c "composite_gamma_gcc_interpolate_4(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:ro:ss:LUT,&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
-        *c "composite_gamma_gcc_interpolate_2p3(&@look_up_tables:${type}:Ids:ss:LUT,&@look_up_tables:${type}:gm:ss:LUT,&@look_up_tables:${type}:go:ss:LUT,&@look_up_tables:${type}:gb:ss:LUT,&(@$transistor:gb),&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
+        *c "composite_gamma_gcc_interpolate_2p3(@$transistor:bin,&@look_up_tables:${type}:Ids:ss:CONTEXT,&@look_up_tables:${type}:gm:ss:CONTEXT,&@look_up_tables:${type}:go:ss:CONTEXT,&@look_up_tables:${type}:gb:ss:CONTEXT,&(@$transistor:gb),&(@$transistor:gm),&(@$transistor:go),&(@$transistor:Ids),(@$g:V)-(@$s:V),(@$d:V)-(@$s:V),(@$b:V)-(@$s:V),@$L,@$W);"
 	*c "if (@$transistor:Ids<0) @$transistor:Ids=0;"
 	*c "if (@$transistor:Ids>1e-3) @$transistor:Ids=1e-3;"
 	if {$type=="pch"} {

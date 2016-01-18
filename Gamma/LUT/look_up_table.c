@@ -1,6 +1,23 @@
 #include "ramspice_types.h"
 #include "look_up_table.h"
 
+int get_transistor_bin(LUT *i_a,float L,float W) {
+    int L_min=0;
+    int W_min=0;
+    int L_max=i_a->size[0]-1;
+    int W_max=i_a->size[1]-1;
+    int L_index=(L_min+L_max)/2;
+    while (L_index!=L_min) {
+        if (i_a->legend[0][L_index]>L) L_max=L_index; else L_min=L_index;
+	L_index=(L_min+L_max)/2;
+    }
+    int W_index=(W_min+W_max)/2;
+    while (W_index!=W_min) {
+        if (i_a->legend[1][W_index]>W) W_max=W_index; else W_min=W_index;
+	W_index=(W_min+W_max)/2;
+    }
+    return((int)i_a->content[L_index*i_a->size[0]+W_index]);
+}
 ordinal nan_tag(float i_scalar) {
     so_union nt_scalar;
     nt_scalar.s=i_scalar;
@@ -894,7 +911,7 @@ float lut_interpolation_reversed(LUT *a,float *coord,int reversed_dim) {
     }
 }    
 #tcl set DIM 5
-void composite_gamma_gcc_interpolate_2p3(void *i_a_ids,void *i_a_gm,void *i_a_go,void *i_a_gb,float *gb,float *gm, float *go, float *Ids 
+void composite_gamma_gcc_interpolate_2p3(int bin,void *i_a_ids,void *i_a_gm,void *i_a_go,void *i_a_gb,float *gb,float *gm, float *go, float *Ids 
 #For: {set j 0} {$j<$DIM} {incr j} {
     ,float c$j
 }
@@ -902,7 +919,7 @@ void composite_gamma_gcc_interpolate_2p3(void *i_a_ids,void *i_a_gm,void *i_a_go
     #Dinfo: "Gamma machine's interpolation function for ${DIM}D %x %x %x" i_a_ids  i_a_gm i_a_ro
     #tcl set num_of_corners [expr 1<<$DIM]
     
-    LUT *a=(LUT *)i_a_gm;
+    LUT *a=(LUT *)((context *)i_a_gm)->children[bin]->value.v;
     #Dinfo: "DIM=%d" a->dim
     Tcl_Time start_time,end_time; 
     Tcl_GetTime(&start_time);
@@ -935,7 +952,7 @@ void composite_gamma_gcc_interpolate_2p3(void *i_a_ids,void *i_a_gm,void *i_a_go
     }
     float w1,w2;
     #Foreach: G {gm go gb} {
-        a=(LUT *)i_a_${G};
+        a=(LUT *)((context *)i_a_${G})->children[bin]->value.v;
         float *${G}_hypercube=&(a->content[index]);
         #For: {set corner 0} {$corner<$num_of_corners} {incr corner} {
             interpolation_buffer$corner=${G}_hypercube[a->neighbors[$corner]];

@@ -609,14 +609,14 @@ proc .compile_circuit {args} {
     .prep_mna dc
     set dim $::MNA(dim)
     @ op_iterations = $::opt(op_limit)
-    foreach metaC_file [glob -nocomplain $::env(RAMSPICE)/Gamma/metaC/*.tcl] {
-        regsub {\.tcl$} [file tail $metaC_file] {} target_name
-        if {[file exists $::env(RAMSPICE)/Gamma/metaC/$::opt(topology)/$target_name.tcl]} {
-            set metaC_file $::env(RAMSPICE)/Gamma/metaC/$::opt(topology)/$target_name.tcl
+    foreach starC_file [glob -nocomplain $::env(RAMSPICE)/Gamma/starC/Circuit/*.tcl] {
+        regsub {\.tcl$} [file tail $starC_file] {} target_name
+        if {[file exists $::env(RAMSPICE)/Gamma/starC/$::opt(topology)/$target_name.tcl]} {
+            set starC_file $::env(RAMSPICE)/Gamma/starC/$::opt(topology)/$target_name.tcl
         }
-        Info: Compiling $target_name from [file dirname $metaC_file]
+        Info: Compiling $target_name from [file dirname $starC_file]
         code_target $target_name
-        source $metaC_file
+        source $starC_file
     }
     gcc $opt(name)
 }
@@ -822,7 +822,7 @@ proc gcc {name {preprocess 1}} {
                     regsub "@+$context_string" $code $var_names($context_string) code
                     continue
                 }
-                Info: converting $context_string
+                Info: Linking $context_string to cTree
                 if {[regexp {^[0-9]} $context_string]} {
                     regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
                 } else {
@@ -852,6 +852,10 @@ proc gcc {name {preprocess 1}} {
                     regsub "&@+$context_string" $code $pointer_name code
                 } elseif {[regexp {(.*):LUT} $context_string -> base]} {
                     append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
+                    regsub "&@+$context_string" $code $pointer_name code
+                } elseif {[regexp {(.*):CONTEXT} $context_string -> base]} {
+                    append global_pointer_init "c=create_context(\"$base\");\n"
+                    append global_pointer_init "$pointer_name=(float *)`c;\n"
                     regsub "&@+$context_string" $code $pointer_name code
                 } else {
                     #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
