@@ -1,11 +1,1 @@
-RAMSPICE=/net/nasstore/students/GRAD/ECE/ystatter/home/public_html/cgi-bin/ramspice
-Info: Traget=regular 
-    ###########################################################
-    #                                                         #
-    # RAMSpice: Colorado State University version of NGSPICE  #
-    # Rewritten by Yishai Statter as part of PhD requirements #
-    # Advisor: Dr Tom Chen                                    #
-    #                                                         #
-    ###########################################################
-version=Mon Jan 18 12:34:37 MST 2016
-Info: Running RAMSpice Script: Etc/utils/convert_bsim_to_starC.tcl start: Mon Jan 18 13:23:03 MST 2016 
+#Wed Jan 20 14:47:48 MST 2016
