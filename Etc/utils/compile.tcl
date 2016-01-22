@@ -114,8 +114,13 @@ proc print_line {line} {
 proc tcl_preprocessor {c_code} {
     set bracket_rank 0
     set lines [split $c_code \n]
+    set num_of_vars [regexp -all {\$} $lines]
+    if {$num_of_vars} {
+#        puts "Info: File contains $num_of_vars variables"
+    }
     for {set i 0} {$i<[llength $lines]} {incr i ; set line [lindex $lines $i]} {
         set line [lindex $lines $i]
+#	    puts "$i/[llength $lines] $line"
         if {[regexp {^\s*\/\/} $line]} {
             print_line $line
             continue
@@ -143,23 +148,37 @@ proc tcl_preprocessor {c_code} {
             continue
         }
         # Substitute Tcl variables everywhere else.
-        while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\(([^\(\)]+)\)\}} $line -> varname key] } {
-            if {[uplevel "info exists $varname\($key\)"]} {
-                regsub -all "\\\$\\\{$varname\\\}" $line [lindex [uplevel "array get $varname $key"] 1] line
+        while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\(([^\(\)]+)\)\}} $line both varname key] } {
+	    set subst_key [subst $key]
+	    # puts "$i Subst? $varname\($key\)"
+            if {[uplevel "info exists $varname\($subst_key\)"]} {
+	        set val [lindex [uplevel "array get $varname $subst_key"] 1]
+	        # puts "$i Substituting $both with $val"
+		regsub -all {\$} $key "\\\$" key
+                regsub -all "\\\$\\\{$varname\\\($key\\\)\\\}" $line $val line
+	        # puts "$i YES line after=$line"
             } else {
-                regsub -all "\\\$\\\{$varname\\\}" $line "\$`$varname" line
+                regsub -all $both $line "\$`$varname\($key\)" line
+	        puts "$i NO line after=$line"
+		exit
             }
         }
         while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\}} $line -> varname] } {
+	    # # puts "Subst? $varname"
             if {[uplevel "info exists $varname"] && ![uplevel "array exists $varname"]} {
-                regsub -all "\\\$\\\{$varname\\\}" $line [uplevel "set $varname"] line
+	        set val [uplevel "set $varname"]
+	        # # puts "Info: Substituting $varname with $val"
+                regsub -all "\\\$\\\{$varname\\\}" $line $val line
             } else {
                 regsub -all "\\\$\\\{$varname\\\}" $line "\$`$varname" line
             }
         }
         while {[regexp {\$(:*[a-zA-Z0-9_]+)} $line -> varname] } {
+	    # # puts "Subst? $varname"
             if {[uplevel "info exists $varname"] && ![uplevel "array exists $varname"]} {
-                regsub -all "\\\$$varname" $line [uplevel "set $varname"] line
+	        set val [uplevel "set $varname"]
+	        # # puts "Info: Substituting $varname with  $val"
+                regsub -all "\\\$$varname" $line $val line
             } else {
                 regsub -all "\\\$$varname" $line "\$`$varname" line
             }

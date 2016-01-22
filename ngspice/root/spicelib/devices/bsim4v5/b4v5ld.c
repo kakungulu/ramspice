@@ -200,28 +200,37 @@ CKTcircuit *ckt)
     int ByPass, ChargeComputationNeeded, error, Check, Check1, Check2;
     
     double m;
-    
+    FILE *O;
     ScalingFactor = 1.0e-9;
     ChargeComputationNeeded =  
     ((ckt->CKTmode & (MODEAC | MODETRAN | MODEINITSMSIG)) ||
     ((ckt->CKTmode & MODETRANOP) && (ckt->CKTmode & MODEUIC)))
     ? 1 : 0;
     ChargeComputationNeeded = 1;
+    if (DEBUG_MODEL>0) {
+    	O=fopen("/tmp/bsim4v5.tcl","w+");
+    }
     for (; model != NULL; model = model->BSIM4v5nextModel)
-    {    for (here = model->BSIM4v5instances; here != NULL; 
+    {    
+        if (DEBUG_MODEL>0) {
+	    fprintf(O,"model %s {\n",model->BSIM4v5modName);
+            #Foreach: var $::bsim4v5_model_flags {
+	        fprintf(O,"    ${var}Given %d\n",model->BSIM4v5${var}Given);
+	    }
+            #Foreach: var $::bsim4v5_model_modes {
+	        fprintf(O,"    $var %d\n",model->BSIM4v5$var);
+	    }
+            #Foreach: var $::bsim4v5_model_fields {
+	        fprintf(O,"    $var %g\n",model->BSIM4v5$var);
+	    }
+	    fprintf(O,"}\n");
+        }
+    for (here = model->BSIM4v5instances; here != NULL; 
         here = here->BSIM4v5nextInstance)
         {
             Check = Check1 = Check2 = 1;
             ByPass = 0;
             pParam = here->pParam;
-	    if (DEBUG_MODEL>0) {
-                #Foreach: var $::bsim4v5_structure_fields {
-	             #Info: "PRE STRUCT $var=%g" here->BSIM4v5$var
-	        }
-                #Foreach: var $::bsim4v5_model_fields {
-	             #Info: "PRE MODEL $var=%g" model->BSIM4v5$var
-	        }
-	    }
             if ((ckt->CKTmode & MODEINITSMSIG))
             {   vds = *(ckt->CKTstate0 + here->BSIM4v5vds);
                 vgs = *(ckt->CKTstate0 + here->BSIM4v5vgs);
@@ -4760,19 +4769,12 @@ CKTcircuit *ckt)
             #Foreach: var $::bsim4v5_internal_calculation_vars {
                 InnerCalc->$var=$var;
             }
-	    
-	    if (DEBUG_MODEL>0) {
-                #Foreach: var $::bsim4v5_structure_fields {
-	             #Info: "POST STRUCT $var=%g" here->BSIM4v5$var
-	        }
-                #Foreach: var $::bsim4v5_model_fields {
-	             #Info: "POST MODEL $var=%g" model->BSIM4v5$var
-	        }
-	    }
-            
+           
         }  /* End of MOSFET Instance */
     }   /* End of Model Instance */
-    
+    if (DEBUG_MODEL>0) {
+        fclose(O);
+    }
     return(OK);
 }
 
