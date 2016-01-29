@@ -397,40 +397,34 @@ get_bsim_${tech} (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]
         #Error: "usage: %s <type> <corner> <Vgs> <Vds> <Vbs> <L> <W>" argv[0]
         return TCL_ERROR;
     }
+    #Foreach: pointer $::bsim_access_fields {
+    	float ${pointer};
+    } 
     float Vgs=atof(argv[3]);
     float Vds=atof(argv[4]);
     float Vbs=atof(argv[5]);
     float L=atof(argv[6]);
     float W=atof(argv[7]);
-    float M=ceilf(W/(L*10));
-    #Foreach: pointer $::bsim_access_fields {
-        float $pointer;
+    int type_index=-1;
+    if (strcmp(argv[1],"nch")==0) type_index=0;
+    if (strcmp(argv[1],"pch")==0) type_index=1;
+    if (type_index==-1) {
+        #Error: "%s: No such transistor type %s" argv[0] argv[1]
+        return TCL_ERROR;
     }
-    W/=M;
-    int section;
-    #tcl set path $::env(RAMSPICE)
-    #include "$path/Etc/Tech_DB/${tech}/sort_${tech}"
-    #tcl aray unset ::bin
-    #tcl source  $::env(RAMSPICE)/Etc/Tech_DB/${tech}/binning_${tech}.tcl
-    #tcl set sections {}
-    #tcl for {set section 1} {[info exists ::bin(p,$section,lmin)]} {incr section} {lappend sections $section}
-    #Foreach: Section $sections {
-        if (section==$Section) {
-	    #Foreach: corner {ss tt ff} {
-	        if (strcmp(argv[2],"$corner")==0) {
-		    #Foreach: type {nch pch} {
-		        if (strcmp(argv[1],"$type")==0) {
-			    Gamma_${tech}_Calc_${type}_${corner}_${Section}(Vgs,Vds,Vbs,L,W,M
+    int corner_index=-1;
+    if (strcmp(argv[2],"ss")==0) corner_index=0;
+    if (strcmp(argv[2],"tt")==0) corner_index=1;
+    if (strcmp(argv[2],"ff")==0) corner_index=2;
+    if (corner_index==-1) {
+        #Error: "%s: No such corner %s" argv[0] argv[2]
+        return TCL_ERROR;
+    }
+    Gamma_${tech}_Calc(type_index,corner_index,Vgs,Vds,Vbs,L,W
 		#Foreach: pointer $::bsim_access_fields {
 		    ,&${pointer}
 		} 
-	    );
-			}
-		    }
-		}
-	    } 
-	}
-    }
+    );
     Tcl_ResetResult(interp);
     #Foreach: pointer $::bsim_access_fields {
         tcl_append_float(interp,$pointer);
@@ -5691,6 +5685,7 @@ int polish2expr(char *expr,int start,int end) {
             #Foreach: global_var $::global_c_variables {
                 $global_var=0.0;
             }
+	    register_tsmc040();
         }
         int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
             int i;

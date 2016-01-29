@@ -1,6 +1,7 @@
 #include "ngspice/ngspice.h"
 #include "ngspice/cktdefs.h"
 #include "ngspice/root/spicelib/devices/bsim4v5/bsim4v5def.h"
+#include "Gamma/BSIM/4v5/bsim4v5_gamma_calc.h"
 #include "ngspice/trandefs.h"
 #include "ngspice/const.h"
 #include "ngspice/sperror.h"
@@ -6554,5 +6555,39 @@ double *Vjm)
             }
         }
     }
+}
+void register_tsmc040() {
+            #For: {set ::section 1} {[info exists ::bin($::t,$::section,lmin)]} {incr ::section} {
+		#tcl set corner_index 0
+	        #Foreach: corner {ss tt ff} {
+		    #tcl set corner_index
+		    #tcl set type_index 0
+		    #Foreach: type {nch pch} {
+		        #tcl set index [expr 6*($::section-1)+2*$corner_index+$type_index]
+			Gamma_tsmc040_Calc_Functions[$index]=Gamma_tsmc040_Calc_${type}_${corner}_${::section};
+			#tcl incr type_index
+		    }
+		    #tcl incr corner_index
+		}
+	    }
+
+}
+void Gamma_tsmc040_Calc(int type,int corner,float Vgs_in,float Vds_in,float Vbs_in,float L_in,float W_in
+		#Foreach: pointer $::bsim_access_fields {
+		    ,float *${pointer}_out
+		} 
+) {
+    float M=ceilf(W_in/(L_in*10));
+    float W=W_in/M;
+    float L=L_in;
+    int section;
+    #tcl set path $::env(RAMSPICE)
+    #include "$path/Etc/Tech_DB/tsmc040/sort_tsmc040"
+    int index=6*section+2*corner+type;
+    Gamma_tsmc040_Calc_Functions[index](Vgs_in,Vds_in,Vbs_in,L,W,M		
+    #Foreach: pointer $::bsim_access_fields {
+		    ,${pointer}_out
+		} 
+);
 }
 
