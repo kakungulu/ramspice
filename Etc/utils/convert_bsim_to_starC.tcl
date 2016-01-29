@@ -101,8 +101,13 @@ foreach ::corner {ss tt ff sf fs mc} {
     file copy -force /tmp/bsim4v5.tcl $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/$::opt(tech).$corner.tcl
     ::spice::destroy all
 }
+Info: writing tech file for Gamma
 set O [open $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/$::opt(tech).tcl w]
-puts $O [list array set ::TECH [array get ::TECH]]
+puts $O "array set ::TECH \{"
+foreach key [lsort [array names ::TECH]] {
+    puts $O "	 $key $::TECH($key)"
+}
+puts $O "\}"
 close $O
 
 
@@ -143,7 +148,11 @@ if {[file exists $::opt(tcl_tech_file)]} {
     }
     eval $tech_data
     set O [open $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/$::opt(tech).tcl w]
-    puts $O [list array set ::TECH [array get ::TECH]]
+    puts $O "array set ::TECH \{"
+    foreach key [lsort [array names ::TECH]] {
+        puts $O "    $key $::TECH($key)"
+    }
+    puts $O "\}"
     close $O
 }
 

@@ -202,6 +202,11 @@ CKTcircuit *ckt)
     double m;
     FILE *O;
     ScalingFactor = 1.0e-9;
+//    #Info: "CKTnoncon=%d" ckt->CKTnoncon
+//    #Info: "CKTabstol=%g" ckt->CKTabstol
+//    #Info: "CKTgmin=%g" ckt->CKTgmin
+//    #Info: "CKTag=%g" ckt->CKTag[0]
+//    #Info: "CKTdelta=%g CKTrhsOld=%g CKTmode=%d MODEAC=%d MODETRAN=%d MODEINITSMSIG=%d MODEUIC=%d MODETRANOP=%d" ckt->CKTdelta *ckt->CKTrhsOld ckt->CKTmode MODEAC MODETRAN MODEINITSMSIG MODEUIC MODETRANOP
     ChargeComputationNeeded =  
     ((ckt->CKTmode & (MODEAC | MODETRAN | MODEINITSMSIG)) ||
     ((ckt->CKTmode & MODETRANOP) && (ckt->CKTmode & MODEUIC)))

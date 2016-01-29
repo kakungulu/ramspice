@@ -1,0 +1,61 @@
+if (L<1.2e-6) {
+    if (L<5e-7) {
+        if (W<1.2e-6) {
+            if (W<5e-7) {
+                section=16;
+            } else {
+                section=12;
+            }
+        } else {
+            if (W<1e-5) {
+                section=8;
+            } else {
+                section=4;
+            }
+        }
+    } else {
+        if (W<1.2e-6) {
+            if (W<5e-7) {
+                section=15;
+            } else {
+                section=11;
+            }
+        } else {
+            if (W<1e-5) {
+                section=7;
+            } else {
+                section=3;
+            }
+        }
+    }
+} else {
+    if (L<1e-5) {
+        if (W<1.2e-6) {
+            if (W<5e-7) {
+                section=14;
+            } else {
+                section=10;
+            }
+        } else {
+            if (W<1e-5) {
+                section=6;
+            } else {
+                section=2;
+            }
+        }
+    } else {
+        if (W<1.2e-6) {
+            if (W<5e-7) {
+                section=13;
+            } else {
+                section=9;
+            }
+        } else {
+            if (W<1e-5) {
+                section=5;
+            } else {
+                section=1;
+            }
+        }
+    }
+}

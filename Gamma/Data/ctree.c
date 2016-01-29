@@ -1,5 +1,6 @@
 #include "ramspice_types.h"
 #include "ctree.h"
+#include "Gamma/BSIM/4v5/bsim4v5_gamma_calc.h"
 #ifdef SPICE_COMPILATION
 #include "ngspice/config.h"
 #include "ngspice/macros.h"
@@ -385,6 +386,57 @@ gamma_info (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
     }
     #Error: "No such %s field: %s" argv[0] argv[1]
     return TCL_ERROR;
+}
+#tcl set tech_files [glob $::env(RAMSPICE)/Etc/Tech_DB/?*/sort_*]
+#tcl set tech_files $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/sort_tsmc040
+#Foreach: tech_file $tech_files {
+#tcl regsub {^.*sort_} $tech_file {} tech
+static int
+get_bsim_${tech} (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=8) {
+        #Error: "usage: %s <type> <corner> <Vgs> <Vds> <Vbs> <L> <W>" argv[0]
+        return TCL_ERROR;
+    }
+    float Vgs=atof(argv[3]);
+    float Vds=atof(argv[4]);
+    float Vbs=atof(argv[5]);
+    float L=atof(argv[6]);
+    float W=atof(argv[7]);
+    float M=ceilf(W/(L*10));
+    #Foreach: pointer $::bsim_access_fields {
+        float $pointer;
+    }
+    W/=M;
+    int section;
+    #tcl set path $::env(RAMSPICE)
+    #include "$path/Etc/Tech_DB/${tech}/sort_${tech}"
+    #tcl aray unset ::bin
+    #tcl source  $::env(RAMSPICE)/Etc/Tech_DB/${tech}/binning_${tech}.tcl
+    #tcl set sections {}
+    #tcl for {set section 1} {[info exists ::bin(p,$section,lmin)]} {incr section} {lappend sections $section}
+    #Foreach: Section $sections {
+        if (section==$Section) {
+	    #Foreach: corner {ss tt ff} {
+	        if (strcmp(argv[2],"$corner")==0) {
+		    #Foreach: type {nch pch} {
+		        if (strcmp(argv[1],"$type")==0) {
+			    Gamma_${tech}_Calc_${type}_${corner}_${Section}(Vgs,Vds,Vbs,L,W,M
+		#Foreach: pointer $::bsim_access_fields {
+		    ,&${pointer}
+		} 
+	    );
+			}
+		    }
+		}
+	    } 
+	}
+    }
+    Tcl_ResetResult(interp);
+    #Foreach: pointer $::bsim_access_fields {
+        tcl_append_float(interp,$pointer);
+    }
+    return TCL_OK;
+}
 }
 /********************************************************
 Binary File interface from Tcl
@@ -5622,6 +5674,7 @@ int polish2expr(char *expr,int start,int end) {
             Tcl_CreateCommand(interp, "save_characterization_slice_delta_differential", save_characterization_slice_delta_differential, NULL, NULL);
             Tcl_CreateCommand(interp, "load_characterization_slice", load_characterization_slice, NULL, NULL);
             #endif
+            Tcl_CreateCommand(interp, "get_bsim_tsmc040", get_bsim_tsmc040, NULL, NULL);
             Tcl_CreateCommand(interp, "generate_lit", tcl_generate_lit, NULL, NULL);
             Tcl_CreateCommand(interp, "normalize_ids", normalize_ids, NULL, NULL);
             Tcl_CreateCommand(interp, "open_bin", tcl_open_bin, NULL, NULL);

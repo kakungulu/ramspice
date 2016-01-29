@@ -151,6 +151,9 @@ proc tcl_preprocessor {c_code} {
         while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\(([^\(\)]+)\)\}} $line both varname key] } {
 	    set subst_key [subst $key]
 	    # puts "$i Subst? $varname\($key\)"
+ #           if {![uplevel "info exists $varname\($subst_key\)"]} {
+#	        uplevel "set $varname\($subst_key\) 0"
+#	    }
             if {[uplevel "info exists $varname\($subst_key\)"]} {
 	        set val [lindex [uplevel "array get $varname $subst_key"] 1]
 	        # puts "$i Substituting $both with $val"

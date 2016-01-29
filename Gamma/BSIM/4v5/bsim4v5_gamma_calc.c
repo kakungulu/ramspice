@@ -21,7 +21,26 @@
 #define DELTA_3 0.02
 #define DELTA_4 0.02
 #define MM  3  /* smooth coeff */
-#define DEXP(A,B,C) {                                                         \
+#define Kb 1.3806226e-23
+#define KboQ 8.617087e-5 
+#define EPS0 8.85418e-12
+#define EPSSI 1.03594e-10
+#define PI 3.141592654
+#define MAX_EXP 5.834617425e14
+#define MIN_EXP 1.713908431e-15
+#define EXP_THRESHOLD 34.0
+#define Charge_q 1.60219e-19
+#define DELTA  1.0E-9
+#define DEXP(A,B) {                                                        \
+    if (A > EXP_THRESHOLD) {                                           \
+        B = MAX_EXP*(1.0+(A)-EXP_THRESHOLD);                           \
+    } else if (A < -EXP_THRESHOLD)  {                                  \
+        B = MIN_EXP;                                                   \
+    } else   {                                                         \
+        B = exp(A);                                                    \
+    }                                                                  \
+}
+#define DEXP3(A,B,C) {                                                         \
     if (A > EXP_THRESHOLD) {                                              \
         B = MAX_EXP*(1.0+(A)-EXP_THRESHOLD);                              \
         C = MAX_EXP;                                                      \
@@ -33,15 +52,88 @@
         C = B;                                                            \
     }                                                                     \
 }
+static int
+BSIM4v5DioIjthVjmEval_Gamma(
+double Nvtm, double Ijth, double Isb, double XExpBV,
+double *Vjm)
+{
+    double Tb, Tc, EVjmovNv;
+    
+    Tc = XExpBV;
+    Tb = 1.0 + Ijth / Isb - Tc;
+    EVjmovNv = 0.5 * (Tb + sqrt(Tb * Tb + 4.0 * Tc));
+    *Vjm = Nvtm * log(EVjmovNv);
+    
+    return 0;
+}
 
 #tcl source $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/binning_tsmc040.tcl
 #tcl source $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/tsmc040.tcl
 #Foreach: ::type {nch pch} {
     #tcl set ::t [string index $::type 0]
     #Foreach: ::corner {ss tt ff} {
+        #tcl set ::TEMP [expr 273.15+$::corner_to_temp($::corner)]
         #For: {set ::section 1} {[info exists ::bin($::t,$::section,lmin)]} {incr ::section} {
             #tcl skip {[array names ::TECH $::type,$::corner,$::section,*]=={}}
-            void Gamma_tsmc040_Calc_${::type}_${::corner}_${::section}(CKTcircuit *ckt, BSIM4v5instance *here, float Vgs_in,float Vds_in,float Vbs_in,float L_in,float W_in) { 
+            void Gamma_tsmc040_Calc_${::type}_${::corner}_${::section}(float Vgs_in,float Vds_in,float Vbs_in,float L_in,float W_in,float M_in
+            #Foreach: pointer $::bsim_access_fields {
+                ,float *${pointer}_out
+            } 
+            ) { 
+                int Mode=MODEINITJCT|MODEDCOP|MODEAC;
+                BSIM4v5instance instance;
+                struct bsim4v5SizeDependParam instance_pParam;
+                BSIM4v5instance *here=&instance;
+                here->pParam=&instance_pParam;
+		here->BSIM4v5off=0;
+		here->BSIM4v5states=0;
+                here->BSIM4v5l = L_in;
+                here->BSIM4v5w = W_in;
+                here->BSIM4v5m = M_in;
+                here->BSIM4v5nf = 1.0;
+                here->BSIM4v5min = 0; /* integer */
+                here->BSIM4v5icVDS = Vds_in;
+                here->BSIM4v5icVGS = Vgs_in;
+                here->BSIM4v5icVBS = Vbs_in;
+                here->BSIM4v5drainArea = 0.0;
+                here->BSIM4v5drainPerimeter = 0.0;
+                here->BSIM4v5drainSquares = 1.0;
+                here->BSIM4v5sourceArea = 0.0;
+                here->BSIM4v5sourcePerimeter = 0.0;
+                here->BSIM4v5sourceSquares = 1.0;
+                here->BSIM4v5sa = 0.0;
+                here->BSIM4v5sb = 0.0;
+                here->BSIM4v5sd = 0.0;
+                here->BSIM4v5rbdb = ${::TECH($::type,$::corner,$::section,rbdb)}; /* in ohm */
+                here->BSIM4v5rbsb = ${::TECH($::type,$::corner,$::section,rbsb)};
+                here->BSIM4v5rbpb = ${::TECH($::type,$::corner,$::section,rbpb)};
+                here->BSIM4v5rbps = ${::TECH($::type,$::corner,$::section,rbps)};
+                here->BSIM4v5rbpd = ${::TECH($::type,$::corner,$::section,rbpd)};
+                here->BSIM4v5delvto = 0.0;
+                here->BSIM4v5xgw = ${::TECH($::type,$::corner,$::section,xgw)};
+                here->BSIM4v5ngcon = ${::TECH($::type,$::corner,$::section,ngcon)};
+                
+                
+                /* Process instance model selectors, some
+                * may override their global counterparts
+                */
+                here->BSIM4v5rbodyMod = ${::TECH($::type,$::corner,$::section,rbodyMod)};
+                here->BSIM4v5rgateMod = ${::TECH($::type,$::corner,$::section,rgateMod)};
+                here->BSIM4v5geoMod = ${::TECH($::type,$::corner,$::section,geoMod)};
+                here->BSIM4v5rgeoMod = ${::TECH($::type,$::corner,$::section,rgeoMod)};
+                here->BSIM4v5trnqsMod = ${::TECH($::type,$::corner,$::section,trnqsMod)};
+                here->BSIM4v5acnqsMod = ${::TECH($::type,$::corner,$::section,acnqsMod)};
+                
+                /* stress effect */
+                here->BSIM4v5sa = 0.0;
+                here->BSIM4v5sb = 0.0;
+                here->BSIM4v5sd = 2 * ${::TECH($::type,$::corner,$::section,dmcg)};
+                /* Well Proximity Effect  */
+                here->BSIM4v5sca = 0.0;
+                here->BSIM4v5scb = 0.0;
+                here->BSIM4v5scc = 0.0;
+                here->BSIM4v5sc = 0.0; /* m */
+                
                 double ceqgstot, dgstot_dvd, dgstot_dvg, dgstot_dvs, dgstot_dvb;
                 double ceqgdtot, dgdtot_dvd, dgdtot_dvg, dgdtot_dvs, dgdtot_dvb;
                 double gstot, gstotd, gstotg, gstots, gstotb, gspr, Rs, Rd;
@@ -101,7 +193,7 @@
                 double Vgs_eff, Vfb=0.0, Vth_NarrowW;
                 double Phis, dPhis_dVb, sqrtPhis, dsqrtPhis_dVb, Vth, dVth_dVb, dVth_dVd;
                 double Vgst, dVgst_dVg, dVgst_dVb, dVgs_eff_dVg, Nvtms, Nvtmd;
-                double Vtm, Vtm0;
+                double Vtm;
                 double n, dn_dVb, dn_dVd, voffcv, noff, dnoff_dVd, dnoff_dVb;
                 double V0, CoxWLcen, QovCox, LINK;
                 double DeltaPhi, dDeltaPhi_dVg, VgDP, dVgDP_dVg;
@@ -252,51 +344,1493 @@
                 double xcgdbi;
                 double xcgsbi;
                 double xcgbbi;
-                
+                double Inv_L, Inv_W, Inv_LW;
                 double vs, Fsevl, dvs_dVg, dvs_dVd, dvs_dVb, dFsevl_dVg, dFsevl_dVd, dFsevl_dVb;
                 double vgdx, vgsx;
                 struct bsim4v5SizeDependParam *pParam;
-                int ByPass, ChargeComputationNeeded, error, Check, Check1, Check2;
+                int ByPass, ChargeComputationNeeded, error, Check, Check1, Check2, bodymode;
                 
                 double m;
+                double deta0_lod, dk2_lod;        
+		double delTemp = $::TEMP - ${::TECH($::type,$::corner,$::section,tnom)};
+                double dumPs, dumPd, dumAs, dumAd, PowWeffWr;
+                double DMCGeff, DMCIeff, DMDGeff;
+		double Tnom = ${::TECH($::type,$::corner,$::section,tnom)};
+                double Vtm0 = KboQ * Tnom;
+                double Eg0 = 1.16 - 7.02e-4 * Tnom * Tnom / (Tnom + 1108.0);
+                double ni = 1.45e10 * (Tnom / 300.15) * sqrt(Tnom / 300.15) * exp(21.5565981 - Eg0 / (2.0 * Vtm0));        
+		double TRatio = $::TEMP / Tnom;
+
+                int i;
+                // Stand-ins for unneeded SPICE BSIM variables
+                double cktState0[256]; // ckt->state0
+                double cktState1[256];
+                double cktState2[256];
+                double RHSOld[]={0}; // ckt->CKTrhsOld
+                double Delta=0; // Delta
+                double DeltaOld[7];
+                double CKT_CKTbypass=0; 
+                double CKT_CKTreltol=0.001; 
+                double CKT_CKTvoltTol=1e-06; 
+                int CKT_CKTnoncon=0; 
+                double CKT_CKTabstol=1e-12;
+                double CKT_CKTgmin=1e-12;
+                double CKT_CKTag[]={0,0,0,0,0,0,0};
                 
                 #tcl set ScalingFactor  1.0e-9
                 ChargeComputationNeeded =  
-                ((ckt->CKTmode & (MODEAC | MODETRAN | MODEINITSMSIG)) ||
-                ((ckt->CKTmode & MODETRANOP) && (ckt->CKTmode & MODEUIC)))
+                ((Mode & (MODEAC | MODETRAN | MODEINITSMSIG)) ||
+                ((Mode & MODETRANOP) && (Mode & MODEUIC)))
                 ? 1 : 0;
                 ChargeComputationNeeded = 1;
                 Check = Check1 = Check2 = 1;
                 ByPass = 0;
                 pParam = here->pParam;
+                /* stress effect */
+                double Ldrn = here->BSIM4v5l;
+                double Wdrn = here->BSIM4v5w / here->BSIM4v5nf;
+                pParam->Length = here->BSIM4v5l;
+                pParam->Width = here->BSIM4v5w;
+                pParam->NFinger = here->BSIM4v5nf;
+                double Lnew = here->BSIM4v5l  + ${::TECH($::type,$::corner,$::section,xl)} ;
+                double Wnew = here->BSIM4v5w / here->BSIM4v5nf + ${::TECH($::type,$::corner,$::section,xw)};
                 
-                if ((ckt->CKTmode & MODEINITSMSIG))
-                {   vds = *(ckt->CKTstate0 + here->BSIM4v5vds);
-                    vgs = *(ckt->CKTstate0 + here->BSIM4v5vgs);
-                    vbs = *(ckt->CKTstate0 + here->BSIM4v5vbs);
-                    vges = *(ckt->CKTstate0 + here->BSIM4v5vges);
-                    vgms = *(ckt->CKTstate0 + here->BSIM4v5vgms);
-                    vdbs = *(ckt->CKTstate0 + here->BSIM4v5vdbs);
-                    vsbs = *(ckt->CKTstate0 + here->BSIM4v5vsbs);
-                    vses = *(ckt->CKTstate0 + here->BSIM4v5vses);
-                    vdes = *(ckt->CKTstate0 + here->BSIM4v5vdes);
-                    
-                    qdef = *(ckt->CKTstate0 + here->BSIM4v5qdef);
+                T0 = pow(Lnew, ${::TECH($::type,$::corner,$::section,Lln)});
+                T1 = pow(Wnew, ${::TECH($::type,$::corner,$::section,Lwn)});
+                tmp1 = ${::TECH($::type,$::corner,$::section,Ll)} / T0 + ${::TECH($::type,$::corner,$::section,Lw)} / T1
+                + ${::TECH($::type,$::corner,$::section,Lwl)} / (T0 * T1);
+                pParam->BSIM4v5dl = ${::TECH($::type,$::corner,$::section,Lint)} + tmp1;
+                tmp2 = ${::TECH($::type,$::corner,$::section,Llc)} / T0 + ${::TECH($::type,$::corner,$::section,Lwc)} / T1
+                + ${::TECH($::type,$::corner,$::section,Lwlc)} / (T0 * T1);
+                pParam->BSIM4v5dlc = ${::TECH($::type,$::corner,$::section,dlc)} + tmp2;
+                
+                T2 = pow(Lnew, ${::TECH($::type,$::corner,$::section,Wln)});
+                T3 = pow(Wnew, ${::TECH($::type,$::corner,$::section,Wwn)});
+                tmp1 = ${::TECH($::type,$::corner,$::section,Wl)} / T2 + ${::TECH($::type,$::corner,$::section,Ww)} / T3
+                + ${::TECH($::type,$::corner,$::section,Wwl)} / (T2 * T3);
+                pParam->BSIM4v5dw = ${::TECH($::type,$::corner,$::section,Wint)} + tmp1;
+                tmp2 = ${::TECH($::type,$::corner,$::section,Wlc)} / T2 + ${::TECH($::type,$::corner,$::section,Wwc)} / T3
+                + ${::TECH($::type,$::corner,$::section,Wwlc)} / (T2 * T3); 
+                pParam->BSIM4v5dwc = ${::TECH($::type,$::corner,$::section,dwc)} + tmp2;
+                pParam->BSIM4v5dwj = ${::TECH($::type,$::corner,$::section,dwj)} + tmp2;
+                
+                pParam->BSIM4v5leff = Lnew - 2.0 * pParam->BSIM4v5dl;
+                if (pParam->BSIM4v5leff <= 0.0)
+                {   
+		    #Error: "Effective channel length <= 0"
+                    return(E_BADPARM);
                 }
-                else if ((ckt->CKTmode & MODEINITTRAN))
-                {   vds = *(ckt->CKTstate1 + here->BSIM4v5vds);
-                    vgs = *(ckt->CKTstate1 + here->BSIM4v5vgs);
-                    vbs = *(ckt->CKTstate1 + here->BSIM4v5vbs);
-                    vges = *(ckt->CKTstate1 + here->BSIM4v5vges);
-                    vgms = *(ckt->CKTstate1 + here->BSIM4v5vgms);
-                    vdbs = *(ckt->CKTstate1 + here->BSIM4v5vdbs);
-                    vsbs = *(ckt->CKTstate1 + here->BSIM4v5vsbs);
-                    vses = *(ckt->CKTstate1 + here->BSIM4v5vses);
-                    vdes = *(ckt->CKTstate1 + here->BSIM4v5vdes);
-                    
-                    qdef = *(ckt->CKTstate1 + here->BSIM4v5qdef);
+                
+                pParam->BSIM4v5weff = Wnew - 2.0 * pParam->BSIM4v5dw;
+                if (pParam->BSIM4v5weff <= 0.0)
+                {   
+ 		    #Error: "Effective channel width <= 0"
+                   return(E_BADPARM);
                 }
-                else if ((ckt->CKTmode & MODEINITJCT) && !here->BSIM4v5off)
+                
+                pParam->BSIM4v5leffCV = Lnew - 2.0 * pParam->BSIM4v5dlc;
+                if (pParam->BSIM4v5leffCV <= 0.0)
+                {   
+                    #Error: "Effective channel length for C-V <= 0"
+                    return(E_BADPARM);
+                }
+                
+                pParam->BSIM4v5weffCV = Wnew - 2.0 * pParam->BSIM4v5dwc;
+                if (pParam->BSIM4v5weffCV <= 0.0)
+                {   
+                    #Error: "Effective channel width for C-V <= 0"
+                    return(E_BADPARM);
+                }
+                
+                pParam->BSIM4v5weffCJ = Wnew - 2.0 * pParam->BSIM4v5dwj;
+                if (pParam->BSIM4v5weffCJ <= 0.0)
+                {   
+                    #Error: "Effective channel width for S/D junctions <= 0"
+                    return(E_BADPARM);
+                }
+                
+                
+                if (${::TECH($::type,$::corner,$::section,binUnit)} == 1)
+                {   Inv_L = 1.0e-6 / pParam->BSIM4v5leff;
+                    Inv_W = 1.0e-6 / pParam->BSIM4v5weff;
+                    Inv_LW = 1.0e-12 / (pParam->BSIM4v5leff
+                    * pParam->BSIM4v5weff);
+                }
+                else
+                {   Inv_L = 1.0 / pParam->BSIM4v5leff;
+                    Inv_W = 1.0 / pParam->BSIM4v5weff;
+                    Inv_LW = 1.0 / (pParam->BSIM4v5leff
+                    * pParam->BSIM4v5weff);
+                }
+                pParam->BSIM4v5cdsc = ${::TECH($::type,$::corner,$::section,cdsc)}
+                + ${::TECH($::type,$::corner,$::section,lcdsc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcdsc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcdsc)} * Inv_LW;
+                pParam->BSIM4v5cdscb = ${::TECH($::type,$::corner,$::section,cdscb)}
+                + ${::TECH($::type,$::corner,$::section,lcdscb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcdscb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcdscb)} * Inv_LW; 
+                
+                pParam->BSIM4v5cdscd = ${::TECH($::type,$::corner,$::section,cdscd)}
+                + ${::TECH($::type,$::corner,$::section,lcdscd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcdscd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcdscd)} * Inv_LW; 
+                
+                pParam->BSIM4v5cit = ${::TECH($::type,$::corner,$::section,cit)}
+                + ${::TECH($::type,$::corner,$::section,lcit)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcit)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcit)} * Inv_LW;
+                pParam->BSIM4v5nfactor = ${::TECH($::type,$::corner,$::section,nfactor)}
+                + ${::TECH($::type,$::corner,$::section,lnfactor)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnfactor)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnfactor)} * Inv_LW;
+                pParam->BSIM4v5xj = ${::TECH($::type,$::corner,$::section,xj)}
+                + ${::TECH($::type,$::corner,$::section,lxj)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wxj)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pxj)} * Inv_LW;
+                pParam->BSIM4v5vsat = ${::TECH($::type,$::corner,$::section,vsat)}
+                + ${::TECH($::type,$::corner,$::section,lvsat)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvsat)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvsat)} * Inv_LW;
+                pParam->BSIM4v5at = ${::TECH($::type,$::corner,$::section,at)}
+                + ${::TECH($::type,$::corner,$::section,lat)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wat)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pat)} * Inv_LW;
+                pParam->BSIM4v5a0 = ${::TECH($::type,$::corner,$::section,a0)}
+                + ${::TECH($::type,$::corner,$::section,la0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wa0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pa0)} * Inv_LW; 
+                
+                pParam->BSIM4v5ags = ${::TECH($::type,$::corner,$::section,ags)}
+                + ${::TECH($::type,$::corner,$::section,lags)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wags)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pags)} * Inv_LW;
+                
+                pParam->BSIM4v5a1 = ${::TECH($::type,$::corner,$::section,a1)}
+                + ${::TECH($::type,$::corner,$::section,la1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wa1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pa1)} * Inv_LW;
+                pParam->BSIM4v5a2 = ${::TECH($::type,$::corner,$::section,a2)}
+                + ${::TECH($::type,$::corner,$::section,la2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wa2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pa2)} * Inv_LW;
+                pParam->BSIM4v5keta = ${::TECH($::type,$::corner,$::section,keta)}
+                + ${::TECH($::type,$::corner,$::section,lketa)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wketa)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pketa)} * Inv_LW;
+                pParam->BSIM4v5nsub = ${::TECH($::type,$::corner,$::section,nsub)}
+                + ${::TECH($::type,$::corner,$::section,lnsub)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnsub)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnsub)} * Inv_LW;
+                pParam->BSIM4v5ndep = ${::TECH($::type,$::corner,$::section,ndep)}
+                + ${::TECH($::type,$::corner,$::section,lndep)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wndep)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pndep)} * Inv_LW;
+                pParam->BSIM4v5nsd = ${::TECH($::type,$::corner,$::section,nsd)}
+                + ${::TECH($::type,$::corner,$::section,lnsd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnsd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnsd)} * Inv_LW;
+                pParam->BSIM4v5phin = ${::TECH($::type,$::corner,$::section,phin)}
+                + ${::TECH($::type,$::corner,$::section,lphin)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wphin)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pphin)} * Inv_LW;
+                pParam->BSIM4v5ngate = ${::TECH($::type,$::corner,$::section,ngate)}
+                + ${::TECH($::type,$::corner,$::section,lngate)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wngate)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pngate)} * Inv_LW;
+                pParam->BSIM4v5gamma1 = ${::TECH($::type,$::corner,$::section,gamma1)}
+                + ${::TECH($::type,$::corner,$::section,lgamma1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wgamma1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pgamma1)} * Inv_LW;
+                pParam->BSIM4v5gamma2 = ${::TECH($::type,$::corner,$::section,gamma2)}
+                + ${::TECH($::type,$::corner,$::section,lgamma2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wgamma2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pgamma2)} * Inv_LW;
+                pParam->BSIM4v5vbx = ${::TECH($::type,$::corner,$::section,vbx)}
+                + ${::TECH($::type,$::corner,$::section,lvbx)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvbx)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvbx)} * Inv_LW;
+                pParam->BSIM4v5vbm = ${::TECH($::type,$::corner,$::section,vbm)}
+                + ${::TECH($::type,$::corner,$::section,lvbm)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvbm)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvbm)} * Inv_LW;
+                pParam->BSIM4v5xt = ${::TECH($::type,$::corner,$::section,xt)}
+                + ${::TECH($::type,$::corner,$::section,lxt)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wxt)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pxt)} * Inv_LW;
+                pParam->BSIM4v5vfb = ${::TECH($::type,$::corner,$::section,vfb)}
+                + ${::TECH($::type,$::corner,$::section,lvfb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvfb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvfb)} * Inv_LW;
+                pParam->BSIM4v5k1 = ${::TECH($::type,$::corner,$::section,k1)}
+                + ${::TECH($::type,$::corner,$::section,lk1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wk1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pk1)} * Inv_LW;
+                pParam->BSIM4v5kt1 = ${::TECH($::type,$::corner,$::section,kt1)}
+                + ${::TECH($::type,$::corner,$::section,lkt1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wkt1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pkt1)} * Inv_LW;
+                pParam->BSIM4v5kt1l = ${::TECH($::type,$::corner,$::section,kt1l)}
+                + ${::TECH($::type,$::corner,$::section,lkt1l)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wkt1l)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pkt1l)} * Inv_LW;
+                pParam->BSIM4v5k2 = ${::TECH($::type,$::corner,$::section,k2)}
+                + ${::TECH($::type,$::corner,$::section,lk2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wk2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pk2)} * Inv_LW;
+                pParam->BSIM4v5kt2 = ${::TECH($::type,$::corner,$::section,kt2)}
+                + ${::TECH($::type,$::corner,$::section,lkt2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wkt2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pkt2)} * Inv_LW;
+                pParam->BSIM4v5k3 = ${::TECH($::type,$::corner,$::section,k3)}
+                + ${::TECH($::type,$::corner,$::section,lk3)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wk3)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pk3)} * Inv_LW;
+                pParam->BSIM4v5k3b = ${::TECH($::type,$::corner,$::section,k3b)}
+                + ${::TECH($::type,$::corner,$::section,lk3b)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wk3b)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pk3b)} * Inv_LW;
+                pParam->BSIM4v5w0 = ${::TECH($::type,$::corner,$::section,w0)}
+                + ${::TECH($::type,$::corner,$::section,lw0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,ww0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pw0)} * Inv_LW;
+                pParam->BSIM4v5lpe0 = ${::TECH($::type,$::corner,$::section,lpe0)}
+                + ${::TECH($::type,$::corner,$::section,llpe0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wlpe0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,plpe0)} * Inv_LW;
+                pParam->BSIM4v5lpeb = ${::TECH($::type,$::corner,$::section,lpeb)}
+                + ${::TECH($::type,$::corner,$::section,llpeb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wlpeb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,plpeb)} * Inv_LW;
+                pParam->BSIM4v5dvtp0 = ${::TECH($::type,$::corner,$::section,dvtp0)}
+                + ${::TECH($::type,$::corner,$::section,ldvtp0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvtp0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvtp0)} * Inv_LW;
+                pParam->BSIM4v5dvtp1 = ${::TECH($::type,$::corner,$::section,dvtp1)}
+                + ${::TECH($::type,$::corner,$::section,ldvtp1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvtp1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvtp1)} * Inv_LW;
+                pParam->BSIM4v5dvt0 = ${::TECH($::type,$::corner,$::section,dvt0)}
+                + ${::TECH($::type,$::corner,$::section,ldvt0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt0)} * Inv_LW;
+                pParam->BSIM4v5dvt1 = ${::TECH($::type,$::corner,$::section,dvt1)}
+                + ${::TECH($::type,$::corner,$::section,ldvt1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt1)} * Inv_LW;
+                pParam->BSIM4v5dvt2 = ${::TECH($::type,$::corner,$::section,dvt2)}
+                + ${::TECH($::type,$::corner,$::section,ldvt2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt2)} * Inv_LW;
+                pParam->BSIM4v5dvt0w = ${::TECH($::type,$::corner,$::section,dvt0w)}
+                + ${::TECH($::type,$::corner,$::section,ldvt0w)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt0w)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt0w)} * Inv_LW;
+                pParam->BSIM4v5dvt1w = ${::TECH($::type,$::corner,$::section,dvt1w)}
+                + ${::TECH($::type,$::corner,$::section,ldvt1w)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt1w)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt1w)} * Inv_LW;
+                pParam->BSIM4v5dvt2w = ${::TECH($::type,$::corner,$::section,dvt2w)}
+                + ${::TECH($::type,$::corner,$::section,ldvt2w)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdvt2w)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdvt2w)} * Inv_LW;
+                pParam->BSIM4v5drout = ${::TECH($::type,$::corner,$::section,drout)}
+                + ${::TECH($::type,$::corner,$::section,ldrout)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdrout)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdrout)} * Inv_LW;
+                pParam->BSIM4v5dsub = ${::TECH($::type,$::corner,$::section,dsub)}
+                + ${::TECH($::type,$::corner,$::section,ldsub)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdsub)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdsub)} * Inv_LW;
+                pParam->BSIM4v5vth0 = ${::TECH($::type,$::corner,$::section,vth0)}
+                + ${::TECH($::type,$::corner,$::section,lvth0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvth0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvth0)} * Inv_LW;
+                pParam->BSIM4v5ua = ${::TECH($::type,$::corner,$::section,ua)}
+                + ${::TECH($::type,$::corner,$::section,lua)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wua)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pua)} * Inv_LW;
+                pParam->BSIM4v5ua1 = ${::TECH($::type,$::corner,$::section,ua1)}
+                + ${::TECH($::type,$::corner,$::section,lua1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wua1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pua1)} * Inv_LW;
+                pParam->BSIM4v5ub = ${::TECH($::type,$::corner,$::section,ub)}
+                + ${::TECH($::type,$::corner,$::section,lub)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wub)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pub)} * Inv_LW;
+                pParam->BSIM4v5ub1 = ${::TECH($::type,$::corner,$::section,ub1)}
+                + ${::TECH($::type,$::corner,$::section,lub1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wub1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pub1)} * Inv_LW;
+                pParam->BSIM4v5uc = ${::TECH($::type,$::corner,$::section,uc)}
+                + ${::TECH($::type,$::corner,$::section,luc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wuc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,puc)} * Inv_LW;
+                pParam->BSIM4v5uc1 = ${::TECH($::type,$::corner,$::section,uc1)}
+                + ${::TECH($::type,$::corner,$::section,luc1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wuc1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,puc1)} * Inv_LW;
+                pParam->BSIM4v5ud = ${::TECH($::type,$::corner,$::section,ud)}
+                + ${::TECH($::type,$::corner,$::section,lud)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wud)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pud)} * Inv_LW;
+                pParam->BSIM4v5ud1 = ${::TECH($::type,$::corner,$::section,ud1)}
+                + ${::TECH($::type,$::corner,$::section,lud1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wud1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pud1)} * Inv_LW;
+                pParam->BSIM4v5up = ${::TECH($::type,$::corner,$::section,up)}
+                + ${::TECH($::type,$::corner,$::section,lup)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wup)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pup)} * Inv_LW;
+                pParam->BSIM4v5lp = ${::TECH($::type,$::corner,$::section,lp)}
+                + ${::TECH($::type,$::corner,$::section,llp)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wlp)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,plp)} * Inv_LW;
+                pParam->BSIM4v5eu = ${::TECH($::type,$::corner,$::section,eu)}
+                + ${::TECH($::type,$::corner,$::section,leu)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,weu)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,peu)} * Inv_LW;
+                pParam->BSIM4v5u0 = ${::TECH($::type,$::corner,$::section,u0)}
+                + ${::TECH($::type,$::corner,$::section,lu0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wu0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pu0)} * Inv_LW;
+                pParam->BSIM4v5ute = ${::TECH($::type,$::corner,$::section,ute)}
+                + ${::TECH($::type,$::corner,$::section,lute)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wute)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pute)} * Inv_LW;
+                pParam->BSIM4v5voff = ${::TECH($::type,$::corner,$::section,voff)}
+                + ${::TECH($::type,$::corner,$::section,lvoff)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvoff)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvoff)} * Inv_LW;
+                pParam->BSIM4v5tvoff = ${::TECH($::type,$::corner,$::section,tvoff)}
+                + ${::TECH($::type,$::corner,$::section,ltvoff)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wtvoff)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ptvoff)} * Inv_LW;
+                pParam->BSIM4v5minv = ${::TECH($::type,$::corner,$::section,minv)}
+                + ${::TECH($::type,$::corner,$::section,lminv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wminv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pminv)} * Inv_LW;
+                pParam->BSIM4v5fprout = ${::TECH($::type,$::corner,$::section,fprout)}
+                + ${::TECH($::type,$::corner,$::section,lfprout)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wfprout)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pfprout)} * Inv_LW;
+                pParam->BSIM4v5pdits = ${::TECH($::type,$::corner,$::section,pdits)}
+                + ${::TECH($::type,$::corner,$::section,lpdits)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpdits)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppdits)} * Inv_LW;
+                pParam->BSIM4v5pditsd = ${::TECH($::type,$::corner,$::section,pditsd)}
+                + ${::TECH($::type,$::corner,$::section,lpditsd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpditsd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppditsd)} * Inv_LW;
+                pParam->BSIM4v5delta = ${::TECH($::type,$::corner,$::section,delta)}
+                + ${::TECH($::type,$::corner,$::section,ldelta)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdelta)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdelta)} * Inv_LW;
+                pParam->BSIM4v5rdsw = ${::TECH($::type,$::corner,$::section,rdsw)}
+                + ${::TECH($::type,$::corner,$::section,lrdsw)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wrdsw)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,prdsw)} * Inv_LW;
+                pParam->BSIM4v5rdw = ${::TECH($::type,$::corner,$::section,rdw)}
+                + ${::TECH($::type,$::corner,$::section,lrdw)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wrdw)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,prdw)} * Inv_LW;
+                pParam->BSIM4v5rsw = ${::TECH($::type,$::corner,$::section,rsw)}
+                + ${::TECH($::type,$::corner,$::section,lrsw)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wrsw)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,prsw)} * Inv_LW;
+                pParam->BSIM4v5prwg = ${::TECH($::type,$::corner,$::section,prwg)}
+                + ${::TECH($::type,$::corner,$::section,lprwg)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wprwg)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pprwg)} * Inv_LW;
+                pParam->BSIM4v5prwb = ${::TECH($::type,$::corner,$::section,prwb)}
+                + ${::TECH($::type,$::corner,$::section,lprwb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wprwb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pprwb)} * Inv_LW;
+                pParam->BSIM4v5prt = ${::TECH($::type,$::corner,$::section,prt)}
+                + ${::TECH($::type,$::corner,$::section,lprt)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wprt)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pprt)} * Inv_LW;
+                pParam->BSIM4v5eta0 = ${::TECH($::type,$::corner,$::section,eta0)}
+                + ${::TECH($::type,$::corner,$::section,leta0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,weta0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,peta0)} * Inv_LW;
+                //if (pParam->BSIM4v5eta0<0.0) pParam->BSIM4v5eta0 = ${::TECH($::type,$::corner,$::section,eta0)};
+                pParam->BSIM4v5etab = ${::TECH($::type,$::corner,$::section,etab)}
+                + ${::TECH($::type,$::corner,$::section,letab)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wetab)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,petab)} * Inv_LW;
+                pParam->BSIM4v5pclm = ${::TECH($::type,$::corner,$::section,pclm)}
+                + ${::TECH($::type,$::corner,$::section,lpclm)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpclm)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppclm)} * Inv_LW;
+                //Info: "Pclm=%g+%g*%g+%g*%g+%g*%g=%g" ${::TECH($::type,$::corner,$::section,pclm)} ${::TECH($::type,$::corner,$::section,lpclm)} Inv_L ${::TECH($::type,$::corner,$::section,wpclm)} Inv_W ${::TECH($::type,$::corner,$::section,ppclm)} Inv_LW pParam->BSIM4v5pclm
+                //if (pParam->BSIM4v5pclm<0.0) pParam->BSIM4v5pclm=${::TECH($::type,$::corner,$::section,pclm)};
+                //Info: "Pclm=%g" pParam->BSIM4v5pclm
+                pParam->BSIM4v5pdibl1 = ${::TECH($::type,$::corner,$::section,pdibl1)}
+                + ${::TECH($::type,$::corner,$::section,lpdibl1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpdibl1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppdibl1)} * Inv_LW;
+                pParam->BSIM4v5pdibl2 = ${::TECH($::type,$::corner,$::section,pdibl2)}
+                + ${::TECH($::type,$::corner,$::section,lpdibl2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpdibl2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppdibl2)} * Inv_LW;
+                pParam->BSIM4v5pdiblb = ${::TECH($::type,$::corner,$::section,pdiblb)}
+                + ${::TECH($::type,$::corner,$::section,lpdiblb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpdiblb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppdiblb)} * Inv_LW;
+                pParam->BSIM4v5pscbe1 = ${::TECH($::type,$::corner,$::section,pscbe1)}
+                + ${::TECH($::type,$::corner,$::section,lpscbe1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpscbe1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppscbe1)} * Inv_LW;
+                pParam->BSIM4v5pscbe2 = ${::TECH($::type,$::corner,$::section,pscbe2)}
+                + ${::TECH($::type,$::corner,$::section,lpscbe2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpscbe2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppscbe2)} * Inv_LW;
+                pParam->BSIM4v5pvag = ${::TECH($::type,$::corner,$::section,pvag)}
+                + ${::TECH($::type,$::corner,$::section,lpvag)} * Inv_L 
+                + ${::TECH($::type,$::corner,$::section,wpvag)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppvag)} * Inv_LW;
+                pParam->BSIM4v5wr = ${::TECH($::type,$::corner,$::section,wr)}
+                + ${::TECH($::type,$::corner,$::section,lwr)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wwr)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pwr)} * Inv_LW;
+                pParam->BSIM4v5dwg = ${::TECH($::type,$::corner,$::section,dwg)}
+                + ${::TECH($::type,$::corner,$::section,ldwg)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdwg)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdwg)} * Inv_LW;
+                pParam->BSIM4v5dwb = ${::TECH($::type,$::corner,$::section,dwb)}
+                + ${::TECH($::type,$::corner,$::section,ldwb)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wdwb)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pdwb)} * Inv_LW;
+                pParam->BSIM4v5b0 = ${::TECH($::type,$::corner,$::section,b0)}
+                + ${::TECH($::type,$::corner,$::section,lb0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wb0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pb0)} * Inv_LW;
+                pParam->BSIM4v5b1 = ${::TECH($::type,$::corner,$::section,b1)}
+                + ${::TECH($::type,$::corner,$::section,lb1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wb1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pb1)} * Inv_LW;
+                pParam->BSIM4v5alpha0 = ${::TECH($::type,$::corner,$::section,alpha0)}
+                + ${::TECH($::type,$::corner,$::section,lalpha0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,walpha0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,palpha0)} * Inv_LW;
+                pParam->BSIM4v5alpha1 = ${::TECH($::type,$::corner,$::section,alpha1)}
+                + ${::TECH($::type,$::corner,$::section,lalpha1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,walpha1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,palpha1)} * Inv_LW;
+                pParam->BSIM4v5beta0 = ${::TECH($::type,$::corner,$::section,beta0)}
+                + ${::TECH($::type,$::corner,$::section,lbeta0)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbeta0)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbeta0)} * Inv_LW;
+                
+                pParam->BSIM4v5agidl = ${::TECH($::type,$::corner,$::section,agidl)}
+                + ${::TECH($::type,$::corner,$::section,lagidl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wagidl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pagidl)} * Inv_LW;
+                pParam->BSIM4v5bgidl = ${::TECH($::type,$::corner,$::section,bgidl)}
+                + ${::TECH($::type,$::corner,$::section,lbgidl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbgidl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbgidl)} * Inv_LW;
+                pParam->BSIM4v5cgidl = ${::TECH($::type,$::corner,$::section,cgidl)}
+                + ${::TECH($::type,$::corner,$::section,lcgidl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcgidl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcgidl)} * Inv_LW;
+                pParam->BSIM4v5egidl = ${::TECH($::type,$::corner,$::section,egidl)}
+                + ${::TECH($::type,$::corner,$::section,legidl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wegidl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pegidl)} * Inv_LW;
+                pParam->BSIM4v5aigc = ${::TECH($::type,$::corner,$::section,aigc)}
+                + ${::TECH($::type,$::corner,$::section,laigc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,waigc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,paigc)} * Inv_LW;
+                pParam->BSIM4v5bigc = ${::TECH($::type,$::corner,$::section,bigc)}
+                + ${::TECH($::type,$::corner,$::section,lbigc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbigc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbigc)} * Inv_LW;
+                pParam->BSIM4v5cigc = ${::TECH($::type,$::corner,$::section,cigc)}
+                + ${::TECH($::type,$::corner,$::section,lcigc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcigc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcigc)} * Inv_LW;
+                pParam->BSIM4v5aigsd = ${::TECH($::type,$::corner,$::section,aigsd)}
+                + ${::TECH($::type,$::corner,$::section,laigsd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,waigsd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,paigsd)} * Inv_LW;
+                pParam->BSIM4v5bigsd = ${::TECH($::type,$::corner,$::section,bigsd)}
+                + ${::TECH($::type,$::corner,$::section,lbigsd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbigsd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbigsd)} * Inv_LW;
+                pParam->BSIM4v5cigsd = ${::TECH($::type,$::corner,$::section,cigsd)}
+                + ${::TECH($::type,$::corner,$::section,lcigsd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcigsd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcigsd)} * Inv_LW;
+                pParam->BSIM4v5aigbacc = ${::TECH($::type,$::corner,$::section,aigbacc)}
+                + ${::TECH($::type,$::corner,$::section,laigbacc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,waigbacc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,paigbacc)} * Inv_LW;
+                pParam->BSIM4v5bigbacc = ${::TECH($::type,$::corner,$::section,bigbacc)}
+                + ${::TECH($::type,$::corner,$::section,lbigbacc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbigbacc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbigbacc)} * Inv_LW;
+                pParam->BSIM4v5cigbacc = ${::TECH($::type,$::corner,$::section,cigbacc)}
+                + ${::TECH($::type,$::corner,$::section,lcigbacc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcigbacc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcigbacc)} * Inv_LW;
+                pParam->BSIM4v5aigbinv = ${::TECH($::type,$::corner,$::section,aigbinv)}
+                + ${::TECH($::type,$::corner,$::section,laigbinv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,waigbinv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,paigbinv)} * Inv_LW;
+                pParam->BSIM4v5bigbinv = ${::TECH($::type,$::corner,$::section,bigbinv)}
+                + ${::TECH($::type,$::corner,$::section,lbigbinv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wbigbinv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pbigbinv)} * Inv_LW;
+                pParam->BSIM4v5cigbinv = ${::TECH($::type,$::corner,$::section,cigbinv)}
+                + ${::TECH($::type,$::corner,$::section,lcigbinv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcigbinv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcigbinv)} * Inv_LW;
+                pParam->BSIM4v5nigc = ${::TECH($::type,$::corner,$::section,nigc)}
+                + ${::TECH($::type,$::corner,$::section,lnigc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnigc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnigc)} * Inv_LW;
+                pParam->BSIM4v5nigbacc = ${::TECH($::type,$::corner,$::section,nigbacc)}
+                + ${::TECH($::type,$::corner,$::section,lnigbacc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnigbacc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnigbacc)} * Inv_LW;
+                pParam->BSIM4v5nigbinv = ${::TECH($::type,$::corner,$::section,nigbinv)}
+                + ${::TECH($::type,$::corner,$::section,lnigbinv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnigbinv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnigbinv)} * Inv_LW;
+                pParam->BSIM4v5ntox = ${::TECH($::type,$::corner,$::section,ntox)}
+                + ${::TECH($::type,$::corner,$::section,lntox)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wntox)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pntox)} * Inv_LW;
+                pParam->BSIM4v5eigbinv = ${::TECH($::type,$::corner,$::section,eigbinv)}
+                + ${::TECH($::type,$::corner,$::section,leigbinv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,weigbinv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,peigbinv)} * Inv_LW;
+                pParam->BSIM4v5pigcd = ${::TECH($::type,$::corner,$::section,pigcd)}
+                + ${::TECH($::type,$::corner,$::section,lpigcd)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpigcd)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppigcd)} * Inv_LW;
+                pParam->BSIM4v5poxedge = ${::TECH($::type,$::corner,$::section,poxedge)}
+                + ${::TECH($::type,$::corner,$::section,lpoxedge)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wpoxedge)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ppoxedge)} * Inv_LW;
+                pParam->BSIM4v5xrcrg1 = ${::TECH($::type,$::corner,$::section,xrcrg1)}
+                + ${::TECH($::type,$::corner,$::section,lxrcrg1)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wxrcrg1)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pxrcrg1)} * Inv_LW;
+                pParam->BSIM4v5xrcrg2 = ${::TECH($::type,$::corner,$::section,xrcrg2)}
+                + ${::TECH($::type,$::corner,$::section,lxrcrg2)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wxrcrg2)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pxrcrg2)} * Inv_LW;
+                pParam->BSIM4v5lambda = ${::TECH($::type,$::corner,$::section,lambda)}
+                + ${::TECH($::type,$::corner,$::section,llambda)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wlambda)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,plambda)} * Inv_LW;
+                pParam->BSIM4v5vtl = ${::TECH($::type,$::corner,$::section,vtl)}
+                + ${::TECH($::type,$::corner,$::section,lvtl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvtl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvtl)} * Inv_LW;
+                pParam->BSIM4v5xn = ${::TECH($::type,$::corner,$::section,xn)}
+                + ${::TECH($::type,$::corner,$::section,lxn)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wxn)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pxn)} * Inv_LW;
+                pParam->BSIM4v5vfbsdoff = ${::TECH($::type,$::corner,$::section,vfbsdoff)}
+                + ${::TECH($::type,$::corner,$::section,lvfbsdoff)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvfbsdoff)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvfbsdoff)} * Inv_LW;
+                pParam->BSIM4v5tvfbsdoff = ${::TECH($::type,$::corner,$::section,tvfbsdoff)}
+                + ${::TECH($::type,$::corner,$::section,ltvfbsdoff)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wtvfbsdoff)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,ptvfbsdoff)} * Inv_LW;
+                
+                pParam->BSIM4v5cgsl = ${::TECH($::type,$::corner,$::section,cgsl)}
+                + ${::TECH($::type,$::corner,$::section,lcgsl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcgsl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcgsl)} * Inv_LW;
+                pParam->BSIM4v5cgdl = ${::TECH($::type,$::corner,$::section,cgdl)}
+                + ${::TECH($::type,$::corner,$::section,lcgdl)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcgdl)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcgdl)} * Inv_LW;
+                pParam->BSIM4v5ckappas = ${::TECH($::type,$::corner,$::section,ckappas)}
+                + ${::TECH($::type,$::corner,$::section,lckappas)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wckappas)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pckappas)} * Inv_LW;
+                pParam->BSIM4v5ckappad = ${::TECH($::type,$::corner,$::section,ckappad)}
+                + ${::TECH($::type,$::corner,$::section,lckappad)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wckappad)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pckappad)} * Inv_LW;
+                pParam->BSIM4v5cf = ${::TECH($::type,$::corner,$::section,cf)}
+                + ${::TECH($::type,$::corner,$::section,lcf)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcf)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcf)} * Inv_LW;
+                pParam->BSIM4v5clc = ${::TECH($::type,$::corner,$::section,clc)}
+                + ${::TECH($::type,$::corner,$::section,lclc)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wclc)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pclc)} * Inv_LW;
+                pParam->BSIM4v5cle = ${::TECH($::type,$::corner,$::section,cle)}
+                + ${::TECH($::type,$::corner,$::section,lcle)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wcle)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pcle)} * Inv_LW;
+                pParam->BSIM4v5vfbcv = ${::TECH($::type,$::corner,$::section,vfbcv)}
+                + ${::TECH($::type,$::corner,$::section,lvfbcv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvfbcv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvfbcv)} * Inv_LW;
+                pParam->BSIM4v5acde = ${::TECH($::type,$::corner,$::section,acde)}
+                + ${::TECH($::type,$::corner,$::section,lacde)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wacde)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pacde)} * Inv_LW;
+                pParam->BSIM4v5moin = ${::TECH($::type,$::corner,$::section,moin)}
+                + ${::TECH($::type,$::corner,$::section,lmoin)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wmoin)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pmoin)} * Inv_LW;
+                pParam->BSIM4v5noff = ${::TECH($::type,$::corner,$::section,noff)}
+                + ${::TECH($::type,$::corner,$::section,lnoff)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wnoff)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pnoff)} * Inv_LW;
+                pParam->BSIM4v5voffcv = ${::TECH($::type,$::corner,$::section,voffcv)}
+                + ${::TECH($::type,$::corner,$::section,lvoffcv)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wvoffcv)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pvoffcv)} * Inv_LW;
+                pParam->BSIM4v5kvth0we = ${::TECH($::type,$::corner,$::section,kvth0we)}
+                + ${::TECH($::type,$::corner,$::section,lkvth0we)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wkvth0we)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pkvth0we)} * Inv_LW;
+                pParam->BSIM4v5k2we = ${::TECH($::type,$::corner,$::section,k2we)}
+                + ${::TECH($::type,$::corner,$::section,lk2we)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wk2we)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pk2we)} * Inv_LW;
+                pParam->BSIM4v5ku0we = ${::TECH($::type,$::corner,$::section,ku0we)}
+                + ${::TECH($::type,$::corner,$::section,lku0we)} * Inv_L
+                + ${::TECH($::type,$::corner,$::section,wku0we)} * Inv_W
+                + ${::TECH($::type,$::corner,$::section,pku0we)} * Inv_LW;
+                
+                pParam->BSIM4v5abulkCVfactor = 1.0 + pow((pParam->BSIM4v5clc
+                / pParam->BSIM4v5leffCV),
+                pParam->BSIM4v5cle);
+                
+                T0 = (TRatio - 1.0);
+                
+                PowWeffWr = pow(pParam->BSIM4v5weffCJ * 1.0e6, pParam->BSIM4v5wr) * here->BSIM4v5nf;
+                
+                T1 = T2 = T3 = T4 = 0.0;
+                if(${::TECH($::type,$::corner,$::section,tempMod)} == 0) {
+                    pParam->BSIM4v5ua = pParam->BSIM4v5ua + pParam->BSIM4v5ua1 * T0;
+                    pParam->BSIM4v5ub = pParam->BSIM4v5ub + pParam->BSIM4v5ub1 * T0;
+                    pParam->BSIM4v5uc = pParam->BSIM4v5uc + pParam->BSIM4v5uc1 * T0;
+                    pParam->BSIM4v5ud = pParam->BSIM4v5ud + pParam->BSIM4v5ud1 * T0;
+                    pParam->BSIM4v5vsattemp = pParam->BSIM4v5vsat - pParam->BSIM4v5at * T0;
+                    T10 = pParam->BSIM4v5prt * T0;
+                    if(${::TECH($::type,$::corner,$::section,rdsMod)}) {
+                        /* External Rd(V) */
+                        T1 = pParam->BSIM4v5rdw + T10;
+                        T2 = ${::TECH($::type,$::corner,$::section,rdwmin)} + T10;
+                        /* External Rs(V) */
+                        T3 = pParam->BSIM4v5rsw + T10;
+                        T4 = ${::TECH($::type,$::corner,$::section,rswmin)} + T10;
+                    }
+                    /* Internal Rds(V) in IV */
+                    pParam->BSIM4v5rds0 = (pParam->BSIM4v5rdsw + T10)
+                    * here->BSIM4v5nf / PowWeffWr;
+                    pParam->BSIM4v5rdswmin = (${::TECH($::type,$::corner,$::section,rdswmin)} + T10)
+                    * here->BSIM4v5nf / PowWeffWr;
+                } else { /* tempMod = 1, 2 */
+                    pParam->BSIM4v5ua = pParam->BSIM4v5ua * (1.0 + pParam->BSIM4v5ua1 * delTemp) ;
+                    pParam->BSIM4v5ub = pParam->BSIM4v5ub * (1.0 + pParam->BSIM4v5ub1 * delTemp);
+                    pParam->BSIM4v5uc = pParam->BSIM4v5uc * (1.0 + pParam->BSIM4v5uc1 * delTemp);
+                    pParam->BSIM4v5ud = pParam->BSIM4v5ud * (1.0 + pParam->BSIM4v5ud1 * delTemp);
+                    pParam->BSIM4v5vsattemp = pParam->BSIM4v5vsat * (1.0 - pParam->BSIM4v5at * delTemp);
+                    T10 = 1.0 + pParam->BSIM4v5prt * delTemp;
+                    if(${::TECH($::type,$::corner,$::section,rdsMod)}) {
+                        /* External Rd(V) */
+                        T1 = pParam->BSIM4v5rdw * T10;
+                        T2 = ${::TECH($::type,$::corner,$::section,rdwmin)} * T10;
+                        /* External Rs(V) */
+                        T3 = pParam->BSIM4v5rsw * T10;
+                        T4 = ${::TECH($::type,$::corner,$::section,rswmin)} * T10;
+                    }
+                    /* Internal Rds(V) in IV */
+                    pParam->BSIM4v5rds0 = pParam->BSIM4v5rdsw * T10 * here->BSIM4v5nf / PowWeffWr;
+                    pParam->BSIM4v5rdswmin = ${::TECH($::type,$::corner,$::section,rdswmin)} * T10 * here->BSIM4v5nf / PowWeffWr;
+                }
+                if (T1 < 0.0)
+                {   T1 = 0.0;
+                    printf("Warning: Rdw at current temperature is negative; set to 0.\n");
+                }
+                if (T2 < 0.0)
+                {   T2 = 0.0;
+                    printf("Warning: Rdwmin at current temperature is negative; set to 0.\n");
+                }
+                pParam->BSIM4v5rd0 = T1 / PowWeffWr;
+                pParam->BSIM4v5rdwmin = T2 / PowWeffWr;
+                if (T3 < 0.0)
+                {   T3 = 0.0;
+                    printf("Warning: Rsw at current temperature is negative; set to 0.\n");
+                }
+                if (T4 < 0.0)
+                {   T4 = 0.0;
+                    printf("Warning: Rswmin at current temperature is negative; set to 0.\n");
+                }
+                pParam->BSIM4v5rs0 = T3 / PowWeffWr;
+                pParam->BSIM4v5rswmin = T4 / PowWeffWr;
+                
+                if (pParam->BSIM4v5u0 > 1.0) 
+                pParam->BSIM4v5u0 = pParam->BSIM4v5u0 / 1.0e4;
+                
+                /* mobility channel length dependence */
+                T5 = 1.0 - pParam->BSIM4v5up * exp( - pParam->BSIM4v5leff / pParam->BSIM4v5lp);
+                pParam->BSIM4v5u0temp = pParam->BSIM4v5u0 * T5
+                * pow(TRatio, pParam->BSIM4v5ute); 
+                if (pParam->BSIM4v5eu < 0.0)
+                {   pParam->BSIM4v5eu = 0.0;
+                    printf("Warning: eu has been negative; reset to 0.0.\n");
+                }
+                
+                pParam->BSIM4v5vfbsdoff = pParam->BSIM4v5vfbsdoff * (1.0 + pParam->BSIM4v5tvfbsdoff * delTemp);
+                pParam->BSIM4v5voff = pParam->BSIM4v5voff * (1.0 + pParam->BSIM4v5tvoff * delTemp);
+                
+                /* Source End Velocity Limit  */
+                if((${::TECH($::type,$::corner,$::section,vtlGiven)}) && (${::TECH($::type,$::corner,$::section,vtl)} > 0.0) )
+                {  
+                    if(${::TECH($::type,$::corner,$::section,lc)} < 0.0) pParam->BSIM4v5lc = 0.0;
+                    else   pParam->BSIM4v5lc = ${::TECH($::type,$::corner,$::section,lc)} ;
+                    T0 = pParam->BSIM4v5leff / (pParam->BSIM4v5xn * pParam->BSIM4v5leff + pParam->BSIM4v5lc);
+                    pParam->BSIM4v5tfactor = (1.0 - T0) / (1.0 + T0 );
+                }
+                
+                pParam->BSIM4v5cgdo = (${::TECH($::type,$::corner,$::section,cgdo)} + pParam->BSIM4v5cf)
+                * pParam->BSIM4v5weffCV;
+                pParam->BSIM4v5cgso = (${::TECH($::type,$::corner,$::section,cgso)} + pParam->BSIM4v5cf)
+                * pParam->BSIM4v5weffCV;
+                pParam->BSIM4v5cgbo = ${::TECH($::type,$::corner,$::section,cgbo)} * pParam->BSIM4v5leffCV * here->BSIM4v5nf;
+                
+                if (!${::TECH($::type,$::corner,$::section,ndepGiven)} && ${::TECH($::type,$::corner,$::section,gamma1Given)})
+                {   T0 = pParam->BSIM4v5gamma1 * ${::TECH($::type,$::corner,$::section,coxe)};
+                    pParam->BSIM4v5ndep = 3.01248e22 * T0 * T0;
+                }
+                
+                pParam->BSIM4v5phi = Vtm0 * log(pParam->BSIM4v5ndep / ni)
+                + pParam->BSIM4v5phin + 0.4;
+                
+                pParam->BSIM4v5sqrtPhi = sqrt(pParam->BSIM4v5phi);
+                pParam->BSIM4v5phis3 = pParam->BSIM4v5sqrtPhi * pParam->BSIM4v5phi;
+                
+                pParam->BSIM4v5Xdep0 = sqrt(2.0 * EPSSI / (Charge_q
+                * pParam->BSIM4v5ndep * 1.0e6))
+                * pParam->BSIM4v5sqrtPhi; 
+                pParam->BSIM4v5sqrtXdep0 = sqrt(pParam->BSIM4v5Xdep0);
+                pParam->BSIM4v5litl = sqrt(3.0 * pParam->BSIM4v5xj
+                * ${::TECH($::type,$::corner,$::section,toxe)});
+                pParam->BSIM4v5vbi = Vtm0 * log(pParam->BSIM4v5nsd
+                * pParam->BSIM4v5ndep / (ni * ni));
+                
+                if (pParam->BSIM4v5ngate > 0.0)
+                {   pParam->BSIM4v5vfbsd = Vtm0 * log(pParam->BSIM4v5ngate
+                    / pParam->BSIM4v5nsd);
+                }
+                else
+                pParam->BSIM4v5vfbsd = 0.0;
+                
+                pParam->BSIM4v5cdep0 = sqrt(Charge_q * EPSSI
+                * pParam->BSIM4v5ndep * 1.0e6 / 2.0
+                / pParam->BSIM4v5phi);
+                
+                pParam->BSIM4v5ToxRatio = exp(pParam->BSIM4v5ntox
+                * log(${::TECH($::type,$::corner,$::section,toxref)} / ${::TECH($::type,$::corner,$::section,toxe)}))
+                / ${::TECH($::type,$::corner,$::section,toxe)} / ${::TECH($::type,$::corner,$::section,toxe)};
+                pParam->BSIM4v5ToxRatioEdge = exp(pParam->BSIM4v5ntox
+                * log(${::TECH($::type,$::corner,$::section,toxref)}
+                / (${::TECH($::type,$::corner,$::section,toxe)} * pParam->BSIM4v5poxedge)))
+                / ${::TECH($::type,$::corner,$::section,toxe)} / ${::TECH($::type,$::corner,$::section,toxe)}
+                / pParam->BSIM4v5poxedge / pParam->BSIM4v5poxedge;
+                pParam->BSIM4v5Aechvb = (${::TECH($::type,$::corner,$::section,type)} == NMOS) ? 4.97232e-7 : 3.42537e-7;
+                pParam->BSIM4v5Bechvb = (${::TECH($::type,$::corner,$::section,type)} == NMOS) ? 7.45669e11 : 1.16645e12;
+                pParam->BSIM4v5AechvbEdge = pParam->BSIM4v5Aechvb * pParam->BSIM4v5weff
+                * ${::TECH($::type,$::corner,$::section,dlcig)} * pParam->BSIM4v5ToxRatioEdge;
+                pParam->BSIM4v5BechvbEdge = -pParam->BSIM4v5Bechvb
+                * ${::TECH($::type,$::corner,$::section,toxe)} * pParam->BSIM4v5poxedge;
+                pParam->BSIM4v5Aechvb *= pParam->BSIM4v5weff * pParam->BSIM4v5leff
+                * pParam->BSIM4v5ToxRatio;
+                pParam->BSIM4v5Bechvb *= -${::TECH($::type,$::corner,$::section,toxe)};
+                
+                
+                pParam->BSIM4v5mstar = 0.5 + atan(pParam->BSIM4v5minv) / PI;
+                pParam->BSIM4v5voffcbn =  pParam->BSIM4v5voff + ${::TECH($::type,$::corner,$::section,voffl)} / pParam->BSIM4v5leff;
+                
+                pParam->BSIM4v5ldeb = sqrt(EPSSI * Vtm0 / (Charge_q
+                * pParam->BSIM4v5ndep * 1.0e6)) / 3.0;
+                pParam->BSIM4v5acde *= pow((pParam->BSIM4v5ndep / 2.0e16), -0.25);
+                
+                
+                if (${::TECH($::type,$::corner,$::section,k1Given)} || ${::TECH($::type,$::corner,$::section,k2Given)})
+                {   if (!${::TECH($::type,$::corner,$::section,k1Given)})
+                    {
+                        pParam->BSIM4v5k1 = 0.53;
+                    }
+                    if (!${::TECH($::type,$::corner,$::section,k2Given)})
+                    {
+                        pParam->BSIM4v5k2 = -0.0186;
+                    }
+                }
+                else
+                {   if (!${::TECH($::type,$::corner,$::section,vbxGiven)})
+                    pParam->BSIM4v5vbx = pParam->BSIM4v5phi - 7.7348e-4 
+                    * pParam->BSIM4v5ndep
+                    * pParam->BSIM4v5xt * pParam->BSIM4v5xt;
+                    if (pParam->BSIM4v5vbx > 0.0)
+                    pParam->BSIM4v5vbx = -pParam->BSIM4v5vbx;
+                    if (pParam->BSIM4v5vbm > 0.0)
+                    pParam->BSIM4v5vbm = -pParam->BSIM4v5vbm;
+                    
+                    if (!${::TECH($::type,$::corner,$::section,gamma1Given)})
+                    pParam->BSIM4v5gamma1 = 5.753e-12
+                    * sqrt(pParam->BSIM4v5ndep)
+                    / ${::TECH($::type,$::corner,$::section,coxe)};
+                    if (!${::TECH($::type,$::corner,$::section,gamma2Given)})
+                    pParam->BSIM4v5gamma2 = 5.753e-12
+                    * sqrt(pParam->BSIM4v5nsub)
+                    / ${::TECH($::type,$::corner,$::section,coxe)};
+                    
+                    T0 = pParam->BSIM4v5gamma1 - pParam->BSIM4v5gamma2;
+                    T1 = sqrt(pParam->BSIM4v5phi - pParam->BSIM4v5vbx)
+                    - pParam->BSIM4v5sqrtPhi;
+                    T2 = sqrt(pParam->BSIM4v5phi * (pParam->BSIM4v5phi
+                    - pParam->BSIM4v5vbm)) - pParam->BSIM4v5phi;
+                    pParam->BSIM4v5k2 = T0 * T1 / (2.0 * T2 + pParam->BSIM4v5vbm);
+                    pParam->BSIM4v5k1 = pParam->BSIM4v5gamma2 - 2.0
+                    * pParam->BSIM4v5k2 * sqrt(pParam->BSIM4v5phi
+                    - pParam->BSIM4v5vbm);
+                }
+                
+                if (!${::TECH($::type,$::corner,$::section,vfbGiven)})
+                {   if (${::TECH($::type,$::corner,$::section,vth0Given)})
+                    {   pParam->BSIM4v5vfb = ${::TECH($::type,$::corner,$::section,type)} * pParam->BSIM4v5vth0
+                        - pParam->BSIM4v5phi - pParam->BSIM4v5k1
+                        * pParam->BSIM4v5sqrtPhi;
+                    }
+                    else
+                    {   pParam->BSIM4v5vfb = -1.0;
+                    }
+                }
+                if (!${::TECH($::type,$::corner,$::section,vth0Given)})
+                {   pParam->BSIM4v5vth0 = ${::TECH($::type,$::corner,$::section,type)} * (pParam->BSIM4v5vfb
+                    + pParam->BSIM4v5phi + pParam->BSIM4v5k1
+                    * pParam->BSIM4v5sqrtPhi);
+                }
+                
+                pParam->BSIM4v5k1ox = pParam->BSIM4v5k1 * ${::TECH($::type,$::corner,$::section,toxe)}
+                / ${::TECH($::type,$::corner,$::section,toxm)};
+                
+                tmp = sqrt(EPSSI / (${::TECH($::type,$::corner,$::section,epsrox)} * EPS0)
+                * ${::TECH($::type,$::corner,$::section,toxe)} * pParam->BSIM4v5Xdep0);
+                T0 = pParam->BSIM4v5dsub * pParam->BSIM4v5leff / tmp;
+                if (T0 < EXP_THRESHOLD)
+                {   T1 = exp(T0);
+                    T2 = T1 - 1.0;
+                    T3 = T2 * T2;
+                    T4 = T3 + 2.0 * T1 * MIN_EXP;
+                    pParam->BSIM4v5theta0vb0 = T1 / T4;
+                }
+                else
+                pParam->BSIM4v5theta0vb0 = 1.0 / (MAX_EXP - 2.0);
+                
+                T0 = pParam->BSIM4v5drout * pParam->BSIM4v5leff / tmp;
+                if (T0 < EXP_THRESHOLD)
+                {   T1 = exp(T0);
+                    T2 = T1 - 1.0;
+                    T3 = T2 * T2;
+                    T4 = T3 + 2.0 * T1 * MIN_EXP;
+                    T5 = T1 / T4;
+                }
+                else
+                T5 = 1.0 / (MAX_EXP - 2.0); /* 3.0 * MIN_EXP omitted */
+                pParam->BSIM4v5thetaRout = pParam->BSIM4v5pdibl1 * T5
+                + pParam->BSIM4v5pdibl2;
+                
+                tmp = sqrt(pParam->BSIM4v5Xdep0);
+                tmp1 = pParam->BSIM4v5vbi - pParam->BSIM4v5phi;
+                tmp2 = ${::TECH($::type,$::corner,$::section,factor1)} * tmp;
+                
+                T0 = pParam->BSIM4v5dvt1w * pParam->BSIM4v5weff
+                * pParam->BSIM4v5leff / tmp2;
+                if (T0 < EXP_THRESHOLD)
+                {   T1 = exp(T0);
+                    T2 = T1 - 1.0;
+                    T3 = T2 * T2;
+                    T4 = T3 + 2.0 * T1 * MIN_EXP;
+                    T8 = T1 / T4;
+                }
+                else
+                T8 = 1.0 / (MAX_EXP - 2.0);
+                T0 = pParam->BSIM4v5dvt0w * T8;
+                T8 = T0 * tmp1;
+                
+                T0 = pParam->BSIM4v5dvt1 * pParam->BSIM4v5leff / tmp2;
+                if (T0 < EXP_THRESHOLD)
+                {   T1 = exp(T0);
+                    T2 = T1 - 1.0;
+                    T3 = T2 * T2;
+                    T4 = T3 + 2.0 * T1 * MIN_EXP;
+                    T9 = T1 / T4;
+                } 
+                else
+                T9 = 1.0 / (MAX_EXP - 2.0);
+                T9 = pParam->BSIM4v5dvt0 * T9 * tmp1;
+                
+                T4 = ${::TECH($::type,$::corner,$::section,toxe)} * pParam->BSIM4v5phi
+                / (pParam->BSIM4v5weff + pParam->BSIM4v5w0);
+                
+                T0 = sqrt(1.0 + pParam->BSIM4v5lpe0 / pParam->BSIM4v5leff);
+                if((${::TECH($::type,$::corner,$::section,tempMod)} == 1) || (${::TECH($::type,$::corner,$::section,tempMod)} == 0))
+                T3 = (pParam->BSIM4v5kt1 + pParam->BSIM4v5kt1l / pParam->BSIM4v5leff)
+                * (TRatio - 1.0);
+                if(${::TECH($::type,$::corner,$::section,tempMod)} == 2)
+                T3 = - pParam->BSIM4v5kt1 * (TRatio - 1.0);
+                
+                T5 = pParam->BSIM4v5k1ox * (T0 - 1.0) * pParam->BSIM4v5sqrtPhi
+                + T3;
+                pParam->BSIM4v5vfbzbfactor = - T8 - T9 + pParam->BSIM4v5k3 * T4 + T5
+                - pParam->BSIM4v5phi - pParam->BSIM4v5k1 * pParam->BSIM4v5sqrtPhi;
+                
+                /* stress effect */
+                
+                double wlod = ${::TECH($::type,$::corner,$::section,wlod)};
+                if (${::TECH($::type,$::corner,$::section,wlod)} < 0.0)
+                {   fprintf(stderr, "Warning: WLOD = %g is less than 0. 0.0 is used\n",${::TECH($::type,$::corner,$::section,wlod)});
+                    wlod = 0.0;
+                }
+                T0 = pow(Lnew, ${::TECH($::type,$::corner,$::section,llodku0)});
+                double W_tmp = Wnew + wlod;
+                T1 = pow(W_tmp, ${::TECH($::type,$::corner,$::section,wlodku0)});
+                tmp1 = ${::TECH($::type,$::corner,$::section,lku0)} / T0 + ${::TECH($::type,$::corner,$::section,wku0)} / T1
+                + ${::TECH($::type,$::corner,$::section,pku0)} / (T0 * T1);
+                pParam->BSIM4v5ku0 = 1.0 + tmp1;
+                
+                T0 = pow(Lnew, ${::TECH($::type,$::corner,$::section,llodvth)});
+                T1 = pow(W_tmp, ${::TECH($::type,$::corner,$::section,wlodvth)});
+                tmp1 = ${::TECH($::type,$::corner,$::section,lkvth0)} / T0 + ${::TECH($::type,$::corner,$::section,wkvth0)} / T1
+                + ${::TECH($::type,$::corner,$::section,pkvth0)} / (T0 * T1);
+                pParam->BSIM4v5kvth0 = 1.0 + tmp1;
+                pParam->BSIM4v5kvth0 = sqrt(pParam->BSIM4v5kvth0*pParam->BSIM4v5kvth0 + DELTA);
+                
+                T0 = (TRatio - 1.0);
+                pParam->BSIM4v5ku0temp = pParam->BSIM4v5ku0 * (1.0 + ${::TECH($::type,$::corner,$::section,tku0)} *T0) + DELTA;
+                
+                double Inv_saref = 1.0/(${::TECH($::type,$::corner,$::section,saref)} + 0.5*Ldrn);
+                double Inv_sbref = 1.0/(${::TECH($::type,$::corner,$::section,sbref)} + 0.5*Ldrn);
+                pParam->BSIM4v5inv_od_ref = Inv_saref + Inv_sbref;
+                pParam->BSIM4v5rho_ref = ${::TECH($::type,$::corner,$::section,ku0)} / pParam->BSIM4v5ku0temp * pParam->BSIM4v5inv_od_ref;
+                
+                /*  stress effect */
+                if( (here->BSIM4v5sa > 0.0) && (here->BSIM4v5sb > 0.0) && 
+                ((here->BSIM4v5nf == 1.0) || ((here->BSIM4v5nf > 1.0) && (here->BSIM4v5sd > 0.0))) )
+                {	double  Inv_sa = 0;
+                    double Inv_sb = 0;
+                    
+                    double kvsat = ${::TECH($::type,$::corner,$::section,kvsat)};
+                    if (${::TECH($::type,$::corner,$::section,kvsat)} < -1.0 )
+                    {   fprintf(stderr, "Warning: KVSAT = %g is too small; -1.0 is used.\n",${::TECH($::type,$::corner,$::section,kvsat)});
+                        kvsat = -1.0;
+                    }
+                    if (${::TECH($::type,$::corner,$::section,kvsat)} > 1.0)
+                    {   fprintf(stderr, "Warning: KVSAT = %g is too big; 1.0 is used.\n",${::TECH($::type,$::corner,$::section,kvsat)});
+                        kvsat = 1.0;
+                    }
+                    
+                    for(i = 0; i < here->BSIM4v5nf; i++){
+                        T0 = 1.0 / here->BSIM4v5nf / (here->BSIM4v5sa + 0.5*Ldrn + i * (here->BSIM4v5sd +Ldrn));
+                        T1 = 1.0 / here->BSIM4v5nf / (here->BSIM4v5sb + 0.5*Ldrn + i * (here->BSIM4v5sd +Ldrn));
+                        Inv_sa += T0;
+                        Inv_sb += T1;
+                    }
+                    double Inv_ODeff = Inv_sa + Inv_sb; 
+                    double rho = ${::TECH($::type,$::corner,$::section,ku0)} / pParam->BSIM4v5ku0temp * Inv_ODeff;
+                    T0 = (1.0 + rho)/(1.0 + pParam->BSIM4v5rho_ref);
+                    here->BSIM4v5u0temp = pParam->BSIM4v5u0temp * T0;
+                    
+                    T1 = (1.0 + kvsat * rho)/(1.0 + kvsat * pParam->BSIM4v5rho_ref);
+                    here->BSIM4v5vsattemp = pParam->BSIM4v5vsattemp * T1;
+                    
+                    double OD_offset = Inv_ODeff - pParam->BSIM4v5inv_od_ref;
+                    double dvth0_lod = ${::TECH($::type,$::corner,$::section,kvth0)} / pParam->BSIM4v5kvth0 * OD_offset;
+                    dk2_lod = ${::TECH($::type,$::corner,$::section,stk2)} / pow(pParam->BSIM4v5kvth0, ${::TECH($::type,$::corner,$::section,lodk2)}) *
+                    OD_offset;
+                    deta0_lod = ${::TECH($::type,$::corner,$::section,steta0)} / pow(pParam->BSIM4v5kvth0, ${::TECH($::type,$::corner,$::section,lodeta0)}) *
+                    OD_offset;
+                    here->BSIM4v5vth0 = pParam->BSIM4v5vth0 + dvth0_lod;
+                    
+                    here->BSIM4v5eta0 = pParam->BSIM4v5eta0 + deta0_lod;
+                    here->BSIM4v5k2 = pParam->BSIM4v5k2 + dk2_lod;
+                } else {
+                    here->BSIM4v5u0temp = pParam->BSIM4v5u0temp;
+                    here->BSIM4v5vth0 = pParam->BSIM4v5vth0;
+                    here->BSIM4v5vsattemp = pParam->BSIM4v5vsattemp;
+                    here->BSIM4v5eta0 = pParam->BSIM4v5eta0;
+                    here->BSIM4v5k2 = pParam->BSIM4v5k2;
+                }
+                
+                /*  Well Proximity Effect  */
+                if (${::TECH($::type,$::corner,$::section,wpemod)})   
+                { if( (!here->BSIM4v5scaGiven) && (!here->BSIM4v5scbGiven) && (!here->BSIM4v5sccGiven) )
+                    {   if((here->BSIM4v5scGiven) && (here->BSIM4v5sc > 0.0) )
+                        {   T1 = here->BSIM4v5sc + Wdrn;
+                            T2 = 1.0 / ${::TECH($::type,$::corner,$::section,scref)};
+                            here->BSIM4v5sca = ${::TECH($::type,$::corner,$::section,scref)} * ${::TECH($::type,$::corner,$::section,scref)} 
+                            / (here->BSIM4v5sc * T1);		
+                            here->BSIM4v5scb = ( (0.1 * here->BSIM4v5sc + 0.01 * ${::TECH($::type,$::corner,$::section,scref)}) 
+                            * exp(-10.0 * here->BSIM4v5sc * T2)  
+                            - (0.1 * T1 + 0.01 * ${::TECH($::type,$::corner,$::section,scref)}) 
+                            * exp(-10.0 * T1 * T2) ) / Wdrn;
+                            here->BSIM4v5scc = ( (0.05 * here->BSIM4v5sc + 0.0025 * ${::TECH($::type,$::corner,$::section,scref)})
+                            * exp(-20.0 * here->BSIM4v5sc * T2)  
+                            - (0.05 * T1 + 0.0025 * ${::TECH($::type,$::corner,$::section,scref)}) 
+                            * exp(-20.0 * T1 * T2) ) / Wdrn;
+                        } else { 
+                            //fprintf(stderr, "Warning: No WPE as none of SCA, SCB, SCC, SC is given and/or SC not positive.\n");
+                        }
+                    }
+                    double sceff = here->BSIM4v5sca + ${::TECH($::type,$::corner,$::section,web)} * here->BSIM4v5scb 
+                    + ${::TECH($::type,$::corner,$::section,wec)} * here->BSIM4v5scc;
+                    here->BSIM4v5vth0 += pParam->BSIM4v5kvth0we * sceff;
+                    here->BSIM4v5k2 +=  pParam->BSIM4v5k2we * sceff;
+                    T3 =  1.0 + pParam->BSIM4v5ku0we * sceff;
+                    if (T3 <= 0.0) 
+                    { 	
+                        fprintf(stderr, "Warning: ku0we = %g is negatively too high. Negative mobility! \n", T3);
+                        T3 = 0.0;
+                    }
+                    here->BSIM4v5u0temp *= T3; 
+                }
+                
+                /* adding delvto  */
+                here->BSIM4v5vth0 += here->BSIM4v5delvto;
+                here->BSIM4v5vfb = pParam->BSIM4v5vfb + ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5delvto;
+                
+                /* Instance variables calculation  */ 
+                T3 = ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5vth0
+                - here->BSIM4v5vfb - pParam->BSIM4v5phi;
+                T4 = T3 + T3;
+                T5 = 2.5 * T3;
+                here->BSIM4v5vtfbphi1 = (${::TECH($::type,$::corner,$::section,type)} == NMOS) ? T4 : T5;
+                if (here->BSIM4v5vtfbphi1 < 0.0)
+                here->BSIM4v5vtfbphi1 = 0.0;
+                
+                here->BSIM4v5vtfbphi2 = 4.0 * T3;
+                if (here->BSIM4v5vtfbphi2 < 0.0)
+                here->BSIM4v5vtfbphi2 = 0.0;
+                
+                if (here->BSIM4v5k2 < 0.0)
+                {   T0 = 0.5 * pParam->BSIM4v5k1 / here->BSIM4v5k2;
+                    here->BSIM4v5vbsc = 0.9 * (pParam->BSIM4v5phi - T0 * T0);
+                    if (here->BSIM4v5vbsc > -3.0)
+                    here->BSIM4v5vbsc = -3.0;
+                    else if (here->BSIM4v5vbsc < -30.0)
+                    here->BSIM4v5vbsc = -30.0;
+                }
+                else
+                here->BSIM4v5vbsc = -30.0;
+                if (here->BSIM4v5vbsc > pParam->BSIM4v5vbm)
+                here->BSIM4v5vbsc = pParam->BSIM4v5vbm;
+                here->BSIM4v5k2ox = here->BSIM4v5k2 * ${::TECH($::type,$::corner,$::section,toxe)}
+                / ${::TECH($::type,$::corner,$::section,toxm)};
+                
+                here->BSIM4v5vfbzb = pParam->BSIM4v5vfbzbfactor 
+                +  ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5vth0 ;
+                
+                here->BSIM4v5cgso = pParam->BSIM4v5cgso;
+                here->BSIM4v5cgdo = pParam->BSIM4v5cgdo;
+                double lnl = log(pParam->BSIM4v5leff * 1.0e6);
+                double lnw = log(pParam->BSIM4v5weff * 1.0e6);
+                double lnnf = log(here->BSIM4v5nf);
+                
+                bodymode = 5;
+                if( ( !${::TECH($::type,$::corner,$::section,rbps0Given)}) || 
+                ( !${::TECH($::type,$::corner,$::section,rbpd0Given)}) )
+                bodymode = 1;
+                else 
+                if( (!${::TECH($::type,$::corner,$::section,rbsbx0Given)} && !${::TECH($::type,$::corner,$::section,rbsby0Given)}) ||
+                (!${::TECH($::type,$::corner,$::section,rbdbx0Given)} && !${::TECH($::type,$::corner,$::section,rbdby0Given)}) )
+                bodymode = 3;
+                
+                if(here->BSIM4v5rbodyMod == 2)
+                {
+                    if (bodymode == 5)
+                    { 
+                        double rbsbx =  exp( log(${::TECH($::type,$::corner,$::section,rbsbx0)}) + ${::TECH($::type,$::corner,$::section,rbsdbxl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbsdbxw)} * lnw + ${::TECH($::type,$::corner,$::section,rbsdbxnf)} * lnnf );
+                        double rbsby =  exp( log(${::TECH($::type,$::corner,$::section,rbsby0)}) + ${::TECH($::type,$::corner,$::section,rbsdbyl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbsdbyw)} * lnw + ${::TECH($::type,$::corner,$::section,rbsdbynf)} * lnnf );
+                        here->BSIM4v5rbsb = rbsbx * rbsby / (rbsbx + rbsby);
+                        
+                        
+                        double rbdbx =  exp( log(${::TECH($::type,$::corner,$::section,rbdbx0)}) + ${::TECH($::type,$::corner,$::section,rbsdbxl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbsdbxw)} * lnw + ${::TECH($::type,$::corner,$::section,rbsdbxnf)} * lnnf );
+                        double rbdby =  exp( log(${::TECH($::type,$::corner,$::section,rbdby0)}) + ${::TECH($::type,$::corner,$::section,rbsdbyl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbsdbyw)} * lnw + ${::TECH($::type,$::corner,$::section,rbsdbynf)} * lnnf );
+                        here->BSIM4v5rbdb = rbdbx * rbdby / (rbdbx + rbdby);
+                    }
+                    
+                    if ((bodymode == 3)|| (bodymode == 5)) 
+                    {
+                        here->BSIM4v5rbps = exp( log(${::TECH($::type,$::corner,$::section,rbps0)}) + ${::TECH($::type,$::corner,$::section,rbpsl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbpsw)} * lnw + ${::TECH($::type,$::corner,$::section,rbpsnf)} * lnnf );
+                        here->BSIM4v5rbpd = exp( log(${::TECH($::type,$::corner,$::section,rbpd0)}) + ${::TECH($::type,$::corner,$::section,rbpdl)} * lnl +  
+                        ${::TECH($::type,$::corner,$::section,rbpdw)} * lnw + ${::TECH($::type,$::corner,$::section,rbpdnf)} * lnnf );
+                    }
+                    
+                    double rbpbx =  exp( log(${::TECH($::type,$::corner,$::section,rbpbx0)}) + ${::TECH($::type,$::corner,$::section,rbpbxl)} * lnl +  
+                    ${::TECH($::type,$::corner,$::section,rbpbxw)} * lnw + ${::TECH($::type,$::corner,$::section,rbpbxnf)} * lnnf );
+                    double rbpby =  exp( log(${::TECH($::type,$::corner,$::section,rbpby0)}) + ${::TECH($::type,$::corner,$::section,rbpbyl)} * lnl +  
+                    ${::TECH($::type,$::corner,$::section,rbpbyw)} * lnw + ${::TECH($::type,$::corner,$::section,rbpbynf)} * lnnf );
+                    here->BSIM4v5rbpb = rbpbx*rbpby/(rbpbx + rbpby);
+                }
+                
+                
+                if ((here->BSIM4v5rbodyMod == 1 ) || ((here->BSIM4v5rbodyMod == 2 ) && (bodymode == 5)) )
+                {   if (here->BSIM4v5rbdb < 1.0e-3)
+                    here->BSIM4v5grbdb = 1.0e3; /* in mho */
+                    else
+                    here->BSIM4v5grbdb = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbdb;
+                    if (here->BSIM4v5rbpb < 1.0e-3)
+                    here->BSIM4v5grbpb = 1.0e3;
+                    else
+                    here->BSIM4v5grbpb = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbpb;
+                    if (here->BSIM4v5rbps < 1.0e-3)
+                    here->BSIM4v5grbps = 1.0e3;
+                    else
+                    here->BSIM4v5grbps = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbps;
+                    if (here->BSIM4v5rbsb < 1.0e-3)
+                    here->BSIM4v5grbsb = 1.0e3;
+                    else
+                    here->BSIM4v5grbsb = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbsb;
+                    if (here->BSIM4v5rbpd < 1.0e-3)
+                    here->BSIM4v5grbpd = 1.0e3;
+                    else
+                    here->BSIM4v5grbpd = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbpd;
+                    
+                }
+                
+                if((here->BSIM4v5rbodyMod == 2) && (bodymode == 3)) 
+                {   
+                    here->BSIM4v5grbdb = here->BSIM4v5grbsb = ${::TECH($::type,$::corner,$::section,gbmin)};
+                    if (here->BSIM4v5rbpb < 1.0e-3)
+                    here->BSIM4v5grbpb = 1.0e3;
+                    else
+                    here->BSIM4v5grbpb = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbpb;
+                    if (here->BSIM4v5rbps < 1.0e-3)
+                    here->BSIM4v5grbps = 1.0e3;
+                    else
+                    here->BSIM4v5grbps = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbps;
+                    if (here->BSIM4v5rbpd < 1.0e-3)
+                    here->BSIM4v5grbpd = 1.0e3;
+                    else
+                    here->BSIM4v5grbpd = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbpd;
+                }
+                
+                if((here->BSIM4v5rbodyMod == 2) && (bodymode == 1)) 
+                {   
+                    here->BSIM4v5grbdb = here->BSIM4v5grbsb = ${::TECH($::type,$::corner,$::section,gbmin)};
+                    here->BSIM4v5grbps = here->BSIM4v5grbpd = 1.0e3;
+                    if (here->BSIM4v5rbpb < 1.0e-3)
+                    here->BSIM4v5grbpb = 1.0e3;
+                    else
+                    here->BSIM4v5grbpb = ${::TECH($::type,$::corner,$::section,gbmin)} + 1.0 / here->BSIM4v5rbpb;
+                }
+                
+                
+                /* 
+                * Process geomertry dependent parasitics
+                */
+                
+                here->BSIM4v5grgeltd = ${::TECH($::type,$::corner,$::section,rshg)} * (here->BSIM4v5xgw
+                + pParam->BSIM4v5weffCJ / 3.0 / here->BSIM4v5ngcon) /
+                (here->BSIM4v5ngcon * here->BSIM4v5nf *
+                (Lnew - ${::TECH($::type,$::corner,$::section,xgl)}));
+                if (here->BSIM4v5grgeltd > 0.0)
+                here->BSIM4v5grgeltd = 1.0 / here->BSIM4v5grgeltd;
+                else
+                {   here->BSIM4v5grgeltd = 1.0e3; /* mho */
+                    if (here->BSIM4v5rgateMod != 0)
+                    printf("Warning: The gate conductance reset to 1.0e3 mho.\n");
+                }
+                
+                DMCGeff = ${::TECH($::type,$::corner,$::section,dmcg)} - ${::TECH($::type,$::corner,$::section,dmcgt)};
+                DMCIeff = ${::TECH($::type,$::corner,$::section,dmci)};
+                DMDGeff = ${::TECH($::type,$::corner,$::section,dmdg)} - ${::TECH($::type,$::corner,$::section,dmcgt)};
+
+                if (here->BSIM4v5sourcePerimeterGiven)
+                {   if (${::TECH($::type,$::corner,$::section,perMod)} == 0)
+                    here->BSIM4v5Pseff = here->BSIM4v5sourcePerimeter;
+                    else
+                    here->BSIM4v5Pseff = here->BSIM4v5sourcePerimeter 
+                    - pParam->BSIM4v5weffCJ * here->BSIM4v5nf;
+                }
+                else
+                BSIM4v5PAeffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod, here->BSIM4v5min, 
+                pParam->BSIM4v5weffCJ, DMCGeff, DMCIeff, DMDGeff,
+                &(here->BSIM4v5Pseff), &dumPd, &dumAs, &dumAd);
+                
+                if (here->BSIM4v5drainPerimeterGiven)
+                {   if (${::TECH($::type,$::corner,$::section,perMod)} == 0)
+                    here->BSIM4v5Pdeff = here->BSIM4v5drainPerimeter;
+                    else
+                    here->BSIM4v5Pdeff = here->BSIM4v5drainPerimeter 
+                    - pParam->BSIM4v5weffCJ * here->BSIM4v5nf;
+                }
+                else
+                BSIM4v5PAeffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod, here->BSIM4v5min,
+                pParam->BSIM4v5weffCJ, DMCGeff, DMCIeff, DMDGeff,
+                &dumPs, &(here->BSIM4v5Pdeff), &dumAs, &dumAd);
+                
+                if (here->BSIM4v5sourceAreaGiven)
+                here->BSIM4v5Aseff = here->BSIM4v5sourceArea;
+                else
+                BSIM4v5PAeffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod, here->BSIM4v5min,
+                pParam->BSIM4v5weffCJ, DMCGeff, DMCIeff, DMDGeff,
+                &dumPs, &dumPd, &(here->BSIM4v5Aseff), &dumAd);
+                
+                if (here->BSIM4v5drainAreaGiven)
+                here->BSIM4v5Adeff = here->BSIM4v5drainArea;
+                else
+                BSIM4v5PAeffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod, here->BSIM4v5min,
+                pParam->BSIM4v5weffCJ, DMCGeff, DMCIeff, DMDGeff,
+                &dumPs, &dumPd, &dumAs, &(here->BSIM4v5Adeff));
+                
+                /* Processing S/D resistance and conductance below */
+                if(here->BSIM4v5sNodePrime != here->BSIM4v5sNode)
+                {
+                    here->BSIM4v5sourceConductance = 0.0;
+                    if(here->BSIM4v5sourceSquaresGiven)
+                    {
+                        here->BSIM4v5sourceConductance = ${::TECH($::type,$::corner,$::section,sheetResistance)}
+                        * here->BSIM4v5sourceSquares;
+                    } else if (here->BSIM4v5rgeoMod > 0)
+                    {
+                        BSIM4v5RdseffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod,
+                        here->BSIM4v5rgeoMod, here->BSIM4v5min,
+                        pParam->BSIM4v5weffCJ, ${::TECH($::type,$::corner,$::section,sheetResistance)},
+                        DMCGeff, DMCIeff, DMDGeff, 1, &(here->BSIM4v5sourceConductance));
+                    } else
+                    {
+                        here->BSIM4v5sourceConductance = 0.0;
+                    }
+                    
+                    if (here->BSIM4v5sourceConductance > 0.0)
+                    here->BSIM4v5sourceConductance = 1.0
+                    / here->BSIM4v5sourceConductance;
+                    else
+                    {
+                        here->BSIM4v5sourceConductance = 1.0e3; /* mho */
+                        printf ("Warning: Source conductance reset to 1.0e3 mho.\n");
+                    }
+                } else
+                {
+                    here->BSIM4v5sourceConductance = 0.0;
+                }
+                
+                if(here->BSIM4v5dNodePrime != here->BSIM4v5dNode)
+                {
+                    here->BSIM4v5drainConductance = 0.0;
+                    if(here->BSIM4v5drainSquaresGiven)
+                    {
+                        here->BSIM4v5drainConductance = ${::TECH($::type,$::corner,$::section,sheetResistance)}
+                        * here->BSIM4v5drainSquares;
+                    } else if (here->BSIM4v5rgeoMod > 0)
+                    {
+                        BSIM4v5RdseffGeo(here->BSIM4v5nf, here->BSIM4v5geoMod,
+                        here->BSIM4v5rgeoMod, here->BSIM4v5min,
+                        pParam->BSIM4v5weffCJ, ${::TECH($::type,$::corner,$::section,sheetResistance)},
+                        DMCGeff, DMCIeff, DMDGeff, 0, &(here->BSIM4v5drainConductance));
+                    } else
+                    {
+                        here->BSIM4v5drainConductance = 0.0;
+                    }
+                    
+                    if (here->BSIM4v5drainConductance > 0.0)
+                    here->BSIM4v5drainConductance = 1.0
+                    / here->BSIM4v5drainConductance;
+                    else
+                    {
+                        here->BSIM4v5drainConductance = 1.0e3; /* mho */
+                        printf ("Warning: Drain conductance reset to 1.0e3 mho.\n");
+                    }
+                } else
+                {
+                    here->BSIM4v5drainConductance = 0.0;
+                }
+                
+                /* End of Rsd processing */
+                
+                
+                Nvtms = ${::TECH($::type,$::corner,$::section,vtm)} * ${::TECH($::type,$::corner,$::section,SjctEmissionCoeff)};
+                if ((here->BSIM4v5Aseff <= 0.0) && (here->BSIM4v5Pseff <= 0.0))
+                {   SourceSatCurrent = 1.0e-14;
+                }
+                else
+                {   SourceSatCurrent = here->BSIM4v5Aseff * ${::TECH($::type,$::corner,$::section,SjctTempSatCurDensity)}
+                    + here->BSIM4v5Pseff * ${::TECH($::type,$::corner,$::section,SjctSidewallTempSatCurDensity)}
+                    + pParam->BSIM4v5weffCJ * here->BSIM4v5nf
+                    * ${::TECH($::type,$::corner,$::section,SjctGateSidewallTempSatCurDensity)};
+                }
+                if (SourceSatCurrent > 0.0)
+                {   switch(${::TECH($::type,$::corner,$::section,dioMod)})
+                    {   case 0:
+                        if ((${::TECH($::type,$::corner,$::section,bvs)} / Nvtms) > EXP_THRESHOLD)
+                        here->BSIM4v5XExpBVS = ${::TECH($::type,$::corner,$::section,xjbvs)} * MIN_EXP;
+                        else
+                        here->BSIM4v5XExpBVS = ${::TECH($::type,$::corner,$::section,xjbvs)} * exp(-${::TECH($::type,$::corner,$::section,bvs)} / Nvtms);	
+                        break;
+                        case 1:
+                        BSIM4v5DioIjthVjmEval_Gamma(Nvtms, ${::TECH($::type,$::corner,$::section,ijthsfwd)}, SourceSatCurrent, 
+                        0.0, &(here->BSIM4v5vjsmFwd));
+                        here->BSIM4v5IVjsmFwd = SourceSatCurrent * exp(here->BSIM4v5vjsmFwd / Nvtms);
+                        break;
+                        case 2:
+                        if ((${::TECH($::type,$::corner,$::section,bvs)} / Nvtms) > EXP_THRESHOLD)
+                        {   here->BSIM4v5XExpBVS = ${::TECH($::type,$::corner,$::section,xjbvs)} * MIN_EXP;
+                            tmp = MIN_EXP;
+                        }
+                        else
+                        {   here->BSIM4v5XExpBVS = exp(-${::TECH($::type,$::corner,$::section,bvs)} / Nvtms);
+                            tmp = here->BSIM4v5XExpBVS;
+                            here->BSIM4v5XExpBVS *= ${::TECH($::type,$::corner,$::section,xjbvs)};	
+                        }
+                        
+                        BSIM4v5DioIjthVjmEval_Gamma(Nvtms, ${::TECH($::type,$::corner,$::section,ijthsfwd)}, SourceSatCurrent, 
+                        here->BSIM4v5XExpBVS, &(here->BSIM4v5vjsmFwd));
+                        T0 = exp(here->BSIM4v5vjsmFwd / Nvtms);
+                        here->BSIM4v5IVjsmFwd = SourceSatCurrent * (T0 - here->BSIM4v5XExpBVS / T0
+                        + here->BSIM4v5XExpBVS - 1.0);
+                        here->BSIM4v5SslpFwd = SourceSatCurrent
+                        * (T0 + here->BSIM4v5XExpBVS / T0) / Nvtms;
+                        
+                        T2 = ${::TECH($::type,$::corner,$::section,ijthsrev)} / SourceSatCurrent;
+                        if (T2 < 1.0)
+                        {   T2 = 10.0;
+                            fprintf(stderr, "Warning: ijthsrev too small and set to 10 times IsbSat.\n");
+                        } 
+                        here->BSIM4v5vjsmRev = -${::TECH($::type,$::corner,$::section,bvs)}
+                        - Nvtms * log((T2 - 1.0) / ${::TECH($::type,$::corner,$::section,xjbvs)});
+                        T1 = ${::TECH($::type,$::corner,$::section,xjbvs)} * exp(-(${::TECH($::type,$::corner,$::section,bvs)}
+                        + here->BSIM4v5vjsmRev) / Nvtms);
+                        here->BSIM4v5IVjsmRev = SourceSatCurrent * (1.0 + T1);
+                        here->BSIM4v5SslpRev = -SourceSatCurrent * T1 / Nvtms;
+                        break;
+                        default:
+                        printf("Specified dioMod = %d not matched\n", ${::TECH($::type,$::corner,$::section,dioMod)});
+                    }
+                }
+                
+                Nvtmd = ${::TECH($::type,$::corner,$::section,vtm)} * ${::TECH($::type,$::corner,$::section,DjctEmissionCoeff)};
+                if ((here->BSIM4v5Adeff <= 0.0) && (here->BSIM4v5Pdeff <= 0.0))
+                {   DrainSatCurrent = 1.0e-14;
+                }
+                else
+                {   DrainSatCurrent = here->BSIM4v5Adeff * ${::TECH($::type,$::corner,$::section,DjctTempSatCurDensity)}
+                    + here->BSIM4v5Pdeff * ${::TECH($::type,$::corner,$::section,DjctSidewallTempSatCurDensity)}
+                    + pParam->BSIM4v5weffCJ * here->BSIM4v5nf
+                    * ${::TECH($::type,$::corner,$::section,DjctGateSidewallTempSatCurDensity)};
+                }
+                if (DrainSatCurrent > 0.0)
+                {   switch(${::TECH($::type,$::corner,$::section,dioMod)})
+                    {   case 0:
+                        if ((${::TECH($::type,$::corner,$::section,bvd)} / Nvtmd) > EXP_THRESHOLD)
+                        here->BSIM4v5XExpBVD = ${::TECH($::type,$::corner,$::section,xjbvd)} * MIN_EXP;
+                        else
+                        here->BSIM4v5XExpBVD = ${::TECH($::type,$::corner,$::section,xjbvd)} * exp(-${::TECH($::type,$::corner,$::section,bvd)} / Nvtmd);
+                        break;
+                        case 1:
+                        BSIM4v5DioIjthVjmEval_Gamma(Nvtmd, ${::TECH($::type,$::corner,$::section,ijthdfwd)}, DrainSatCurrent,
+                        0.0, &(here->BSIM4v5vjdmFwd));
+                        here->BSIM4v5IVjdmFwd = DrainSatCurrent * exp(here->BSIM4v5vjdmFwd / Nvtmd);
+                        break;
+                        case 2:
+                        if ((${::TECH($::type,$::corner,$::section,bvd)} / Nvtmd) > EXP_THRESHOLD)
+                        {   here->BSIM4v5XExpBVD = ${::TECH($::type,$::corner,$::section,xjbvd)} * MIN_EXP;
+                            tmp = MIN_EXP;
+                        }
+                        else
+                        {   here->BSIM4v5XExpBVD = exp(-${::TECH($::type,$::corner,$::section,bvd)} / Nvtmd);
+                            tmp = here->BSIM4v5XExpBVD;
+                            here->BSIM4v5XExpBVD *= ${::TECH($::type,$::corner,$::section,xjbvd)};
+                        }
+                        
+                        BSIM4v5DioIjthVjmEval_Gamma(Nvtmd, ${::TECH($::type,$::corner,$::section,ijthdfwd)}, DrainSatCurrent,
+                        here->BSIM4v5XExpBVD, &(here->BSIM4v5vjdmFwd));
+                        T0 = exp(here->BSIM4v5vjdmFwd / Nvtmd);
+                        here->BSIM4v5IVjdmFwd = DrainSatCurrent * (T0 - here->BSIM4v5XExpBVD / T0
+                        + here->BSIM4v5XExpBVD - 1.0);
+                        here->BSIM4v5DslpFwd = DrainSatCurrent
+                        * (T0 + here->BSIM4v5XExpBVD / T0) / Nvtmd;
+                        
+                        T2 = ${::TECH($::type,$::corner,$::section,ijthdrev)} / DrainSatCurrent;
+                        if (T2 < 1.0) 
+                        {   T2 = 10.0;
+                            fprintf(stderr, "Warning: ijthdrev too small and set to 10 times IdbSat.\n");
+                        }
+                        here->BSIM4v5vjdmRev = -${::TECH($::type,$::corner,$::section,bvd)}
+                        - Nvtmd * log((T2 - 1.0) / ${::TECH($::type,$::corner,$::section,xjbvd)}); /* bugfix */
+                        T1 = ${::TECH($::type,$::corner,$::section,xjbvd)} * exp(-(${::TECH($::type,$::corner,$::section,bvd)}
+                        + here->BSIM4v5vjdmRev) / Nvtmd);
+                        here->BSIM4v5IVjdmRev = DrainSatCurrent * (1.0 + T1);
+                        here->BSIM4v5DslpRev = -DrainSatCurrent * T1 / Nvtmd;
+                        break;
+                        default:
+                        printf("Specified dioMod = %d not matched\n", ${::TECH($::type,$::corner,$::section,dioMod)});
+                    }
+                }
+                
+                /* GEDL current reverse bias */
+                T0 = (TRatio - 1.0);
+                T7 = Eg0 / ${::TECH($::type,$::corner,$::section,vtm)} * T0;
+                T9 = ${::TECH($::type,$::corner,$::section,xtss)} * T7;
+                DEXP(T9, T1);
+                T9 = ${::TECH($::type,$::corner,$::section,xtsd)} * T7;
+                DEXP(T9, T2);
+                T9 = ${::TECH($::type,$::corner,$::section,xtssws)} * T7;
+                DEXP(T9, T3);
+                T9 = ${::TECH($::type,$::corner,$::section,xtsswd)} * T7;
+                DEXP(T9, T4);
+                T9 = ${::TECH($::type,$::corner,$::section,xtsswgs)} * T7;
+                DEXP(T9, T5);
+                T9 = ${::TECH($::type,$::corner,$::section,xtsswgd)} * T7;
+                DEXP(T9, T6);
+                
+                T10 = pParam->BSIM4v5weffCJ * here->BSIM4v5nf;
+                here->BSIM4v5SjctTempRevSatCur = T1 * here->BSIM4v5Aseff * ${::TECH($::type,$::corner,$::section,jtss)};
+                here->BSIM4v5DjctTempRevSatCur = T2 * here->BSIM4v5Adeff * ${::TECH($::type,$::corner,$::section,jtsd)};
+                here->BSIM4v5SswTempRevSatCur = T3 * here->BSIM4v5Pseff * ${::TECH($::type,$::corner,$::section,jtssws)};
+                here->BSIM4v5DswTempRevSatCur = T4 * here->BSIM4v5Pdeff * ${::TECH($::type,$::corner,$::section,jtsswd)};
+                here->BSIM4v5SswgTempRevSatCur = T5 * T10 * ${::TECH($::type,$::corner,$::section,jtsswgs)};
+                here->BSIM4v5DswgTempRevSatCur = T6 * T10 * ${::TECH($::type,$::corner,$::section,jtsswgd)};
+                
+                if ((Mode & MODEINITSMSIG))
+                {   vds = *(cktState0 + here->BSIM4v5vds);
+                    vgs = *(cktState0 + here->BSIM4v5vgs);
+                    vbs = *(cktState0 + here->BSIM4v5vbs);
+                    vges = *(cktState0 + here->BSIM4v5vges);
+                    vgms = *(cktState0 + here->BSIM4v5vgms);
+                    vdbs = *(cktState0 + here->BSIM4v5vdbs);
+                    vsbs = *(cktState0 + here->BSIM4v5vsbs);
+                    vses = *(cktState0 + here->BSIM4v5vses);
+                    vdes = *(cktState0 + here->BSIM4v5vdes);
+                    
+                    qdef = *(cktState0 + here->BSIM4v5qdef);
+                }
+                else if ((Mode & MODEINITTRAN))
+                {   vds = *(cktState1 + here->BSIM4v5vds);
+                    vgs = *(cktState1 + here->BSIM4v5vgs);
+                    vbs = *(cktState1 + here->BSIM4v5vbs);
+                    vges = *(cktState1 + here->BSIM4v5vges);
+                    vgms = *(cktState1 + here->BSIM4v5vgms);
+                    vdbs = *(cktState1 + here->BSIM4v5vdbs);
+                    vsbs = *(cktState1 + here->BSIM4v5vsbs);
+                    vses = *(cktState1 + here->BSIM4v5vses);
+                    vdes = *(cktState1 + here->BSIM4v5vdes);
+                    
+                    qdef = *(cktState1 + here->BSIM4v5qdef);
+                }
+                else if ((Mode & MODEINITJCT) && !here->BSIM4v5off)
                 {   vds = ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5icVDS;
                     vgs = vges = vgms = ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5icVGS;
                     vbs = vdbs = vsbs = ${::TECH($::type,$::corner,$::section,type)} * here->BSIM4v5icVBS;
@@ -314,8 +1848,8 @@
                     qdef = 0.0;
                     
                     if ((vds == 0.0) && (vgs == 0.0) && (vbs == 0.0) &&
-                    ((ckt->CKTmode & (MODETRAN | MODEAC|MODEDCOP |
-                    MODEDCTRANCURVE)) || (!(ckt->CKTmode & MODEUIC))))
+                    ((Mode & (MODETRAN | MODEAC|MODEDCOP |
+                    MODEDCTRANCURVE)) || (!(Mode & MODEUIC))))
                     {   vds = 0.1;
                         vdes = 0.11;
                         vses = -0.01;
@@ -324,106 +1858,106 @@
                         vbs = vdbs = vsbs = 0.0;
                     }
                 }
-                else if ((ckt->CKTmode & (MODEINITJCT | MODEINITFIX)) && 
+                else if ((Mode & (MODEINITJCT | MODEINITFIX)) && 
                 (here->BSIM4v5off)) 
-                {   vds = vgs = vbs = vges = vgms = 0.0;
+                {   
+                    vds = vgs = vbs = vges = vgms = 0.0;
                     vdbs = vsbs = vdes = vses = qdef = 0.0;
                 }
                 else
                 {
                     #ifndef PREDICTOR
-                    if ((ckt->CKTmode & MODEINITPRED))
-                    {   xfact = ckt->CKTdelta / ckt->CKTdeltaOld[1];
-                        *(ckt->CKTstate0 + here->BSIM4v5vds) = 
-                        *(ckt->CKTstate1 + here->BSIM4v5vds);
-                        vds = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vds))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vds)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vgs) = 
-                        *(ckt->CKTstate1 + here->BSIM4v5vgs);
-                        vgs = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vgs))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vgs)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vges) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vges);
-                        vges = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vges))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vges)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vgms) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vgms);
-                        vgms = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vgms))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vgms)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vbs) = 
-                        *(ckt->CKTstate1 + here->BSIM4v5vbs);
-                        vbs = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vbs))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vbs)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vbd) = 
-                        *(ckt->CKTstate0 + here->BSIM4v5vbs)
-                        - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                        *(ckt->CKTstate0 + here->BSIM4v5vdbs) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vdbs);
-                        vdbs = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vdbs))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vdbs)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vdbd) =
-                        *(ckt->CKTstate0 + here->BSIM4v5vdbs)
-                        - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                        *(ckt->CKTstate0 + here->BSIM4v5vsbs) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vsbs);
-                        vsbs = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vsbs))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vsbs)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vses) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vses);
-                        vses = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vses))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vses)));
-                        *(ckt->CKTstate0 + here->BSIM4v5vdes) =
-                        *(ckt->CKTstate1 + here->BSIM4v5vdes);
-                        vdes = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5vdes))
-                        - (xfact * (*(ckt->CKTstate2 + here->BSIM4v5vdes)));
+                    if ((Mode & MODEINITPRED))
+                    {   xfact = Delta / DeltaOld[1];
+                        *(cktState0 + here->BSIM4v5vds) = 
+                        *(cktState1 + here->BSIM4v5vds);
+                        vds = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vds))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vds)));
+                        *(cktState0 + here->BSIM4v5vgs) = 
+                        *(cktState1 + here->BSIM4v5vgs);
+                        vgs = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vgs))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vgs)));
+                        *(cktState0 + here->BSIM4v5vges) =
+                        *(cktState1 + here->BSIM4v5vges);
+                        vges = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vges))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vges)));
+                        *(cktState0 + here->BSIM4v5vgms) =
+                        *(cktState1 + here->BSIM4v5vgms);
+                        vgms = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vgms))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vgms)));
+                        *(cktState0 + here->BSIM4v5vbs) = 
+                        *(cktState1 + here->BSIM4v5vbs);
+                        vbs = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vbs))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vbs)));
+                        *(cktState0 + here->BSIM4v5vbd) = 
+                        *(cktState0 + here->BSIM4v5vbs)
+                        - *(cktState0 + here->BSIM4v5vds);
+                        *(cktState0 + here->BSIM4v5vdbs) =
+                        *(cktState1 + here->BSIM4v5vdbs);
+                        vdbs = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vdbs))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vdbs)));
+                        *(cktState0 + here->BSIM4v5vdbd) =
+                        *(cktState0 + here->BSIM4v5vdbs)
+                        - *(cktState0 + here->BSIM4v5vds);
+                        *(cktState0 + here->BSIM4v5vsbs) =
+                        *(cktState1 + here->BSIM4v5vsbs);
+                        vsbs = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vsbs))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vsbs)));
+                        *(cktState0 + here->BSIM4v5vses) =
+                        *(cktState1 + here->BSIM4v5vses);
+                        vses = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vses))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vses)));
+                        *(cktState0 + here->BSIM4v5vdes) =
+                        *(cktState1 + here->BSIM4v5vdes);
+                        vdes = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5vdes))
+                        - (xfact * (*(cktState2 + here->BSIM4v5vdes)));
                         
-                        *(ckt->CKTstate0 + here->BSIM4v5qdef) =
-                        *(ckt->CKTstate1 + here->BSIM4v5qdef);
-                        qdef = (1.0 + xfact)* (*(ckt->CKTstate1 + here->BSIM4v5qdef))
-                        -(xfact * (*(ckt->CKTstate2 + here->BSIM4v5qdef)));
+                        *(cktState0 + here->BSIM4v5qdef) =
+                        *(cktState1 + here->BSIM4v5qdef);
+                        qdef = (1.0 + xfact)* (*(cktState1 + here->BSIM4v5qdef))
+                        -(xfact * (*(cktState2 + here->BSIM4v5qdef)));
                     }
                     else
                     {
                         #endif /* PREDICTOR */
                         vds = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5dNodePrime)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5dNodePrime)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vgs = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5gNodePrime) 
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5gNodePrime) 
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vbs = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5bNodePrime)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5bNodePrime)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vges = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5gNodeExt)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5gNodeExt)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vgms = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5gNodeMid)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5gNodeMid)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vdbs = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5dbNode)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5dbNode)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vsbs = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5sbNode)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5sbNode)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vses = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5sNode)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5sNode)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         vdes = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5dNode)
-                        - *(ckt->CKTrhsOld + here->BSIM4v5sNodePrime));
+                        * (*(RHSOld + here->BSIM4v5dNode)
+                        - *(RHSOld + here->BSIM4v5sNodePrime));
                         qdef = ${::TECH($::type,$::corner,$::section,type)}
-                        * (*(ckt->CKTrhsOld + here->BSIM4v5qNode));
+                        * (*(RHSOld + here->BSIM4v5qNode));
                         #ifndef PREDICTOR
                     }
                     #endif /* PREDICTOR */
-                    
-                    vgdo = *(ckt->CKTstate0 + here->BSIM4v5vgs)
-                    - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                    vgedo = *(ckt->CKTstate0 + here->BSIM4v5vges)
-                    - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                    vgmdo = *(ckt->CKTstate0 + here->BSIM4v5vgms)
-                    - *(ckt->CKTstate0 + here->BSIM4v5vds);
+                    vgdo = *(cktState0 + here->BSIM4v5vgs)
+                    - *(cktState0 + here->BSIM4v5vds);
+                    vgedo = *(cktState0 + here->BSIM4v5vges)
+                    - *(cktState0 + here->BSIM4v5vds);
+                    vgmdo = *(cktState0 + here->BSIM4v5vgms)
+                    - *(cktState0 + here->BSIM4v5vds);
                     
                     vbd = vbs - vds;
                     vdbd = vdbs - vds;
@@ -431,24 +1965,24 @@
                     vged = vges - vds;
                     vgmd = vgms - vds;
                     
-                    delvbd = vbd - *(ckt->CKTstate0 + here->BSIM4v5vbd);
-                    delvdbd = vdbd - *(ckt->CKTstate0 + here->BSIM4v5vdbd);
+                    delvbd = vbd - *(cktState0 + here->BSIM4v5vbd);
+                    delvdbd = vdbd - *(cktState0 + here->BSIM4v5vdbd);
                     delvgd = vgd - vgdo;
                     delvged = vged - vgedo;
                     delvgmd = vgmd - vgmdo;
                     
-                    delvds = vds - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                    delvgs = vgs - *(ckt->CKTstate0 + here->BSIM4v5vgs);
-                    delvges = vges - *(ckt->CKTstate0 + here->BSIM4v5vges);
-                    delvgms = vgms - *(ckt->CKTstate0 + here->BSIM4v5vgms);
-                    delvbs = vbs - *(ckt->CKTstate0 + here->BSIM4v5vbs);
-                    delvdbs = vdbs - *(ckt->CKTstate0 + here->BSIM4v5vdbs);
-                    delvsbs = vsbs - *(ckt->CKTstate0 + here->BSIM4v5vsbs);
+                    delvds = vds - *(cktState0 + here->BSIM4v5vds);
+                    delvgs = vgs - *(cktState0 + here->BSIM4v5vgs);
+                    delvges = vges - *(cktState0 + here->BSIM4v5vges);
+                    delvgms = vgms - *(cktState0 + here->BSIM4v5vgms);
+                    delvbs = vbs - *(cktState0 + here->BSIM4v5vbs);
+                    delvdbs = vdbs - *(cktState0 + here->BSIM4v5vdbs);
+                    delvsbs = vsbs - *(cktState0 + here->BSIM4v5vsbs);
                     
-                    delvses = vses - (*(ckt->CKTstate0 + here->BSIM4v5vses));
-                    vdedo = *(ckt->CKTstate0 + here->BSIM4v5vdes)
-                    - *(ckt->CKTstate0 + here->BSIM4v5vds);
-                    delvdes = vdes - *(ckt->CKTstate0 + here->BSIM4v5vdes);
+                    delvses = vses - (*(cktState0 + here->BSIM4v5vses));
+                    vdedo = *(cktState0 + here->BSIM4v5vdes)
+                    - *(cktState0 + here->BSIM4v5vds);
+                    delvdes = vdes - *(cktState0 + here->BSIM4v5vdes);
                     delvded = vdes - vds - vdedo;
                     
                     delvbd_jct = (!here->BSIM4v5rbodyMod) ? delvbd : delvdbd;
@@ -506,7 +2040,7 @@
                         cgbhat = here->BSIM4v5Igb + here->BSIM4v5gIgbg * delvgd - here->BSIM4v5gIgbd
                         * delvds + here->BSIM4v5gIgbb * delvbd;
                     }
-                    Isestot = here->BSIM4v5gstot * (*(ckt->CKTstate0 + here->BSIM4v5vses));
+                    Isestot = here->BSIM4v5gstot * (*(cktState0 + here->BSIM4v5vses));
                     cseshat = Isestot + here->BSIM4v5gstot * delvses
                     + here->BSIM4v5gstotd * delvds + here->BSIM4v5gstotg * delvgs
                     + here->BSIM4v5gstotb * delvbs;
@@ -522,62 +2056,62 @@
                     * can't handle that all at once, so we split it into several
                     * successive IF's */
                     
-                    if ((!(ckt->CKTmode & MODEINITPRED)) && (ckt->CKTbypass))
-                    if ((fabs(delvds) < (ckt->CKTreltol * MAX(fabs(vds),
-                    fabs(*(ckt->CKTstate0 + here->BSIM4v5vds))) + ckt->CKTvoltTol)))
-                    if ((fabs(delvgs) < (ckt->CKTreltol * MAX(fabs(vgs),
-                    fabs(*(ckt->CKTstate0 + here->BSIM4v5vgs))) + ckt->CKTvoltTol)))
-                    if ((fabs(delvbs) < (ckt->CKTreltol * MAX(fabs(vbs),
-                    fabs(*(ckt->CKTstate0 + here->BSIM4v5vbs))) + ckt->CKTvoltTol)))
-                    if ((fabs(delvbd) < (ckt->CKTreltol * MAX(fabs(vbd),
-                    fabs(*(ckt->CKTstate0 + here->BSIM4v5vbd))) + ckt->CKTvoltTol)))
+                    if ((!(Mode & MODEINITPRED)) && (CKT_CKTbypass))
+                    if ((fabs(delvds) < (CKT_CKTreltol * MAX(fabs(vds),
+                    fabs(*(cktState0 + here->BSIM4v5vds))) + CKT_CKTvoltTol)))
+                    if ((fabs(delvgs) < (CKT_CKTreltol * MAX(fabs(vgs),
+                    fabs(*(cktState0 + here->BSIM4v5vgs))) + CKT_CKTvoltTol)))
+                    if ((fabs(delvbs) < (CKT_CKTreltol * MAX(fabs(vbs),
+                    fabs(*(cktState0 + here->BSIM4v5vbs))) + CKT_CKTvoltTol)))
+                    if ((fabs(delvbd) < (CKT_CKTreltol * MAX(fabs(vbd),
+                    fabs(*(cktState0 + here->BSIM4v5vbd))) + CKT_CKTvoltTol)))
                     if ((here->BSIM4v5rgateMod == 0) || (here->BSIM4v5rgateMod == 1) 
-                    || (fabs(delvges) < (ckt->CKTreltol * MAX(fabs(vges),
-                    fabs(*(ckt->CKTstate0 + here->BSIM4v5vges))) + ckt->CKTvoltTol)))
-                    if ((here->BSIM4v5rgateMod != 3) || (fabs(delvgms) < (ckt->CKTreltol
-                    * MAX(fabs(vgms), fabs(*(ckt->CKTstate0 + here->BSIM4v5vgms)))
-                    + ckt->CKTvoltTol)))
-                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvdbs) < (ckt->CKTreltol
-                    * MAX(fabs(vdbs), fabs(*(ckt->CKTstate0 + here->BSIM4v5vdbs)))
-                    + ckt->CKTvoltTol)))
-                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvdbd) < (ckt->CKTreltol
-                    * MAX(fabs(vdbd), fabs(*(ckt->CKTstate0 + here->BSIM4v5vdbd)))
-                    + ckt->CKTvoltTol)))
-                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvsbs) < (ckt->CKTreltol
-                    * MAX(fabs(vsbs), fabs(*(ckt->CKTstate0 + here->BSIM4v5vsbs)))
-                    + ckt->CKTvoltTol)))
-                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || (fabs(delvses) < (ckt->CKTreltol
-                    * MAX(fabs(vses), fabs(*(ckt->CKTstate0 + here->BSIM4v5vses)))
-                    + ckt->CKTvoltTol)))
-                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || (fabs(delvdes) < (ckt->CKTreltol
-                    * MAX(fabs(vdes), fabs(*(ckt->CKTstate0 + here->BSIM4v5vdes)))
-                    + ckt->CKTvoltTol)))
-                    if ((fabs(cdhat - Idtot) < ckt->CKTreltol
-                    * MAX(fabs(cdhat), fabs(Idtot)) + ckt->CKTabstol))
-                    if ((fabs(cbhat - Ibtot) < ckt->CKTreltol
-                    * MAX(fabs(cbhat), fabs(Ibtot)) + ckt->CKTabstol))
-                    if ((!${::TECH($::type,$::corner,$::section,igcMod)}) || ((fabs(cgshat - Igstot) < ckt->CKTreltol
-                    * MAX(fabs(cgshat), fabs(Igstot)) + ckt->CKTabstol)))
-                    if ((!${::TECH($::type,$::corner,$::section,igcMod)}) || ((fabs(cgdhat - Igdtot) < ckt->CKTreltol
-                    * MAX(fabs(cgdhat), fabs(Igdtot)) + ckt->CKTabstol)))
-                    if ((!${::TECH($::type,$::corner,$::section,igbMod)}) || ((fabs(cgbhat - Igbtot) < ckt->CKTreltol
-                    * MAX(fabs(cgbhat), fabs(Igbtot)) + ckt->CKTabstol)))
-                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || ((fabs(cseshat - Isestot) < ckt->CKTreltol
-                    * MAX(fabs(cseshat), fabs(Isestot)) + ckt->CKTabstol)))
-                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || ((fabs(cdedhat - Idedtot) < ckt->CKTreltol
-                    * MAX(fabs(cdedhat), fabs(Idedtot)) + ckt->CKTabstol)))
-                    {   vds = *(ckt->CKTstate0 + here->BSIM4v5vds);
-                        vgs = *(ckt->CKTstate0 + here->BSIM4v5vgs);
-                        vbs = *(ckt->CKTstate0 + here->BSIM4v5vbs);
-                        vges = *(ckt->CKTstate0 + here->BSIM4v5vges);
-                        vgms = *(ckt->CKTstate0 + here->BSIM4v5vgms);
+                    || (fabs(delvges) < (CKT_CKTreltol * MAX(fabs(vges),
+                    fabs(*(cktState0 + here->BSIM4v5vges))) + CKT_CKTvoltTol)))
+                    if ((here->BSIM4v5rgateMod != 3) || (fabs(delvgms) < (CKT_CKTreltol
+                    * MAX(fabs(vgms), fabs(*(cktState0 + here->BSIM4v5vgms)))
+                    + CKT_CKTvoltTol)))
+                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvdbs) < (CKT_CKTreltol
+                    * MAX(fabs(vdbs), fabs(*(cktState0 + here->BSIM4v5vdbs)))
+                    + CKT_CKTvoltTol)))
+                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvdbd) < (CKT_CKTreltol
+                    * MAX(fabs(vdbd), fabs(*(cktState0 + here->BSIM4v5vdbd)))
+                    + CKT_CKTvoltTol)))
+                    if ((!here->BSIM4v5rbodyMod) || (fabs(delvsbs) < (CKT_CKTreltol
+                    * MAX(fabs(vsbs), fabs(*(cktState0 + here->BSIM4v5vsbs)))
+                    + CKT_CKTvoltTol)))
+                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || (fabs(delvses) < (CKT_CKTreltol
+                    * MAX(fabs(vses), fabs(*(cktState0 + here->BSIM4v5vses)))
+                    + CKT_CKTvoltTol)))
+                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || (fabs(delvdes) < (CKT_CKTreltol
+                    * MAX(fabs(vdes), fabs(*(cktState0 + here->BSIM4v5vdes)))
+                    + CKT_CKTvoltTol)))
+                    if ((fabs(cdhat - Idtot) < CKT_CKTreltol
+                    * MAX(fabs(cdhat), fabs(Idtot)) + CKT_CKTabstol))
+                    if ((fabs(cbhat - Ibtot) < CKT_CKTreltol
+                    * MAX(fabs(cbhat), fabs(Ibtot)) + CKT_CKTabstol))
+                    if ((!${::TECH($::type,$::corner,$::section,igcMod)}) || ((fabs(cgshat - Igstot) < CKT_CKTreltol
+                    * MAX(fabs(cgshat), fabs(Igstot)) + CKT_CKTabstol)))
+                    if ((!${::TECH($::type,$::corner,$::section,igcMod)}) || ((fabs(cgdhat - Igdtot) < CKT_CKTreltol
+                    * MAX(fabs(cgdhat), fabs(Igdtot)) + CKT_CKTabstol)))
+                    if ((!${::TECH($::type,$::corner,$::section,igbMod)}) || ((fabs(cgbhat - Igbtot) < CKT_CKTreltol
+                    * MAX(fabs(cgbhat), fabs(Igbtot)) + CKT_CKTabstol)))
+                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || ((fabs(cseshat - Isestot) < CKT_CKTreltol
+                    * MAX(fabs(cseshat), fabs(Isestot)) + CKT_CKTabstol)))
+                    if ((!${::TECH($::type,$::corner,$::section,rdsMod)}) || ((fabs(cdedhat - Idedtot) < CKT_CKTreltol
+                    * MAX(fabs(cdedhat), fabs(Idedtot)) + CKT_CKTabstol)))
+                    {   vds = *(cktState0 + here->BSIM4v5vds);
+                        vgs = *(cktState0 + here->BSIM4v5vgs);
+                        vbs = *(cktState0 + here->BSIM4v5vbs);
+                        vges = *(cktState0 + here->BSIM4v5vges);
+                        vgms = *(cktState0 + here->BSIM4v5vgms);
                         
-                        vbd = *(ckt->CKTstate0 + here->BSIM4v5vbd);
-                        vdbs = *(ckt->CKTstate0 + here->BSIM4v5vdbs);
-                        vdbd = *(ckt->CKTstate0 + here->BSIM4v5vdbd);
-                        vsbs = *(ckt->CKTstate0 + here->BSIM4v5vsbs);
-                        vses = *(ckt->CKTstate0 + here->BSIM4v5vses);
-                        vdes = *(ckt->CKTstate0 + here->BSIM4v5vdes);
+                        vbd = *(cktState0 + here->BSIM4v5vbd);
+                        vdbs = *(cktState0 + here->BSIM4v5vdbs);
+                        vdbd = *(cktState0 + here->BSIM4v5vdbd);
+                        vsbs = *(cktState0 + here->BSIM4v5vsbs);
+                        vses = *(cktState0 + here->BSIM4v5vses);
+                        vdes = *(cktState0 + here->BSIM4v5vdes);
                         
                         vgd = vgs - vds;
                         vgb = vgs - vbs;
@@ -589,13 +2123,13 @@
                         vbd_jct = (!here->BSIM4v5rbodyMod) ? vbd : vdbd;
                         
                         /*** qdef should not be kept fixed even if vgs, vds & vbs has converged 
-                        ****               qdef = *(ckt->CKTstate0 + here->BSIM4v5qdef);  
+                        ****               qdef = *(cktState0 + here->BSIM4v5qdef);  
                         ***/
                         cdrain = here->BSIM4v5cd;
                         
-                        if ((ckt->CKTmode & (MODETRAN | MODEAC)) || 
-                        ((ckt->CKTmode & MODETRANOP) && 
-                        (ckt->CKTmode & MODEUIC)))
+                        if ((Mode & (MODETRAN | MODEAC)) || 
+                        ((Mode & MODETRANOP) && 
+                        (Mode & MODEUIC)))
                         {   ByPass = 1;
                             
                             qgate = here->BSIM4v5qgate;
@@ -614,32 +2148,32 @@
                     #endif /*NOBYPASS*/
                     
                     von = here->BSIM4v5von;
-                    if (*(ckt->CKTstate0 + here->BSIM4v5vds) >= 0.0)
-                    {   vgs = DEVfetlim(vgs, *(ckt->CKTstate0 + here->BSIM4v5vgs), von);
+                    if (*(cktState0 + here->BSIM4v5vds) >= 0.0)
+                    {   vgs = DEVfetlim(vgs, *(cktState0 + here->BSIM4v5vgs), von);
                         vds = vgs - vgd;
-                        vds = DEVlimvds(vds, *(ckt->CKTstate0 + here->BSIM4v5vds));
+                        vds = DEVlimvds(vds, *(cktState0 + here->BSIM4v5vds));
                         vgd = vgs - vds;
                         if (here->BSIM4v5rgateMod == 3)
-                        {   vges = DEVfetlim(vges, *(ckt->CKTstate0 + here->BSIM4v5vges), von);
-                            vgms = DEVfetlim(vgms, *(ckt->CKTstate0 + here->BSIM4v5vgms), von);
+                        {   vges = DEVfetlim(vges, *(cktState0 + here->BSIM4v5vges), von);
+                            vgms = DEVfetlim(vgms, *(cktState0 + here->BSIM4v5vgms), von);
                             vged = vges - vds;
                             vgmd = vgms - vds;
                         }
                         else if ((here->BSIM4v5rgateMod == 1) || (here->BSIM4v5rgateMod == 2))
-                        {   vges = DEVfetlim(vges, *(ckt->CKTstate0 + here->BSIM4v5vges), von);
+                        {   vges = DEVfetlim(vges, *(cktState0 + here->BSIM4v5vges), von);
                             vged = vges - vds;
                         }
                         
                         if (${::TECH($::type,$::corner,$::section,rdsMod)})
-                        {   vdes = DEVlimvds(vdes, *(ckt->CKTstate0 + here->BSIM4v5vdes));
-                            vses = -DEVlimvds(-vses, -(*(ckt->CKTstate0 + here->BSIM4v5vses)));
+                        {   vdes = DEVlimvds(vdes, *(cktState0 + here->BSIM4v5vdes));
+                            vses = -DEVlimvds(-vses, -(*(cktState0 + here->BSIM4v5vses)));
                         }
                         
                     }
                     else
                     {   vgd = DEVfetlim(vgd, vgdo, von);
                         vds = vgs - vgd;
-                        vds = -DEVlimvds(-vds, -(*(ckt->CKTstate0 + here->BSIM4v5vds)));
+                        vds = -DEVlimvds(-vds, -(*(cktState0 + here->BSIM4v5vds)));
                         vgs = vgd + vds;
                         
                         if (here->BSIM4v5rgateMod == 3)
@@ -654,20 +2188,20 @@
                         }
                         
                         if (${::TECH($::type,$::corner,$::section,rdsMod)})
-                        {   vdes = -DEVlimvds(-vdes, -(*(ckt->CKTstate0 + here->BSIM4v5vdes)));
-                            vses = DEVlimvds(vses, *(ckt->CKTstate0 + here->BSIM4v5vses));
+                        {   vdes = -DEVlimvds(-vdes, -(*(cktState0 + here->BSIM4v5vdes)));
+                            vses = DEVlimvds(vses, *(cktState0 + here->BSIM4v5vses));
                         }
                     }
                     
                     if (vds >= 0.0)
-                    {   vbs = DEVpnjlim(vbs, *(ckt->CKTstate0 + here->BSIM4v5vbs),
+                    {   vbs = DEVpnjlim(vbs, *(cktState0 + here->BSIM4v5vbs),
                         CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check);
                         vbd = vbs - vds;
                         if (here->BSIM4v5rbodyMod)
-                        {   vdbs = DEVpnjlim(vdbs, *(ckt->CKTstate0 + here->BSIM4v5vdbs),
+                        {   vdbs = DEVpnjlim(vdbs, *(cktState0 + here->BSIM4v5vdbs),
                             CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check1);
                             vdbd = vdbs - vds;
-                            vsbs = DEVpnjlim(vsbs, *(ckt->CKTstate0 + here->BSIM4v5vsbs),
+                            vsbs = DEVpnjlim(vsbs, *(cktState0 + here->BSIM4v5vsbs),
                             CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check2);
                             if ((Check1 == 0) && (Check2 == 0))
                             Check = 0;
@@ -676,15 +2210,15 @@
                         }
                     }
                     else
-                    {   vbd = DEVpnjlim(vbd, *(ckt->CKTstate0 + here->BSIM4v5vbd),
+                    {   vbd = DEVpnjlim(vbd, *(cktState0 + here->BSIM4v5vbd),
                         CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check); 
                         vbs = vbd + vds;
                         if (here->BSIM4v5rbodyMod)
-                        {   vdbd = DEVpnjlim(vdbd, *(ckt->CKTstate0 + here->BSIM4v5vdbd),
+                        {   vdbd = DEVpnjlim(vdbd, *(cktState0 + here->BSIM4v5vdbd),
                             CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check1);
                             vdbs = vdbd + vds;
-                            vsbdo = *(ckt->CKTstate0 + here->BSIM4v5vsbs)
-                            - *(ckt->CKTstate0 + here->BSIM4v5vds);
+                            vsbdo = *(cktState0 + here->BSIM4v5vsbs)
+                            - *(cktState0 + here->BSIM4v5vds);
                             vsbd = vsbs - vds;
                             vsbd = DEVpnjlim(vsbd, vsbdo, CONSTvt0, ${::TECH($::type,$::corner,$::section,vcrit)}, &Check2);
                             vsbs = vsbd + vds;
@@ -695,7 +2229,6 @@
                         }
                     }
                 }
-                
                 /* Calculate DC currents and their derivatives */
                 vbd = vbs - vds;
                 vgd = vgs - vds;
@@ -721,7 +2254,7 @@
                 }
                 
                 if (SourceSatCurrent <= 0.0)
-                {   here->BSIM4v5gbs = ckt->CKTgmin;
+                {   here->BSIM4v5gbs = CKT_CKTgmin;
                     here->BSIM4v5cbs = here->BSIM4v5gbs * vbs_jct;
                 }
                 else
@@ -730,28 +2263,28 @@
                         evbs = exp(vbs_jct / Nvtms);
                         T1 = ${::TECH($::type,$::corner,$::section,xjbvs)} * exp(-(${::TECH($::type,$::corner,$::section,bvs)} + vbs_jct) / Nvtms);
                         /* WDLiu: Magic T1 in this form; different from BSIM4v5 beta. */
-                        here->BSIM4v5gbs = SourceSatCurrent * (evbs + T1) / Nvtms + ckt->CKTgmin;
+                        here->BSIM4v5gbs = SourceSatCurrent * (evbs + T1) / Nvtms + CKT_CKTgmin;
                         here->BSIM4v5cbs = SourceSatCurrent * (evbs + here->BSIM4v5XExpBVS
-                        - T1 - 1.0) + ckt->CKTgmin * vbs_jct;
+                        - T1 - 1.0) + CKT_CKTgmin * vbs_jct;
                         break;
                         case 1:
                         T2 = vbs_jct / Nvtms;
                         if (T2 < -EXP_THRESHOLD)
-                        {   here->BSIM4v5gbs = ckt->CKTgmin;
+                        {   here->BSIM4v5gbs = CKT_CKTgmin;
                             here->BSIM4v5cbs = SourceSatCurrent * (MIN_EXP - 1.0)
-                            + ckt->CKTgmin * vbs_jct;
+                            + CKT_CKTgmin * vbs_jct;
                         }
                         else if (vbs_jct <= here->BSIM4v5vjsmFwd)
                         {   evbs = exp(T2);
-                            here->BSIM4v5gbs = SourceSatCurrent * evbs / Nvtms + ckt->CKTgmin;
+                            here->BSIM4v5gbs = SourceSatCurrent * evbs / Nvtms + CKT_CKTgmin;
                             here->BSIM4v5cbs = SourceSatCurrent * (evbs - 1.0)
-                            + ckt->CKTgmin * vbs_jct;
+                            + CKT_CKTgmin * vbs_jct;
                         }
                         else
                         {   T0 = here->BSIM4v5IVjsmFwd / Nvtms;
-                            here->BSIM4v5gbs = T0 + ckt->CKTgmin;
+                            here->BSIM4v5gbs = T0 + CKT_CKTgmin;
                             here->BSIM4v5cbs = here->BSIM4v5IVjsmFwd - SourceSatCurrent + T0 
-                            * (vbs_jct - here->BSIM4v5vjsmFwd) + ckt->CKTgmin * vbs_jct;
+                            * (vbs_jct - here->BSIM4v5vjsmFwd) + CKT_CKTgmin * vbs_jct;
                         }	
                         break;
                         case 2:
@@ -769,8 +2302,8 @@
                             T1 = evbs - 1.0;
                             T2 = here->BSIM4v5IVjsmRev + here->BSIM4v5SslpRev
                             * (vbs_jct - here->BSIM4v5vjsmRev);
-                            here->BSIM4v5gbs = devbs_dvb * T2 + T1 * here->BSIM4v5SslpRev + ckt->CKTgmin;
-                            here->BSIM4v5cbs = T1 * T2 + ckt->CKTgmin * vbs_jct;
+                            here->BSIM4v5gbs = devbs_dvb * T2 + T1 * here->BSIM4v5SslpRev + CKT_CKTgmin;
+                            here->BSIM4v5cbs = T1 * T2 + CKT_CKTgmin * vbs_jct;
                         }         
                         else if (vbs_jct <= here->BSIM4v5vjsmFwd)
                         {   T0 = vbs_jct / Nvtms;
@@ -793,14 +2326,14 @@
                                 T3 = -T2 /Nvtms;
                             }
                             here->BSIM4v5gbs = SourceSatCurrent * (devbs_dvb - ${::TECH($::type,$::corner,$::section,xjbvs)} * T3)
-                            + ckt->CKTgmin;
+                            + CKT_CKTgmin;
                             here->BSIM4v5cbs = SourceSatCurrent * (evbs + here->BSIM4v5XExpBVS - 1.0
-                            - ${::TECH($::type,$::corner,$::section,xjbvs)} * T2) + ckt->CKTgmin * vbs_jct;
+                            - ${::TECH($::type,$::corner,$::section,xjbvs)} * T2) + CKT_CKTgmin * vbs_jct;
                         }
                         else
-                        {   here->BSIM4v5gbs = here->BSIM4v5SslpFwd + ckt->CKTgmin;
+                        {   here->BSIM4v5gbs = here->BSIM4v5SslpFwd + CKT_CKTgmin;
                             here->BSIM4v5cbs = here->BSIM4v5IVjsmFwd + here->BSIM4v5SslpFwd * (vbs_jct
-                            - here->BSIM4v5vjsmFwd) + ckt->CKTgmin * vbs_jct;
+                            - here->BSIM4v5vjsmFwd) + CKT_CKTgmin * vbs_jct;
                         }
                         break;
                         default: break;
@@ -819,7 +2352,7 @@
                 }
                 
                 if (DrainSatCurrent <= 0.0)
-                {   here->BSIM4v5gbd = ckt->CKTgmin;
+                {   here->BSIM4v5gbd = CKT_CKTgmin;
                     here->BSIM4v5cbd = here->BSIM4v5gbd * vbd_jct;
                 }
                 else
@@ -828,28 +2361,28 @@
                         evbd = exp(vbd_jct / Nvtmd);
                         T1 = ${::TECH($::type,$::corner,$::section,xjbvd)} * exp(-(${::TECH($::type,$::corner,$::section,bvd)} + vbd_jct) / Nvtmd);
                         /* WDLiu: Magic T1 in this form; different from BSIM4v5 beta. */
-                        here->BSIM4v5gbd = DrainSatCurrent * (evbd + T1) / Nvtmd + ckt->CKTgmin;
+                        here->BSIM4v5gbd = DrainSatCurrent * (evbd + T1) / Nvtmd + CKT_CKTgmin;
                         here->BSIM4v5cbd = DrainSatCurrent * (evbd + here->BSIM4v5XExpBVD
-                        - T1 - 1.0) + ckt->CKTgmin * vbd_jct;
+                        - T1 - 1.0) + CKT_CKTgmin * vbd_jct;
                         break;
                         case 1:
                         T2 = vbd_jct / Nvtmd;
                         if (T2 < -EXP_THRESHOLD)
-                        {   here->BSIM4v5gbd = ckt->CKTgmin;
+                        {   here->BSIM4v5gbd = CKT_CKTgmin;
                             here->BSIM4v5cbd = DrainSatCurrent * (MIN_EXP - 1.0)
-                            + ckt->CKTgmin * vbd_jct;
+                            + CKT_CKTgmin * vbd_jct;
                         }
                         else if (vbd_jct <= here->BSIM4v5vjdmFwd)
                         {   evbd = exp(T2);
-                            here->BSIM4v5gbd = DrainSatCurrent * evbd / Nvtmd + ckt->CKTgmin;
+                            here->BSIM4v5gbd = DrainSatCurrent * evbd / Nvtmd + CKT_CKTgmin;
                             here->BSIM4v5cbd = DrainSatCurrent * (evbd - 1.0)
-                            + ckt->CKTgmin * vbd_jct;
+                            + CKT_CKTgmin * vbd_jct;
                         }
                         else
                         {   T0 = here->BSIM4v5IVjdmFwd / Nvtmd;
-                            here->BSIM4v5gbd = T0 + ckt->CKTgmin;
+                            here->BSIM4v5gbd = T0 + CKT_CKTgmin;
                             here->BSIM4v5cbd = here->BSIM4v5IVjdmFwd - DrainSatCurrent + T0
-                            * (vbd_jct - here->BSIM4v5vjdmFwd) + ckt->CKTgmin * vbd_jct;
+                            * (vbd_jct - here->BSIM4v5vjdmFwd) + CKT_CKTgmin * vbd_jct;
                         }
                         break;
                         case 2:
@@ -867,8 +2400,8 @@
                             T1 = evbd - 1.0;
                             T2 = here->BSIM4v5IVjdmRev + here->BSIM4v5DslpRev
                             * (vbd_jct - here->BSIM4v5vjdmRev);
-                            here->BSIM4v5gbd = devbd_dvb * T2 + T1 * here->BSIM4v5DslpRev + ckt->CKTgmin;
-                            here->BSIM4v5cbd = T1 * T2 + ckt->CKTgmin * vbd_jct;
+                            here->BSIM4v5gbd = devbd_dvb * T2 + T1 * here->BSIM4v5DslpRev + CKT_CKTgmin;
+                            here->BSIM4v5cbd = T1 * T2 + CKT_CKTgmin * vbd_jct;
                         }
                         else if (vbd_jct <= here->BSIM4v5vjdmFwd)
                         {   T0 = vbd_jct / Nvtmd;
@@ -891,20 +2424,19 @@
                                 T3 = -T2 /Nvtmd;
                             }     
                             here->BSIM4v5gbd = DrainSatCurrent * (devbd_dvb - ${::TECH($::type,$::corner,$::section,xjbvd)} * T3)
-                            + ckt->CKTgmin;
+                            + CKT_CKTgmin;
                             here->BSIM4v5cbd = DrainSatCurrent * (evbd + here->BSIM4v5XExpBVD - 1.0
-                            - ${::TECH($::type,$::corner,$::section,xjbvd)} * T2) + ckt->CKTgmin * vbd_jct;
+                            - ${::TECH($::type,$::corner,$::section,xjbvd)} * T2) + CKT_CKTgmin * vbd_jct;
                         }
                         else
-                        {   here->BSIM4v5gbd = here->BSIM4v5DslpFwd + ckt->CKTgmin;
+                        {   here->BSIM4v5gbd = here->BSIM4v5DslpFwd + CKT_CKTgmin;
                             here->BSIM4v5cbd = here->BSIM4v5IVjdmFwd + here->BSIM4v5DslpFwd * (vbd_jct
-                            - here->BSIM4v5vjdmFwd) + ckt->CKTgmin * vbd_jct;
+                            - here->BSIM4v5vjdmFwd) + CKT_CKTgmin * vbd_jct;
                         }
                         break;
                         default: break;
                     }
                 } 
-                
                 /* trap-assisted tunneling and recombination current for reverse bias  */
                 Nvtmrssw = ${::TECH($::type,$::corner,$::section,vtm0)} * ${::TECH($::type,$::corner,$::section,njtsswtemp)};
                 Nvtmrsswg = ${::TECH($::type,$::corner,$::section,vtm0)} * ${::TECH($::type,$::corner,$::section,njtsswgtemp)};
@@ -913,78 +2445,78 @@
                 if ((${::TECH($::type,$::corner,$::section,vtss)} - vbs_jct) < (${::TECH($::type,$::corner,$::section,vtss)} * 1e-3))
                 { T9 = 1.0e3; 
                     T0 = - vbs_jct / Nvtmrs * T9;
-                    DEXP(T0, T1, T10);
+                    DEXP3(T0, T1, T10);
                     dT1_dVb = T10 / Nvtmrs * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtss)} - vbs_jct);
                     T0 = -vbs_jct / Nvtmrs * ${::TECH($::type,$::corner,$::section,vtss)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtss)} / Nvtmrs * (T9 + vbs_jct * T9 * T9) ;
-                    DEXP(T0, T1, T10);
+                    DEXP3(T0, T1, T10);
                     dT1_dVb = T10 * dT0_dVb;
                 }
                 
                 if ((${::TECH($::type,$::corner,$::section,vtsd)} - vbd_jct) < (${::TECH($::type,$::corner,$::section,vtsd)} * 1e-3) )
                 { T9 = 1.0e3;
                     T0 = -vbd_jct / Nvtmrs * T9;
-                    DEXP(T0, T2, T10);
+                    DEXP3(T0, T2, T10);
                     dT2_dVb = T10 / Nvtmrs * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtsd)} - vbd_jct);
                     T0 = -vbd_jct / Nvtmrs * ${::TECH($::type,$::corner,$::section,vtsd)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtsd)} / Nvtmrs * (T9 + vbd_jct * T9 * T9) ;
-                    DEXP(T0, T2, T10);
+                    DEXP3(T0, T2, T10);
                     dT2_dVb = T10 * dT0_dVb;
                 }
                 
                 if ((${::TECH($::type,$::corner,$::section,vtssws)} - vbs_jct) < (${::TECH($::type,$::corner,$::section,vtssws)} * 1e-3) )
                 { T9 = 1.0e3; 
                     T0 = -vbs_jct / Nvtmrssw * T9;
-                    DEXP(T0, T3, T10);
+                    DEXP3(T0, T3, T10);
                     dT3_dVb = T10 / Nvtmrssw * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtssws)} - vbs_jct);
                     T0 = -vbs_jct / Nvtmrssw * ${::TECH($::type,$::corner,$::section,vtssws)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtssws)} / Nvtmrssw * (T9 + vbs_jct * T9 * T9) ;
-                    DEXP(T0, T3, T10);
+                    DEXP3(T0, T3, T10);
                     dT3_dVb = T10 * dT0_dVb;
                 }
                 
                 if ((${::TECH($::type,$::corner,$::section,vtsswd)} - vbd_jct) < (${::TECH($::type,$::corner,$::section,vtsswd)} * 1e-3) )
                 { T9 = 1.0e3; 
                     T0 = -vbd_jct / Nvtmrssw * T9;
-                    DEXP(T0, T4, T10);
+                    DEXP3(T0, T4, T10);
                     dT4_dVb = T10 / Nvtmrssw * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtsswd)} - vbd_jct);
                     T0 = -vbd_jct / Nvtmrssw * ${::TECH($::type,$::corner,$::section,vtsswd)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtsswd)} / Nvtmrssw * (T9 + vbd_jct * T9 * T9) ;
-                    DEXP(T0, T4, T10);
+                    DEXP3(T0, T4, T10);
                     dT4_dVb = T10 * dT0_dVb;
                 }
                 
                 if ((${::TECH($::type,$::corner,$::section,vtsswgs)} - vbs_jct) < (${::TECH($::type,$::corner,$::section,vtsswgs)} * 1e-3) )
                 { T9 = 1.0e3; 
                     T0 = -vbs_jct / Nvtmrsswg * T9;
-                    DEXP(T0, T5, T10);
+                    DEXP3(T0, T5, T10);
                     dT5_dVb = T10 / Nvtmrsswg * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtsswgs)} - vbs_jct);
                     T0 = -vbs_jct / Nvtmrsswg * ${::TECH($::type,$::corner,$::section,vtsswgs)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtsswgs)} / Nvtmrsswg * (T9 + vbs_jct * T9 * T9) ;
-                    DEXP(T0, T5, T10);
+                    DEXP3(T0, T5, T10);
                     dT5_dVb = T10 * dT0_dVb;
                 }
                 
                 if ((${::TECH($::type,$::corner,$::section,vtsswgd)} - vbd_jct) < (${::TECH($::type,$::corner,$::section,vtsswgd)} * 1e-3) )
                 { T9 = 1.0e3; 
                     T0 = -vbd_jct / Nvtmrsswg * T9;
-                    DEXP(T0, T6, T10);
+                    DEXP3(T0, T6, T10);
                     dT6_dVb = T10 / Nvtmrsswg * T9; 
                 } else {
                     T9 = 1.0 / (${::TECH($::type,$::corner,$::section,vtsswgd)} - vbd_jct);
                     T0 = -vbd_jct / Nvtmrsswg * ${::TECH($::type,$::corner,$::section,vtsswgd)} * T9;
                     dT0_dVb = ${::TECH($::type,$::corner,$::section,vtsswgd)} / Nvtmrsswg * (T9 + vbd_jct * T9 * T9) ;
-                    DEXP(T0, T6, T10);
+                    DEXP3(T0, T6, T10);
                     dT6_dVb = T10 * dT0_dVb;
                 }
                 
@@ -1116,7 +2648,7 @@
                 T2 = T0 * V0;
                 dT2_dVb = pParam->BSIM4v5dvt0w * dT5_dVb * V0;
                 
-                TempRatio =  ckt->CKTtemp / ${::TECH($::type,$::corner,$::section,tnom)} - 1.0;
+                TempRatio =  $::TEMP / ${::TECH($::type,$::corner,$::section,tnom)} - 1.0;
                 T0 = sqrt(1.0 + pParam->BSIM4v5lpe0 / Leff);
                 T1 = pParam->BSIM4v5k1ox * (T0 - 1.0) * pParam->BSIM4v5sqrtPhi
                 + (pParam->BSIM4v5kt1 + pParam->BSIM4v5kt1l / Leff
@@ -1973,7 +3505,6 @@
                 + Vdseff * tmp2) * dVbseff_dVb;
                 
                 cdrain = Ids * Vdseff;
-                // #Info: "%s Id=%g" here->BSIM4v5name Ids
                 
                 /* Source End Velocity Limit  */
                 if((${::TECH($::type,$::corner,$::section,vtlGiven)}) && (${::TECH($::type,$::corner,$::section,vtl)} > 0.0) ) {
@@ -2705,7 +4236,7 @@
                     here->BSIM4v5cqdb = here->BSIM4v5cqsb = here->BSIM4v5cqgb 
                     = here->BSIM4v5cqbb = 0.0;
                     here->BSIM4v5gtau = 0.0;
-                    goto finished;
+                    goto finished_${::type}_${::corner}_${::section};
                 }
                 else if (${::TECH($::type,$::corner,$::section,capMod)} == 0)
                 {
@@ -3536,19 +5067,19 @@
                     if (here->BSIM4v5acnqsMod)
                     here->BSIM4v5taunet = 1.0 / T1;
                     
-                    *(ckt->CKTstate0 + here->BSIM4v5qcheq) = qcheq;
-                    if (ckt->CKTmode & MODEINITTRAN)
-                    *(ckt->CKTstate1 + here->BSIM4v5qcheq) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qcheq);
+                    *(cktState0 + here->BSIM4v5qcheq) = qcheq;
+                    if (Mode & MODEINITTRAN)
+                    *(cktState1 + here->BSIM4v5qcheq) =
+                    *(cktState0 + here->BSIM4v5qcheq);
                     if (here->BSIM4v5trnqsMod)
-                    {   error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qcheq);
+                    {   error = 0;
                         if (error)
                         return(error);
                     }
                 }
                 
                 
-                finished: 
+                finished_${::type}_${::corner}_${::section}: 
                 
                 /* Calculate junction C-V */
                 if (ChargeComputationNeeded)
@@ -3571,7 +5102,9 @@
                     
                     /* Source Bulk Junction */
                     if (vbs_jct == 0.0)
-                    {   *(ckt->CKTstate0 + here->BSIM4v5qbs) = 0.0;
+                    {   
+                        
+                        *(cktState0 + here->BSIM4v5qbs) = 0.0;
                         here->BSIM4v5capbs = czbs + czbssw + czbsswg;
                     }
                     else if (vbs_jct < 0.0)
@@ -3581,12 +5114,13 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJS * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbs) = ${::TECH($::type,$::corner,$::section,PhiBS)} * czbs 
+                            *(cktState0 + here->BSIM4v5qbs) = ${::TECH($::type,$::corner,$::section,PhiBS)} * czbs 
                             * (1.0 - arg * sarg) / (1.0 - MJS);
                             here->BSIM4v5capbs = czbs * sarg;
                         }
                         else
-                        {   *(ckt->CKTstate0 + here->BSIM4v5qbs) = 0.0;
+                        {   
+                            *(cktState0 + here->BSIM4v5qbs) = 0.0;
                             here->BSIM4v5capbs = 0.0;
                         }
                         if (czbssw > 0.0)
@@ -3595,7 +5129,7 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJSWS * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbs) += ${::TECH($::type,$::corner,$::section,PhiBSWS)} * czbssw
+                            *(cktState0 + here->BSIM4v5qbs) += ${::TECH($::type,$::corner,$::section,PhiBSWS)} * czbssw
                             * (1.0 - arg * sarg) / (1.0 - MJSWS);
                             here->BSIM4v5capbs += czbssw * sarg;
                         }
@@ -3605,7 +5139,7 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJSWGS * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbs) += ${::TECH($::type,$::corner,$::section,PhiBSWGS)} * czbsswg
+                            *(cktState0 + here->BSIM4v5qbs) += ${::TECH($::type,$::corner,$::section,PhiBSWGS)} * czbsswg
                             * (1.0 - arg * sarg) / (1.0 - MJSWGS);
                             here->BSIM4v5capbs += czbsswg * sarg;
                         }
@@ -3615,13 +5149,13 @@
                     {   T0 = czbs + czbssw + czbsswg;
                         T1 = vbs_jct * (czbs * MJS / ${::TECH($::type,$::corner,$::section,PhiBS)} + czbssw * MJSWS 
                         / ${::TECH($::type,$::corner,$::section,PhiBSWS)} + czbsswg * MJSWGS / ${::TECH($::type,$::corner,$::section,PhiBSWGS)});    
-                        *(ckt->CKTstate0 + here->BSIM4v5qbs) = vbs_jct * (T0 + 0.5 * T1);
+                        *(cktState0 + here->BSIM4v5qbs) = vbs_jct * (T0 + 0.5 * T1);
                         here->BSIM4v5capbs = T0 + T1;
                     }
                     
                     /* Drain Bulk Junction */
                     if (vbd_jct == 0.0)
-                    {   *(ckt->CKTstate0 + here->BSIM4v5qbd) = 0.0;
+                    {   *(cktState0 + here->BSIM4v5qbd) = 0.0;
                         here->BSIM4v5capbd = czbd + czbdsw + czbdswg;
                     }
                     else if (vbd_jct < 0.0)
@@ -3631,12 +5165,12 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJD * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbd) = ${::TECH($::type,$::corner,$::section,PhiBD)}* czbd 
+                            *(cktState0 + here->BSIM4v5qbd) = ${::TECH($::type,$::corner,$::section,PhiBD)}* czbd 
                             * (1.0 - arg * sarg) / (1.0 - MJD);
                             here->BSIM4v5capbd = czbd * sarg;
                         }
                         else
-                        {   *(ckt->CKTstate0 + here->BSIM4v5qbd) = 0.0;
+                        {   *(cktState0 + here->BSIM4v5qbd) = 0.0;
                             here->BSIM4v5capbd = 0.0;
                         }
                         if (czbdsw > 0.0)
@@ -3645,7 +5179,7 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJSWD * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbd) += ${::TECH($::type,$::corner,$::section,PhiBSWD)} * czbdsw 
+                            *(cktState0 + here->BSIM4v5qbd) += ${::TECH($::type,$::corner,$::section,PhiBSWD)} * czbdsw 
                             * (1.0 - arg * sarg) / (1.0 - MJSWD);
                             here->BSIM4v5capbd += czbdsw * sarg;
                         }
@@ -3655,7 +5189,7 @@
                             sarg = 1.0 / sqrt(arg);
                             else
                             sarg = exp(-MJSWGD * log(arg));
-                            *(ckt->CKTstate0 + here->BSIM4v5qbd) += ${::TECH($::type,$::corner,$::section,PhiBSWGD)} * czbdswg
+                            *(cktState0 + here->BSIM4v5qbd) += ${::TECH($::type,$::corner,$::section,PhiBSWGD)} * czbdswg
                             * (1.0 - arg * sarg) / (1.0 - MJSWGD);
                             here->BSIM4v5capbd += czbdswg * sarg;
                         }
@@ -3664,7 +5198,7 @@
                     {   T0 = czbd + czbdsw + czbdswg;
                         T1 = vbd_jct * (czbd * MJD / ${::TECH($::type,$::corner,$::section,PhiBD)} + czbdsw * MJSWD
                         / ${::TECH($::type,$::corner,$::section,PhiBSWD)} + czbdswg * MJSWGD / ${::TECH($::type,$::corner,$::section,PhiBSWGD)});
-                        *(ckt->CKTstate0 + here->BSIM4v5qbd) = vbd_jct * (T0 + 0.5 * T1);
+                        *(cktState0 + here->BSIM4v5qbd) = vbd_jct * (T0 + 0.5 * T1);
                         here->BSIM4v5capbd = T0 + T1; 
                     }
                 }
@@ -3674,9 +5208,9 @@
                 *  check convergence
                 */
                 
-                if ((here->BSIM4v5off == 0) || (!(ckt->CKTmode & MODEINITFIX)))
+                if ((here->BSIM4v5off == 0) || (!(Mode & MODEINITFIX)))
                 {   if (Check == 1)
-                    {   ckt->CKTnoncon++;
+                    {   CKT_CKTnoncon++;
                         #ifndef NEWCONV
                     } 
                     else
@@ -3687,50 +5221,50 @@
                         else
                         {   Idtot = here->BSIM4v5cd + here->BSIM4v5cbd - here->BSIM4v5Igidl; /* bugfix */
                         }
-                        tol0 = ckt->CKTreltol * MAX(fabs(cdhat), fabs(Idtot))
-                        + ckt->CKTabstol;
-                        tol1 = ckt->CKTreltol * MAX(fabs(cseshat), fabs(Isestot))
-                        + ckt->CKTabstol;
-                        tol2 = ckt->CKTreltol * MAX(fabs(cdedhat), fabs(Idedtot))
-                        + ckt->CKTabstol;
-                        tol3 = ckt->CKTreltol * MAX(fabs(cgshat), fabs(Igstot))
-                        + ckt->CKTabstol;
-                        tol4 = ckt->CKTreltol * MAX(fabs(cgdhat), fabs(Igdtot))
-                        + ckt->CKTabstol;
-                        tol5 = ckt->CKTreltol * MAX(fabs(cgbhat), fabs(Igbtot))
-                        + ckt->CKTabstol;
+                        tol0 = CKT_CKTreltol * MAX(fabs(cdhat), fabs(Idtot))
+                        + CKT_CKTabstol;
+                        tol1 = CKT_CKTreltol * MAX(fabs(cseshat), fabs(Isestot))
+                        + CKT_CKTabstol;
+                        tol2 = CKT_CKTreltol * MAX(fabs(cdedhat), fabs(Idedtot))
+                        + CKT_CKTabstol;
+                        tol3 = CKT_CKTreltol * MAX(fabs(cgshat), fabs(Igstot))
+                        + CKT_CKTabstol;
+                        tol4 = CKT_CKTreltol * MAX(fabs(cgdhat), fabs(Igdtot))
+                        + CKT_CKTabstol;
+                        tol5 = CKT_CKTreltol * MAX(fabs(cgbhat), fabs(Igbtot))
+                        + CKT_CKTabstol;
                         if ((fabs(cdhat - Idtot) >= tol0) || (fabs(cseshat - Isestot) >= tol1)
                         || (fabs(cdedhat - Idedtot) >= tol2))
-                        {   ckt->CKTnoncon++;
+                        {   CKT_CKTnoncon++;
                         }
                         else if ((fabs(cgshat - Igstot) >= tol3) || (fabs(cgdhat - Igdtot) >= tol4)
                         || (fabs(cgbhat - Igbtot) >= tol5))
-                        {   ckt->CKTnoncon++;
+                        {   CKT_CKTnoncon++;
                         }
                         else
                         {   Ibtot = here->BSIM4v5cbs + here->BSIM4v5cbd
                             - here->BSIM4v5Igidl - here->BSIM4v5Igisl - here->BSIM4v5csub;
-                            tol6 = ckt->CKTreltol * MAX(fabs(cbhat), fabs(Ibtot))
-                            + ckt->CKTabstol;
+                            tol6 = CKT_CKTreltol * MAX(fabs(cbhat), fabs(Ibtot))
+                            + CKT_CKTabstol;
                             if (fabs(cbhat - Ibtot) > tol6)
-                            {   ckt->CKTnoncon++;
+                            {   CKT_CKTnoncon++;
                             }
                         }
                         #endif /* NEWCONV */
                     }
                 }
-                *(ckt->CKTstate0 + here->BSIM4v5vds) = vds;
-                *(ckt->CKTstate0 + here->BSIM4v5vgs) = vgs;
-                *(ckt->CKTstate0 + here->BSIM4v5vbs) = vbs;
-                *(ckt->CKTstate0 + here->BSIM4v5vbd) = vbd;
-                *(ckt->CKTstate0 + here->BSIM4v5vges) = vges;
-                *(ckt->CKTstate0 + here->BSIM4v5vgms) = vgms;
-                *(ckt->CKTstate0 + here->BSIM4v5vdbs) = vdbs;
-                *(ckt->CKTstate0 + here->BSIM4v5vdbd) = vdbd;
-                *(ckt->CKTstate0 + here->BSIM4v5vsbs) = vsbs;
-                *(ckt->CKTstate0 + here->BSIM4v5vses) = vses;
-                *(ckt->CKTstate0 + here->BSIM4v5vdes) = vdes;
-                *(ckt->CKTstate0 + here->BSIM4v5qdef) = qdef;
+                *(cktState0 + here->BSIM4v5vds) = vds;
+                *(cktState0 + here->BSIM4v5vgs) = vgs;
+                *(cktState0 + here->BSIM4v5vbs) = vbs;
+                *(cktState0 + here->BSIM4v5vbd) = vbd;
+                *(cktState0 + here->BSIM4v5vges) = vges;
+                *(cktState0 + here->BSIM4v5vgms) = vgms;
+                *(cktState0 + here->BSIM4v5vdbs) = vdbs;
+                *(cktState0 + here->BSIM4v5vdbd) = vdbd;
+                *(cktState0 + here->BSIM4v5vsbs) = vsbs;
+                *(cktState0 + here->BSIM4v5vses) = vses;
+                *(cktState0 + here->BSIM4v5vdes) = vdes;
+                *(cktState0 + here->BSIM4v5qdef) = qdef;
                 
                 
                 if (!ChargeComputationNeeded)
@@ -3790,7 +5324,7 @@
                 #ifndef NOBYPASS
                 line_${::type}_${::corner}_${::section}_755:
                 #endif
-                ag0 = ckt->CKTag[0];
+                ag0 = CKT_CKTag[0];
                 if (here->BSIM4v5mode > 0)
                 {   if (here->BSIM4v5trnqsMod == 0)
                     {   qdrn -= qgdo;
@@ -4175,80 +5709,80 @@
                 
                 
                 if (here->BSIM4v5trnqsMod)
-                {   *(ckt->CKTstate0 + here->BSIM4v5qcdump) = qdef * $ScalingFactor;
-                    if (ckt->CKTmode & MODEINITTRAN)
-                    *(ckt->CKTstate1 + here->BSIM4v5qcdump) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qcdump);
-                    error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qcdump);
+                {   *(cktState0 + here->BSIM4v5qcdump) = qdef * $ScalingFactor;
+                    if (Mode & MODEINITTRAN)
+                    *(cktState1 + here->BSIM4v5qcdump) =
+                    *(cktState0 + here->BSIM4v5qcdump);
+                    error = 0;
                     if (error)
                     return(error);
                 }
                 
                 if (ByPass) goto line_${::type}_${::corner}_${::section}_860;
                 
-                *(ckt->CKTstate0 + here->BSIM4v5qg) = qgate;
-                *(ckt->CKTstate0 + here->BSIM4v5qd) = qdrn
-                - *(ckt->CKTstate0 + here->BSIM4v5qbd);
-                *(ckt->CKTstate0 + here->BSIM4v5qs) = qsrc
-                - *(ckt->CKTstate0 + here->BSIM4v5qbs);
+                *(cktState0 + here->BSIM4v5qg) = qgate;
+                *(cktState0 + here->BSIM4v5qd) = qdrn
+                - *(cktState0 + here->BSIM4v5qbd);
+                *(cktState0 + here->BSIM4v5qs) = qsrc
+                - *(cktState0 + here->BSIM4v5qbs);
                 if (here->BSIM4v5rgateMod == 3)
-                *(ckt->CKTstate0 + here->BSIM4v5qgmid) = qgmid;
+                *(cktState0 + here->BSIM4v5qgmid) = qgmid;
                 
                 if (!here->BSIM4v5rbodyMod)
-                {   *(ckt->CKTstate0 + here->BSIM4v5qb) = qbulk
-                    + *(ckt->CKTstate0 + here->BSIM4v5qbd)
-                    + *(ckt->CKTstate0 + here->BSIM4v5qbs);
+                {   *(cktState0 + here->BSIM4v5qb) = qbulk
+                    + *(cktState0 + here->BSIM4v5qbd)
+                    + *(cktState0 + here->BSIM4v5qbs);
                 }
                 else
-                *(ckt->CKTstate0 + here->BSIM4v5qb) = qbulk;
+                *(cktState0 + here->BSIM4v5qb) = qbulk;
                 
                 
                 /* Store small signal parameters */
-                if (ckt->CKTmode & MODEINITSMSIG)
+                if (Mode & MODEINITSMSIG)
                 {   goto line_${::type}_${::corner}_${::section}_1000;
                 }
                 
                 if (!ChargeComputationNeeded)
                 goto line_${::type}_${::corner}_${::section}_850;
                 
-                if (ckt->CKTmode & MODEINITTRAN)
-                {   *(ckt->CKTstate1 + here->BSIM4v5qb) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qb);
-                    *(ckt->CKTstate1 + here->BSIM4v5qg) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qg);
-                    *(ckt->CKTstate1 + here->BSIM4v5qd) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qd);
+                if (Mode & MODEINITTRAN)
+                {   *(cktState1 + here->BSIM4v5qb) =
+                    *(cktState0 + here->BSIM4v5qb);
+                    *(cktState1 + here->BSIM4v5qg) =
+                    *(cktState0 + here->BSIM4v5qg);
+                    *(cktState1 + here->BSIM4v5qd) =
+                    *(cktState0 + here->BSIM4v5qd);
                     if (here->BSIM4v5rgateMod == 3)
-                    *(ckt->CKTstate1 + here->BSIM4v5qgmid) =
-                    *(ckt->CKTstate0 + here->BSIM4v5qgmid);
+                    *(cktState1 + here->BSIM4v5qgmid) =
+                    *(cktState0 + here->BSIM4v5qgmid);
                     if (here->BSIM4v5rbodyMod)
-                    {   *(ckt->CKTstate1 + here->BSIM4v5qbs) =
-                        *(ckt->CKTstate0 + here->BSIM4v5qbs);
-                        *(ckt->CKTstate1 + here->BSIM4v5qbd) =
-                        *(ckt->CKTstate0 + here->BSIM4v5qbd);
+                    {   *(cktState1 + here->BSIM4v5qbs) =
+                        *(cktState0 + here->BSIM4v5qbs);
+                        *(cktState1 + here->BSIM4v5qbd) =
+                        *(cktState0 + here->BSIM4v5qbd);
                     }
                 }
                 
-                error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qb);
+                error = 0;
                 if (error) 
                 return(error);
-                error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qg);
+                error = 0;
                 if (error) 
                 return(error);
-                error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qd);
+                error = 0;
                 if (error) 
                 return(error);
                 
                 if (here->BSIM4v5rgateMod == 3)
-                {   error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qgmid);
+                {   error = 0;
                     if (error) return(error);
                 }
                 
                 if (here->BSIM4v5rbodyMod)
-                {   error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qbs);
+                {   error = 0;
                     if (error) 
                     return(error);
-                    error = NIintegrate(ckt, &geq, &ceq, 0.0, here->BSIM4v5qbd);
+                    error = 0;
                     if (error) 
                     return(error);
                 }
@@ -4292,9 +5826,9 @@
                 line_${::type}_${::corner}_${::section}_860:
                 /* Calculate equivalent charge current */
                 
-                cqgate = *(ckt->CKTstate0 + here->BSIM4v5cqg);
-                cqbody = *(ckt->CKTstate0 + here->BSIM4v5cqb);
-                cqdrn = *(ckt->CKTstate0 + here->BSIM4v5cqd);
+                cqgate = *(cktState0 + here->BSIM4v5cqg);
+                cqbody = *(cktState0 + here->BSIM4v5cqb);
+                cqdrn = *(cktState0 + here->BSIM4v5cqd);
                 
                 ceqqg = cqgate - gcggb * vgb + gcgdb * vbd + gcgsb * vbs;
                 ceqqd = cqdrn - gcdgb * vgb - gcdgmb * vgmb + (gcddb + gcdbdb)
@@ -4304,14 +5838,14 @@
                 
                 
                 if (here->BSIM4v5rgateMod == 3)
-                ceqqgmid = *(ckt->CKTstate0 + here->BSIM4v5cqgmid)
+                ceqqgmid = *(cktState0 + here->BSIM4v5cqgmid)
                 + gcgmdb * vbd + gcgmsb * vbs - gcgmgmb * vgmb;
                 else
                 ceqqgmid = 0.0;	
                 
                 if (here->BSIM4v5rbodyMod)
-                {   ceqqjs = *(ckt->CKTstate0 + here->BSIM4v5cqbs) + gcsbsb * vbs_jct;
-                    ceqqjd = *(ckt->CKTstate0 + here->BSIM4v5cqbd) + gcdbdb * vbd_jct; 
+                {   ceqqjs = *(cktState0 + here->BSIM4v5cqbs) + gcsbsb * vbs_jct;
+                    ceqqjd = *(cktState0 + here->BSIM4v5cqbd) + gcdbdb * vbd_jct; 
                 }
                 
                 if (here->BSIM4v5trnqsMod)
@@ -4320,28 +5854,28 @@
                     T1 = qdef * here->BSIM4v5gtau;
                     ceqqd -= dxpart * T0 + T1 * (ddxpart_dVg * vgb - ddxpart_dVd
                     * vbd - ddxpart_dVs * vbs);
-                    cqdef = *(ckt->CKTstate0 + here->BSIM4v5cqcdump) - gqdef * qdef;
-                    cqcheq = *(ckt->CKTstate0 + here->BSIM4v5cqcheq)
+                    cqdef = *(cktState0 + here->BSIM4v5cqcdump) - gqdef * qdef;
+                    cqcheq = *(cktState0 + here->BSIM4v5cqcheq)
                     - (gcqgb * vgb - gcqdb * vbd - gcqsb * vbs) + T0;
                 }
                 
-                if (ckt->CKTmode & MODEINITTRAN)
-                {   *(ckt->CKTstate1 + here->BSIM4v5cqb) =
-                    *(ckt->CKTstate0 + here->BSIM4v5cqb);
-                    *(ckt->CKTstate1 + here->BSIM4v5cqg) =
-                    *(ckt->CKTstate0 + here->BSIM4v5cqg);
-                    *(ckt->CKTstate1 + here->BSIM4v5cqd) =
-                    *(ckt->CKTstate0 + here->BSIM4v5cqd);
+                if (Mode & MODEINITTRAN)
+                {   *(cktState1 + here->BSIM4v5cqb) =
+                    *(cktState0 + here->BSIM4v5cqb);
+                    *(cktState1 + here->BSIM4v5cqg) =
+                    *(cktState0 + here->BSIM4v5cqg);
+                    *(cktState1 + here->BSIM4v5cqd) =
+                    *(cktState0 + here->BSIM4v5cqd);
                     
                     if (here->BSIM4v5rgateMod == 3)
-                    *(ckt->CKTstate1 + here->BSIM4v5cqgmid) =
-                    *(ckt->CKTstate0 + here->BSIM4v5cqgmid);
+                    *(cktState1 + here->BSIM4v5cqgmid) =
+                    *(cktState0 + here->BSIM4v5cqgmid);
                     
                     if (here->BSIM4v5rbodyMod)
-                    {   *(ckt->CKTstate1 + here->BSIM4v5cqbs) =
-                        *(ckt->CKTstate0 + here->BSIM4v5cqbs);
-                        *(ckt->CKTstate1 + here->BSIM4v5cqbd) =
-                        *(ckt->CKTstate0 + here->BSIM4v5cqbd);
+                    {   *(cktState1 + here->BSIM4v5cqbs) =
+                        *(cktState0 + here->BSIM4v5cqbs);
+                        *(cktState1 + here->BSIM4v5cqbd) =
+                        *(cktState0 + here->BSIM4v5cqbd);
                     }
                 }
                 
@@ -4721,11 +6255,11 @@
                     gIgtotg = gIgtotd = gIgtots = gIgtotb = 0.0;
                     
                     if (here->BSIM4v5rgateMod == 2)
-                    T0 = *(ckt->CKTstates[0] + here->BSIM4v5vges)
-                    - *(ckt->CKTstates[0] + here->BSIM4v5vgs);
+                    T0 = *(cktState0 + here->BSIM4v5vges)
+                    - *(cktState0 + here->BSIM4v5vgs);
                     else if (here->BSIM4v5rgateMod == 3)
-                    T0 = *(ckt->CKTstates[0] + here->BSIM4v5vgms)
-                    - *(ckt->CKTstates[0] + here->BSIM4v5vgs);
+                    T0 = *(cktState0 + here->BSIM4v5vgms)
+                    - *(cktState0 + here->BSIM4v5vgs);
                     if (here->BSIM4v5rgateMod > 1)
                     {   gcrgd = here->BSIM4v5gcrgd * T0;
                         gcrgg = here->BSIM4v5gcrgg * T0;
@@ -4865,11 +6399,11 @@
                     gIgtotg = gIgtotd = gIgtots = gIgtotb = 0.0;
                     
                     if (here->BSIM4v5rgateMod == 2)
-                    T0 = *(ckt->CKTstates[0] + here->BSIM4v5vges)
-                    - *(ckt->CKTstates[0] + here->BSIM4v5vgs);
+                    T0 = *(cktState0 + here->BSIM4v5vges)
+                    - *(cktState0 + here->BSIM4v5vgs);
                     else if (here->BSIM4v5rgateMod == 3)
-                    T0 = *(ckt->CKTstates[0] + here->BSIM4v5vgms)
-                    - *(ckt->CKTstates[0] + here->BSIM4v5vgs);
+                    T0 = *(cktState0 + here->BSIM4v5vgms)
+                    - *(cktState0 + here->BSIM4v5vgs);
                     if (here->BSIM4v5rgateMod > 1)
                     {   gcrgd = here->BSIM4v5gcrgs * T0;
                         gcrgg = here->BSIM4v5gcrgg * T0;
@@ -4967,6 +6501,56 @@
                 {   gstot = gstotd = gstotg = gstots = gstotb = 0.0;
                     gdtot = gdtotd = gdtotg = gdtots = gdtotb = 0.0;
                 }
+                double cd;
+                double model;
+                double Leffsq;
+                double esat;
+                double DelClm;
+                double EffFreq;
+                double freq;
+                double temp;
+                double N0;
+                double Nl;
+                double Ssi;
+                cd = fabs(here->BSIM4v5cd);
+                Leff = pParam->BSIM4v5leff - 2.0 * ${::TECH($::type,$::corner,$::section,lintnoi)};
+                Leffsq = Leff * Leff;
+                esat = 2.0 * here->BSIM4v5vsattemp / here->BSIM4v5ueff;
+                if(${::TECH($::type,$::corner,$::section,em)}<=0.0) DelClm = 0.0; /* flicker noise modified -JX  */
+                else {
+                    T0 = ((((Vds - here->BSIM4v5Vdseff) / pParam->BSIM4v5litl)
+                    + ${::TECH($::type,$::corner,$::section,em)}) / esat);
+                    DelClm = pParam->BSIM4v5litl * log (MAX(T0, N_MINLOG));
+                    if (DelClm < 0.0)        DelClm = 0.0;  /* bugfix */
+                }
+                EffFreq = pow(freq, ${::TECH($::type,$::corner,$::section,ef)});
+                T1 = CHARGE * CHARGE * CONSTboltz * cd * $::TEMP * here->BSIM4v5ueff;
+                T2 = 1.0e10 * EffFreq * here->BSIM4v5Abulk * ${::TECH($::type,$::corner,$::section,coxe)} * Leffsq;
+                N0 = ${::TECH($::type,$::corner,$::section,coxe)} * here->BSIM4v5Vgsteff / CHARGE;
+                Nl = ${::TECH($::type,$::corner,$::section,coxe)} * here->BSIM4v5Vgsteff
+                * (1.0 - here->BSIM4v5AbovVgst2Vtm * here->BSIM4v5Vdseff) / CHARGE;
+                
+                T3 = ${::TECH($::type,$::corner,$::section,oxideTrapDensityA)}
+                * log(MAX(((N0 + here->BSIM4v5nstar) / (Nl + here->BSIM4v5nstar)), N_MINLOG));
+                T4 = ${::TECH($::type,$::corner,$::section,oxideTrapDensityB)} * (N0 - Nl);
+                T5 = ${::TECH($::type,$::corner,$::section,oxideTrapDensityC)} * 0.5 * (N0 * N0 - Nl * Nl);
+                
+                T6 = CONSTboltz * $::TEMP * cd * cd;
+                T7 = 1.0e10 * EffFreq * Leffsq * pParam->BSIM4v5weff * here->BSIM4v5nf;
+                T8 = ${::TECH($::type,$::corner,$::section,oxideTrapDensityA)} + ${::TECH($::type,$::corner,$::section,oxideTrapDensityB)} * Nl
+                + ${::TECH($::type,$::corner,$::section,oxideTrapDensityC)} * Nl * Nl;
+                T9 = (Nl + here->BSIM4v5nstar) * (Nl + here->BSIM4v5nstar);
+                Ssi = T1 / T2 * (T3 + T4 + T5) + T6 / T7 * DelClm * T8 / T9;
+                Captured_Ssi=Ssi;
+                Captured_EffFreq=EffFreq;
+                Captured_Thermal_Noise = 4 * CONSTboltz * $::TEMP * here->BSIM4v5gds;
+                #Foreach: pointer $::bsim_access_fields {
+                    *${pointer}_out=$pointer;
+                } 
+//                *Gds_out=here->BSIM4v5gds;
+ //               *Gm_out=here->BSIM4v5gm;
+  //              *Gmb_out=here->BSIM4v5gmbs;
+   //             *Ids_out=here->BSIM4v5IdovVds;
             }
         }
     }

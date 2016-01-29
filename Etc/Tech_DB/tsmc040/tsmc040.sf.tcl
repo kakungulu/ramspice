@@ -819,6 +819,7 @@ model pch_sf_1 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.361135
     eu 1
     ua 1.297e-10
     ua1 1.19693e-09
@@ -2353,6 +2354,7 @@ model pch_sf_9 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.361477
     eu 1
     ua 1.42183e-10
     ua1 1.23335e-09
@@ -3887,6 +3889,7 @@ model pch_sf_17 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.359246
     eu 1
     ua 1.91197e-10
     ua1 1.45515e-09
@@ -5421,6 +5424,7 @@ model pch_sf_25 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.353982
     eu 1
     ua 1.82287e-10
     ua1 1.85075e-10
@@ -6955,6 +6959,7 @@ model pch_sf_33 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.348871
     eu 1
     ua -1.92157e-10
     ua1 9.81627e-10
@@ -8489,6 +8494,7 @@ model pch_sf_2 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.360565
     eu 1
     ua 1.40831e-10
     ua1 1.18177e-09
@@ -10023,6 +10029,7 @@ model pch_sf_10 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.360979
     eu 1
     ua 1.55088e-10
     ua1 1.23005e-09
@@ -11557,6 +11564,7 @@ model pch_sf_18 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.358178
     eu 1
     ua 1.80228e-10
     ua1 1.37093e-09
@@ -13091,6 +13099,7 @@ model pch_sf_26 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.352564
     eu 1
     ua 1.8429e-10
     ua1 2.02368e-11
@@ -14625,6 +14634,7 @@ model pch_sf_34 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.347329
     eu 1
     ua -1.84143e-10
     ua1 8.0735e-10
@@ -16159,6 +16169,7 @@ model pch_sf_3 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.36319
     eu 1
     ua 1.14138e-10
     ua1 1.28041e-09
@@ -17693,6 +17704,7 @@ model pch_sf_11 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.362474
     eu 1
     ua 8.41901e-11
     ua1 1.16549e-09
@@ -19227,6 +19239,7 @@ model pch_sf_19 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.368784
     eu 1
     ua 6.51138e-10
     ua1 2.98592e-09
@@ -20761,6 +20774,7 @@ model pch_sf_27 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.368077
     eu 1
     ua 2.24757e-10
     ua1 1.5353e-09
@@ -22295,6 +22309,7 @@ model pch_sf_35 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.362878
     eu 1
     ua 4.40261e-10
     ua1 2.77177e-09
@@ -23829,6 +23844,7 @@ model pch_sf_4 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.379397
     eu 1
     ua 2.92467e-10
     ua1 1.25536e-09
@@ -25363,6 +25379,7 @@ model pch_sf_12 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.379443
     eu 1
     ua 3.29347e-10
     ua1 1.21769e-09
@@ -26897,6 +26914,7 @@ model pch_sf_20 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.383948
     eu 1
     ua 5.85805e-11
     ua1 1.32712e-09
@@ -28431,6 +28449,7 @@ model pch_sf_28 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.376065
     eu 1
     ua 3.35844e-10
     ua1 1.73132e-09
@@ -29965,6 +29984,7 @@ model pch_sf_36 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.369506
     eu 1
     ua -5.99624e-10
     ua1 2.63509e-09
@@ -31499,6 +31519,7 @@ model pch_sf_5 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.383365
     eu 1
     ua -3.18715e-10
     ua1 2.25106e-09
@@ -33033,6 +33054,7 @@ model pch_sf_13 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.383914
     eu 1
     ua -3.22994e-10
     ua1 2.20487e-09
@@ -34567,6 +34589,7 @@ model pch_sf_21 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.371997
     eu 1
     ua 2.73125e-10
     ua1 2.96285e-09
@@ -36101,6 +36124,7 @@ model pch_sf_29 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.373622
     eu 1
     ua -3.15997e-11
     ua1 2.83699e-09
@@ -37635,6 +37659,7 @@ model pch_sf_37 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.382014
     eu 1
     ua -1.46844e-09
     ua1 3.06519e-09
@@ -39169,6 +39194,7 @@ model pch_sf_6 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.313303
     eu 1
     ua -1.1683e-09
     ua1 7.27518e-10
@@ -40703,6 +40729,7 @@ model pch_sf_14 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.31148
     eu 1
     ua -1.15026e-09
     ua1 8.90787e-10
@@ -42237,6 +42264,7 @@ model pch_sf_22 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.337446
     eu 1
     ua -1.57341e-09
     ua1 -1.42419e-09
@@ -43771,6 +43799,7 @@ model pch_sf_30 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.317465
     eu 1
     ua -9.24399e-11
     ua1 -2.79981e-10
@@ -45305,6 +45334,7 @@ model pch_sf_38 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.318807
     eu 1
     ua -2.49969e-09
     ua1 -8.74471e-10
@@ -46839,6 +46869,7 @@ model pch_sf_7 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.297638
     eu 1
     ua 5.43989e-10
     ua1 1.00313e-09
@@ -48373,6 +48404,7 @@ model pch_sf_15 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.30299
     eu 1
     ua 3.74898e-10
     ua1 5.69555e-10
@@ -49907,6 +49939,7 @@ model pch_sf_23 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.208522
     eu 1
     ua 5.39443e-09
     ua1 9.46416e-09
@@ -51441,6 +51474,7 @@ model pch_sf_31 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.29742
     eu 1
     ua 4.75952e-10
     ua1 -3.34535e-09
@@ -52975,6 +53009,7 @@ model pch_sf_39 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.24914
     eu 1
     ua -1.96557e-09
     ua1 8.34535e-09
@@ -54509,6 +54544,7 @@ model pch_sf_8 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.344386
     eu 1
     ua -1.1795e-09
     ua1 1.49175e-09
@@ -56043,6 +56079,7 @@ model pch_sf_16 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.345233
     eu 1
     ua -9.20574e-10
     ua1 1.92226e-09
@@ -57577,6 +57614,7 @@ model pch_sf_24 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.33116
     eu 1
     ua -6.03797e-09
     ua1 -1.01818e-08
@@ -59111,6 +59149,7 @@ model pch_sf_32 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.369071
     eu 1
     ua -1.44371e-09
     ua1 5.95854e-09
@@ -60645,6 +60684,7 @@ model pch_sf_40 {
     dvt2w 0
     drout 0.56
     dsub 0.5
+    vth0 -0.313086
     eu 1
     ua -2.19842e-09
     ua1 2.15669e-09
@@ -62179,6 +62219,7 @@ model nch_sf_17 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.37493
     eu 1.67
     ua -1.78552e-09
     ua1 -6.87491e-10
@@ -63713,6 +63754,7 @@ model nch_sf_25 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.391405
     eu 1.67
     ua -1.67626e-09
     ua1 1.62128e-09
@@ -65247,6 +65289,7 @@ model nch_sf_1 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.376311
     eu 1.67
     ua -1.82377e-09
     ua1 1.22997e-09
@@ -66781,6 +66824,7 @@ model nch_sf_33 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.339894
     eu 1.67
     ua -2.09115e-09
     ua1 9.53477e-10
@@ -68315,6 +68359,7 @@ model nch_sf_9 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.377548
     eu 1.67
     ua -1.81925e-09
     ua1 1.31195e-09
@@ -69849,6 +69894,7 @@ model nch_sf_18 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.369141
     eu 1.67
     ua -1.7688e-09
     ua1 -8.41514e-10
@@ -71383,6 +71429,7 @@ model nch_sf_26 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.385698
     eu 1.67
     ua -1.64361e-09
     ua1 1.72059e-09
@@ -72917,6 +72964,7 @@ model nch_sf_2 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.370567
     eu 1.67
     ua -1.79959e-09
     ua1 1.27139e-09
@@ -74451,6 +74499,7 @@ model nch_sf_34 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.333597
     eu 1.67
     ua -2.0769e-09
     ua1 9.61738e-10
@@ -75985,6 +76034,7 @@ model nch_sf_10 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.371847
     eu 1.67
     ua -1.79472e-09
     ua1 1.36089e-09
@@ -77519,6 +77569,7 @@ model nch_sf_19 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.427342
     eu 1.67
     ua -1.77087e-09
     ua1 7.25522e-10
@@ -79053,6 +79104,7 @@ model nch_sf_27 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.45258
     eu 1.67
     ua -1.84797e-09
     ua1 6.66394e-10
@@ -80587,6 +80639,7 @@ model nch_sf_3 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.420259
     eu 1.67
     ua -1.94294e-09
     ua1 9.68551e-10
@@ -82121,6 +82174,7 @@ model nch_sf_35 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.376137
     eu 1.67
     ua -2.22516e-09
     ua1 1.06299e-09
@@ -83655,6 +83709,7 @@ model nch_sf_11 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.420395
     eu 1.67
     ua -1.94195e-09
     ua1 9.94277e-10
@@ -85189,6 +85244,7 @@ model nch_sf_20 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.4357
     eu 1.67
     ua -2.03457e-09
     ua1 7.22956e-10
@@ -86723,6 +86779,7 @@ model nch_sf_28 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.430556
     eu 1.67
     ua -2.05939e-09
     ua1 8.76016e-10
@@ -88257,6 +88314,7 @@ model nch_sf_4 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.447764
     eu 1.67
     ua -2.12265e-09
     ua1 8.04135e-10
@@ -89791,6 +89849,7 @@ model nch_sf_36 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.438754
     eu 1.67
     ua -2.22479e-09
     ua1 5.83637e-10
@@ -91325,6 +91384,7 @@ model nch_sf_12 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.449916
     eu 1.67
     ua -2.12261e-09
     ua1 8.09986e-10
@@ -92859,6 +92919,7 @@ model nch_sf_21 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.448791
     eu 1.67
     ua -2.27037e-09
     ua1 6.13254e-10
@@ -94393,6 +94454,7 @@ model nch_sf_29 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.49534
     eu 1.67
     ua -2.39837e-09
     ua1 6.82163e-10
@@ -95927,6 +95989,7 @@ model nch_sf_5 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.463761
     eu 1.67
     ua -2.28936e-09
     ua1 6.23273e-10
@@ -97461,6 +97524,7 @@ model nch_sf_37 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.434323
     eu 1.67
     ua -2.26793e-09
     ua1 8.36137e-10
@@ -98995,6 +99059,7 @@ model nch_sf_13 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.464412
     eu 1.67
     ua -2.28209e-09
     ua1 6.17289e-10
@@ -100529,6 +100594,7 @@ model nch_sf_22 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.379812
     eu 1.67
     ua -2.38224e-09
     ua1 8.15887e-10
@@ -102063,6 +102129,7 @@ model nch_sf_30 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.327418
     eu 1.67
     ua -1.75318e-09
     ua1 7.54983e-10
@@ -103597,6 +103664,7 @@ model nch_sf_6 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.354022
     eu 1.67
     ua -2.40427e-09
     ua1 8.89738e-10
@@ -105131,6 +105199,7 @@ model nch_sf_38 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.295733
     eu 1.67
     ua -2.66952e-09
     ua1 7.20262e-10
@@ -106665,6 +106734,7 @@ model nch_sf_14 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.355499
     eu 1.67
     ua -2.42191e-09
     ua1 9.02554e-10
@@ -108199,6 +108269,7 @@ model nch_sf_23 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.446733
     eu 1.67
     ua -5.20661e-09
     ua1 -5.99152e-10
@@ -109733,6 +109804,7 @@ model nch_sf_31 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.346824
     eu 1.67
     ua -3.00236e-09
     ua1 1.49101e-09
@@ -111267,6 +111339,7 @@ model nch_sf_7 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.351918
     eu 1.67
     ua -3.15448e-09
     ua1 3.74423e-10
@@ -112801,6 +112874,7 @@ model nch_sf_39 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.248401
     eu 1.67
     ua -2.371e-09
     ua1 1.47805e-09
@@ -114335,6 +114409,7 @@ model nch_sf_15 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.351786
     eu 1.67
     ua -3.0787e-09
     ua1 3.5617e-10
@@ -115869,6 +115944,7 @@ model nch_sf_24 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.321585
     eu 1.67
     ua -5.36907e-09
     ua1 2.3571e-09
@@ -117403,6 +117479,7 @@ model nch_sf_32 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.398499
     eu 1.67
     ua -1.71486e-09
     ua1 -1.19357e-09
@@ -118937,6 +119014,7 @@ model nch_sf_8 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.355739
     eu 1.67
     ua -2.25804e-09
     ua1 4.83725e-10
@@ -120471,6 +120549,7 @@ model nch_sf_40 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.350033
     eu 1.67
     ua -5.58916e-10
     ua1 5.43331e-10
@@ -122005,6 +122084,7 @@ model nch_sf_16 {
     dvt2w 0
     drout 0.56
     dsub 0.75
+    vth0 0.357517
     eu 1.67
     ua -2.19661e-09
     ua1 4.30713e-10

@@ -37,7 +37,7 @@ define_sizers {
     Iref {} 1e-6 2e-5 A
 }
 set name [file tail [file dirname [info script]]]
-set ::topologies(op_amp,schematic) {
+set ::topologies(op_amp_inst,schematic) {
 NewFormat	
 vdd		blank			blank		blank		vdd			blank		blank		blank		blank	blank	vdd		blank			vdd			blank		blank		vdd 	    nl  		    
 pmos/fr		twire			line/r			line/r		pmos/rrr	blank		blank		blank		blank	blank	pmos/fr		line/r			pmos_linethrough/fr	twire		line/r		pmos/rrr	    nl
