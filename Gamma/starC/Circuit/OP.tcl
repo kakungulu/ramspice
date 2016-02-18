@@ -82,7 +82,7 @@ foreach node $::independent_nodes {
     set expression($node) $::det_calc_result
     Info: ===== $node =====
     Info: $expression($node)
-    $node=>($expression($node))*@Ted
+    $node=>($expression($node))*Ted
     skip {$node=="vdd"}
     skip {![info exists ::MNA($i,$i)]}
     skip {$::MNA($i,$i)=="0"}
@@ -145,10 +145,10 @@ if {$::opt(bsim)} {
 ############   DC Properties
 ############
 #####################################################################################################
-*c "@Det=$expression(Det);"
-if {$::debug_mode} {*c "printf(\"Det=%g\\n\",@Det);"}
-*c "@Ted=1/@Det;"
-if {$::debug_mode} {*c "printf(\"Ted=%g\\n\",@Ted);"}
+*c "double Det=$expression(Det);"
+if {$::debug_mode} {*c "printf(\"Det=%g\\n\",Det);"}
+*c "double Ted=1/Det;"
+if {$::debug_mode} {*c "printf(\"Ted=%g\\n\",Ted);"}
 if {[@ param:inn ?] && [@ param:inp ?]} {
     set out_node_expression $expression(outp)
     *c "double der_p=[DERIVE @param:inp $out_node_expression];"
@@ -175,7 +175,7 @@ if {$::debug_mode} {*c "printf(\" Adc=%g (%gdB)\\n\",@property:Adc,20*log10(fabs
 .prep_mna zout
 DET ::MNA ::MNAy [lsearch $::independent_nodes $::output_net]
 set expression(Rout) $::det_calc_result
-*c "@property:Rout=fabs(($expression(Rout))*@Ted);"
+*c "@property:Rout=fabs(($expression(Rout))*Ted);"
 #####################################################################################################
 ############
 ############   AC Properties
@@ -197,7 +197,8 @@ if {[set index_out [lsearch $::independent_nodes outp]]!=-1} {
     exit
 }	
 Info: AC
-set expression(dDet_ac) [derive_expression @s $expression(Det_ac)]
+regsub -all {\@s} $expression(Det_ac) s expression(Det_ac)
+set expression(dDet_ac) [derive_expression s $expression(Det_ac)]
 set views {gg gd gs gb dd dg db ds sd sg ss sb bd bg bs bb}
 foreach transistor $::all_transistors {
     foreach key [array names ::transistors $transistor,*] {
@@ -220,7 +221,7 @@ foreach transistor $::all_transistors {
         }
     }
 }	    
-*c "@s=-1;"
+*c "float s=-1;"
 *c "int BW_it;"
 if {$::debug_mode} {*c "printf(\"num=$expression(Det_ac)\\n\");"}
 if {$::debug_mode} {*c "printf(\"denom=$expression(dDet_ac)\\n\");"}
@@ -244,20 +245,20 @@ s2iW $expression(Det_ac) spectrum_denom_real spectrum_denom_imag
 *c "      if (W==0) W=1; else W*=1.01;"
 *c "\}"
 *c "@property:BW=fabs(W/(2*3.141592656));"
-*c "for (BW_it=0;BW_it<5;BW_it++)  @s-=($expression(Det_ac))/($expression(dDet_ac));"
+*c "for (BW_it=0;BW_it<5;BW_it++)  s-=($expression(Det_ac))/($expression(dDet_ac));"
 *c "@property:BW:s=$expression(dDet_ac);"
-*c "@p1=-@s;"
+*c "@p1=-s;"
 if {$::debug_mode} {*c "printf(\"BW=%g\\n\",@property:BW);"}
 *c "if (!isfinite(@property:BW))  \{@status:fail=8; return TCL_ERROR;\}"
 # Move away from the found root 
-*c "@s-=1e3;"
+*c "s-=1e3;"
 # Find next root (=pole)
-*c "for (BW_it=0;BW_it<20;BW_it++)  @s-=(($expression(Det_ac))*(@s+@p1-5e2))/(($expression(dDet_ac))*(@s+@p1-5e2)-($expression(Det_ac)));"
-*c "@p2=-@s;"
+*c "for (BW_it=0;BW_it<20;BW_it++)  s-=(($expression(Det_ac))*(s+@p1-5e2))/(($expression(dDet_ac))*(s+@p1-5e2)-($expression(Det_ac)));"
+*c "@p2=-s;"
 if {$::debug_mode} {*c "printf(\"Poles: %g    %g\\n\",@p1,@p2);"}
-*c "if (!isfinite(p1)) \{"
+*c "if (!isfinite(@p1)) \{"
 *c "    @property:ts=1/@property:BW;"
-*c "\} else if (!isfinite(p2)) \{"
+*c "\} else if (!isfinite(@p2)) \{"
 *c "    @property:ts=-log(0.02)/@p1;"
 *c "\} else \{"
 *c "    float A1=-@p2/(-@p1+@p2);"
@@ -306,7 +307,7 @@ foreach transistor $::all_transistors {
     if {0} {*c "printf(\"$transistor Nt=%gA^2/Hz Nf(f=1Hz)=%gA^2/Hz\\n\",@$transistor:Nt,@$transistor:Nf);"}
 }
 foreach transistor $::all_transistors {
-    *c "float current_transfer_$transistor=@Ted*([DERIVE @$transistor:Ideq $out_node_expression])/@property:Adc;"
+    *c "float current_transfer_$transistor=Ted*([DERIVE @$transistor:Ideq $out_node_expression])/@property:Adc;"
     if {0} {*c "printf(\"$transistor:noise_trans=%gOhm\\n\",current_transfer_$transistor);"}
 } 
 foreach noise_type {t f} {   
@@ -349,9 +350,9 @@ if {$::debug_mode} {*c "printf(\"Temporary Area=%g\\n\",@property:Area);"}
 foreach transistor $::all_transistors {
     skip {![regexp {^in} $::transistors($transistor,g)]}
     if {$::transistors($transistor,type)=="pch"} {
-        *c "single_transistor_vos=vos(-@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W));"
+        *c "single_transistor_vos=vos(-@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W),@property:Area);"
     } else {
-        *c "single_transistor_vos=vos(@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W));"
+        *c "single_transistor_vos=vos(@$transistor:Ids*@$::transistors($transistor,L)/@$::transistors($transistor,W),@property:Area);"
     }
     *c "@property:Vos+=single_transistor_vos*single_transistor_vos;"
 }	

@@ -116,11 +116,11 @@ proc tcl_preprocessor {c_code} {
     set lines [split $c_code \n]
     set num_of_vars [regexp -all {\$} $lines]
     if {$num_of_vars} {
-#        puts "Info: File contains $num_of_vars variables"
+        #        puts "Info: File contains $num_of_vars variables"
     }
     for {set i 0} {$i<[llength $lines]} {incr i ; set line [lindex $lines $i]} {
         set line [lindex $lines $i]
-#	    puts "$i/[llength $lines] $line"
+        #	    puts "$i/[llength $lines] $line"
         if {[regexp {^\s*\/\/} $line]} {
             print_line $line
             continue
@@ -149,38 +149,38 @@ proc tcl_preprocessor {c_code} {
         }
         # Substitute Tcl variables everywhere else.
         while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\(([^\(\)]+)\)\}} $line both varname key] } {
-	    set subst_key [subst $key]
-	    # puts "$i Subst? $varname\($key\)"
- #           if {![uplevel "info exists $varname\($subst_key\)"]} {
-#	        uplevel "set $varname\($subst_key\) 0"
-#	    }
+            set subst_key [subst $key]
+            # puts "$i Subst? $varname\($key\)"
+            #           if {![uplevel "info exists $varname\($subst_key\)"]} {
+                #	        uplevel "set $varname\($subst_key\) 0"
+            #	    }
             if {[uplevel "info exists $varname\($subst_key\)"]} {
-	        set val [lindex [uplevel "array get $varname $subst_key"] 1]
-	        # puts "$i Substituting $both with $val"
-		regsub -all {\$} $key "\\\$" key
+                set val [lindex [uplevel "array get $varname $subst_key"] 1]
+                # puts "$i Substituting $both with $val"
+                regsub -all {\$} $key "\\\$" key
                 regsub -all "\\\$\\\{$varname\\\($key\\\)\\\}" $line $val line
-	        # puts "$i YES line after=$line"
+                # puts "$i YES line after=$line"
             } else {
                 regsub -all $both $line "\$`$varname\($key\)" line
-	        puts "$i NO line after=$line"
-		exit
+                puts "$i NO line after=$line"
+                exit
             }
         }
         while {[regexp {\$\{(:*[a-zA-Z0-9_]+)\}} $line -> varname] } {
-	    # # puts "Subst? $varname"
+            # # puts "Subst? $varname"
             if {[uplevel "info exists $varname"] && ![uplevel "array exists $varname"]} {
-	        set val [uplevel "set $varname"]
-	        # # puts "Info: Substituting $varname with $val"
+                set val [uplevel "set $varname"]
+                # # puts "Info: Substituting $varname with $val"
                 regsub -all "\\\$\\\{$varname\\\}" $line $val line
             } else {
                 regsub -all "\\\$\\\{$varname\\\}" $line "\$`$varname" line
             }
         }
         while {[regexp {\$(:*[a-zA-Z0-9_]+)} $line -> varname] } {
-	    # # puts "Subst? $varname"
+            # # puts "Subst? $varname"
             if {[uplevel "info exists $varname"] && ![uplevel "array exists $varname"]} {
-	        set val [uplevel "set $varname"]
-	        # # puts "Info: Substituting $varname with  $val"
+                set val [uplevel "set $varname"]
+                # # puts "Info: Substituting $varname with  $val"
                 regsub -all "\\\$$varname" $line $val line
             } else {
                 regsub -all "\\\$$varname" $line "\$`$varname" line
@@ -207,6 +207,77 @@ proc all_paths {{dir .} {visited {}}} {
     }
     return $retval
 }
+if {![file exists ~/public_html]} {
+    file mkdir ~/public_html
+}
+# Look for new netlists
+
+set uncompiled_topologies {}
+set CC [open $::env(RAMSPICE)/cc.csh w]
+puts $CC "#!/bin/tcsh"
+puts $CC "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
+foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
+    set topology [file rootname [file tail $netlist_file]]
+    if {![file exists $::env(RAMSPICE)/Etc/Templates/$topology]} {
+        file mkdir $::env(RAMSPICE)/Etc/Templates/$topology
+    }
+    set compile_topology 0
+    if {![file exists $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]} {
+        set compile_topology 1
+    } elseif {[file mtime $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]<[file mtime $netlist_file]} {
+        set compile_topology 1
+    }
+    if {$compile_topology} {
+        lappend uncompiled_topologies $topology
+        puts $CC "$::env(RAMSPICE)/GammaCC/circuit_compiler.tcl -topology $topology | & tee -a log"
+    }
+}
+close $CC
+set CC [open $::env(RAMSPICE)/Gamma/Data/init_gamma.ignore.c w]
+foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
+    set topology [file rootname [file tail $netlist_file]]
+    if {![file exists $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]} continue
+    puts $CC "Gamma_${topology}_Init(interp);"
+}    
+close $CC
+set CC [open $::env(RAMSPICE)/Gamma/Data/register_gamma.ignore.c w]
+foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
+    set topology [file rootname [file tail $netlist_file]]
+    if {![file exists $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]} continue
+    puts $CC "Gamma_${topology}_Register(interp);"
+}    
+close $CC
+set CC [open $::env(RAMSPICE)/Gamma/Data/init_gamma.ignore.h w]
+puts $CC "#ifndef INIT_GAMMA"
+puts $CC "#define INIT_GAMMA"
+foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
+    set topology [file rootname [file tail $netlist_file]]
+    if {![file exists $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]} continue
+    set I [open $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c r]
+    while {[gets $I line]>=0} { 
+        if {![regexp {^int\s+(\S+)\s+\{\s*$} $line -> cmd]} continue
+        puts $CC "$cmd;"
+    }
+}    
+puts $CC "#endif"
+close $CC
+if {$uncompiled_topologies!={}} {
+    puts "Info: $uncompiled_topologies need compiling. Run cc.csh after this and rerun comp."
+} else {
+    set new_gamma_c_files 0
+    foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
+        set topology [file rootname [file tail $netlist_file]]
+        if {[file mtime $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c]>[file mtime $::env(RAMSPICE)/Gamma/Data/ctree.c]} {
+            set new_gamma_c_files 1
+            break
+        }
+    }
+    if {$new_gamma_c_files} {
+        exec touch $::env(RAMSPICE)/Gamma/Data/ctree.c
+    }
+}	
+exec chmod +x $::env(RAMSPICE)/cc.csh
+
 foreach binary $::opt(bins) {
     set binary_flag $::bin2flag($binary)
     foreach target $::opt(targets) {
@@ -236,7 +307,7 @@ foreach binary $::opt(bins) {
         set O [open compile${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
-        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0  -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
+        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0 -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
         set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
         array set mtimes {}
         set copied_filenames {}
@@ -250,7 +321,7 @@ foreach binary $::opt(bins) {
             if {$binary=="gamma" && [string match *spice* $path]} continue
             foreach file [glob -nocomplain $path/*.h $path/*.c $path/*.cpp] {
                 if {$binary=="ramspice" && [string match *Gamma/main.c $file]} continue
-		if {[string match *.ignore.c $file]} continue
+                if {[string match *.ignore.c $file]} continue
                 set filename [file tail $file]
                 set fileext [file extension $file]
                 set fileroot [file rootname $filename]
@@ -347,9 +418,16 @@ foreach binary $::opt(bins) {
         exec chmod +x ./link${binary}-$target.tcsh
         
         puts "Info: Compiling [c]"
-        exec ./compile${binary}-$target.tcsh
+        catch {exec ./compile${binary}-$target.tcsh}
+	set I [open log r]
+	while {[gets $I line]>=0} {
+	    if {![regexp {error:} $line]} continue
+	    if {[regexp {Derror:} $line]} continue
+	    puts $line
+	}
+	close $I
         puts "Info: Linking [c]"
-        exec ./link${binary}-$target.tcsh
+        catch {exec ./link${binary}-$target.tcsh}
         #        file delete compile${binary}-$target.tcsh
         #        file delete link${binary}-$target.tcsh
     }

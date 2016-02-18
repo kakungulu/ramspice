@@ -23,7 +23,7 @@
         *c "@size:$s+=step;"
     }
     *c "int pre_volume=p->content->num_of;"
-    *c "if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) \{i--; continue;\}"
+    *c "if (tcl_gamma_${::opt(topology)}_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) \{i--; continue;\}"
     *c "if (pre_volume==p->content->num_of) \{i--; continue;\}"
     *c "if (p->content->num_of%1000==0) \{"
     *c "    printf(\"               %ld/%g=%g%% max gain=%g\\n\",p->content->num_of,@config:pat_size_target,100*p->content->num_of/@config:pat_size_target,@max_Adc);"

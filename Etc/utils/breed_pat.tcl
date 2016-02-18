@@ -27,7 +27,7 @@ default ::opt(epsrox) 3.9
 default ::opt(source) $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/4d/$::opt(rez)/
 source $::env(RAMSPICE)/Etc/Tech_DB/$::opt(tech)/binning_$::opt(tech).tcl
 @ max_Adc = 0
-@ / load Etc/Templates/$::opt(topology)/models_$::opt(tech).db
+@ / load Etc/Templates/$::opt(topology)/$::opt(tech).db
 
 @ /look_up_tables foreach_child type {
     @ /look_up_tables/$type foreach_child table {
@@ -124,7 +124,7 @@ source $::env(RAMSPICE)/Gamma/Init.tcl
 @ size/Wp/min = 120e-9
 @ size/Wn/min = 120e-9
 @ size/Wo/min = 120e-9
-@ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
+# @ $::opt(topology)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
 @ config/pat_size_target = $::opt(sample)
 @ config/op_iterations = 10000
 load $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/libGamma.so

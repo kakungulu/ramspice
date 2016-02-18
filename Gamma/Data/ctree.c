@@ -1,6 +1,7 @@
 #include "ramspice_types.h"
 #include "ctree.h"
 #include "Gamma/BSIM/4v5/bsim4v5_gamma_calc.h"
+#include "Gamma/Data/init_gamma.ignore.h"
 #ifdef SPICE_COMPILATION
 #include "ngspice/config.h"
 #include "ngspice/macros.h"
@@ -56,6 +57,30 @@ IFfrontEnd nutmeginfo = {
     OUTattributes
 };
 #endif
+#tcl set tech_files [glob -nocomplain $::env(RAMSPICE)/Etc/Tech_DB/*/vos] 
+#Foreach: ::tech_file $tech_files {
+    #tcl set tech [file tail [file dirname $::tech_file]]
+    vos_${tech}(float isize,float area) {
+    	#include "$::tech_file"
+    }
+}
+static int
+set_gamma_tech (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+    if (argc!=2) {
+        #Error: "usage: %s <tech>" argv[0]
+        return TCL_ERROR;
+    }
+    #tcl set tech_files [glob -nocomplain $::env(RAMSPICE)/Etc/Tech_DB/*/vos] 
+    #Foreach: ::tech_file $tech_files {
+        #tcl set tech [file tail [file dirname $::tech_file]]
+        if (strcmp(argv[1],"$tech")==0) {
+            vos=vos_$tech;
+            return TCL_OK;
+        }
+    }
+    #Error: "No such technology: %s" argv[1]
+    return TCL_ERROR;
+}
 
 #Foreach: type $::vector_pointer_types {
     vector_pointer_$type *new_vector_pointer_$type() {
@@ -390,47 +415,47 @@ gamma_info (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
 #tcl set tech_files [glob $::env(RAMSPICE)/Etc/Tech_DB/?*/sort_*]
 #tcl set tech_files $::env(RAMSPICE)/Etc/Tech_DB/tsmc040/sort_tsmc040
 #Foreach: tech_file $tech_files {
-#tcl regsub {^.*sort_} $tech_file {} tech
-static int
-get_bsim_${tech} (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
-    if (argc!=8) {
-        #Error: "usage: %s <type> <corner> <Vgs> <Vds> <Vbs> <L> <W>" argv[0]
-        return TCL_ERROR;
+    #tcl regsub {^.*sort_} $tech_file {} tech
+    static int
+    get_bsim_${tech} (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+        if (argc!=8) {
+            #Error: "usage: %s <type> <corner> <Vgs> <Vds> <Vbs> <L> <W>" argv[0]
+            return TCL_ERROR;
+        }
+        #Foreach: pointer $::bsim_access_fields {
+            float ${pointer};
+        } 
+        float Vgs=atof(argv[3]);
+        float Vds=atof(argv[4]);
+        float Vbs=atof(argv[5]);
+        float L=atof(argv[6]);
+        float W=atof(argv[7]);
+        int type_index=-1;
+        if (strcmp(argv[1],"nch")==0) type_index=0;
+        if (strcmp(argv[1],"pch")==0) type_index=1;
+        if (type_index==-1) {
+            #Error: "%s: No such transistor type %s" argv[0] argv[1]
+            return TCL_ERROR;
+        }
+        int corner_index=-1;
+        if (strcmp(argv[2],"ss")==0) corner_index=0;
+        if (strcmp(argv[2],"tt")==0) corner_index=1;
+        if (strcmp(argv[2],"ff")==0) corner_index=2;
+        if (corner_index==-1) {
+            #Error: "%s: No such corner %s" argv[0] argv[2]
+            return TCL_ERROR;
+        }
+        Gamma_${tech}_Calc(type_index,corner_index,Vgs,Vds,Vbs,L,W
+        #Foreach: pointer $::bsim_access_fields {
+            ,&${pointer}
+        } 
+        );
+        Tcl_ResetResult(interp);
+        #Foreach: pointer $::bsim_access_fields {
+            tcl_append_float(interp,$pointer);
+        }
+        return TCL_OK;
     }
-    #Foreach: pointer $::bsim_access_fields {
-    	float ${pointer};
-    } 
-    float Vgs=atof(argv[3]);
-    float Vds=atof(argv[4]);
-    float Vbs=atof(argv[5]);
-    float L=atof(argv[6]);
-    float W=atof(argv[7]);
-    int type_index=-1;
-    if (strcmp(argv[1],"nch")==0) type_index=0;
-    if (strcmp(argv[1],"pch")==0) type_index=1;
-    if (type_index==-1) {
-        #Error: "%s: No such transistor type %s" argv[0] argv[1]
-        return TCL_ERROR;
-    }
-    int corner_index=-1;
-    if (strcmp(argv[2],"ss")==0) corner_index=0;
-    if (strcmp(argv[2],"tt")==0) corner_index=1;
-    if (strcmp(argv[2],"ff")==0) corner_index=2;
-    if (corner_index==-1) {
-        #Error: "%s: No such corner %s" argv[0] argv[2]
-        return TCL_ERROR;
-    }
-    Gamma_${tech}_Calc(type_index,corner_index,Vgs,Vds,Vbs,L,W
-		#Foreach: pointer $::bsim_access_fields {
-		    ,&${pointer}
-		} 
-    );
-    Tcl_ResetResult(interp);
-    #Foreach: pointer $::bsim_access_fields {
-        tcl_append_float(interp,$pointer);
-    }
-    return TCL_OK;
-}
 }
 /********************************************************
 Binary File interface from Tcl
@@ -811,7 +836,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
     Tcl_SplitList(interp,argv[2],&dim,&sizes_string);
     ordinal size[MAXDIM];
     for (i=0;i<dim;i++) size[i]=atoi(sizes_string[i]);
-    free(sizes_string);
+    //    free(sizes_string);
     
     ordinal offset[MAXDIM];
     offset[0]=1;
@@ -826,7 +851,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
     Tcl_SplitList(interp,argv[5],&postfix_dim,&postfix_indices_string);
     ordinal postfix_indices[MAXDIM];
     for (i=0;i<postfix_dim;i++) postfix_indices[i]=atoi(postfix_indices_string[i]);
-    free(postfix_indices_string);
+    //    free(postfix_indices_string);
     ordinal initial_offset=0;
     for (i=0;i<postfix_dim;i++) initial_offset+=postfix_indices[i]*offset[i+vector_dim+slice_dim];
     struct dvec *d=plot_cur->pl_dvecs;
@@ -855,7 +880,7 @@ save_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         }
         ordinal final_offset=initial_offset;
         for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
-        free(vector_index_string);
+        //        //free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
         float w;
@@ -912,7 +937,7 @@ save_characterization_slice_differential (ClientData clientData,Tcl_Interp *inte
     Tcl_SplitList(interp,argv[2],&dim,&sizes_string);
     ordinal size[MAXDIM];
     for (i=0;i<dim;i++) size[i]=atoi(sizes_string[i]);
-    free(sizes_string);
+    //free(sizes_string);
     
     ordinal offset[MAXDIM];
     offset[0]=1;
@@ -927,7 +952,7 @@ save_characterization_slice_differential (ClientData clientData,Tcl_Interp *inte
     Tcl_SplitList(interp,argv[5],&postfix_dim,&postfix_indices_string);
     ordinal postfix_indices[MAXDIM];
     for (i=0;i<postfix_dim;i++) postfix_indices[i]=atoi(postfix_indices_string[i]);
-    free(postfix_indices_string);
+    //free(postfix_indices_string);
     ordinal initial_offset=0;
     for (i=0;i<postfix_dim;i++) initial_offset+=postfix_indices[i]*offset[i+vector_dim+slice_dim];
     struct dvec *d=plot_cur->pl_dvecs;
@@ -967,8 +992,14 @@ save_characterization_slice_differential (ClientData clientData,Tcl_Interp *inte
             continue;
         }
         ordinal final_offset=initial_offset;
-        for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
-        free(vector_index_string);
+        #Info: "initial_offset=%d starting_index=%d" initial_offset starting_index
+        for (i=0;i<slice_dim;i++) {
+            #Info: "%s atoi=%d offset=%d" vector_index_string[i] atoi(vector_index_string[i]) offset[i+vector_dim]
+            final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
+        }    
+        //free(vector_index_string);
+        #Info: "Saving vector %s for slice %s (differential) in %s offset=%d" b->v_name argv[5],argv[1] final_offset
+        
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
         /*        for (i=0;i<d->v_length;i++) {
@@ -1008,7 +1039,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
     Tcl_SplitList(interp,argv[2],&dim,&sizes_string);
     ordinal size[MAXDIM];
     for (i=0;i<dim;i++) size[i]=atoi(sizes_string[i]);
-    free(sizes_string);
+    //free(sizes_string);
     
     ordinal offset[MAXDIM];
     offset[0]=1;
@@ -1023,7 +1054,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
     Tcl_SplitList(interp,argv[5],&postfix_dim,&postfix_indices_string);
     ordinal postfix_indices[MAXDIM];
     for (i=0;i<postfix_dim;i++) postfix_indices[i]=atoi(postfix_indices_string[i]);
-    free(postfix_indices_string);
+    //free(postfix_indices_string);
     ordinal initial_offset=0;
     for (i=0;i<postfix_dim;i++) initial_offset+=postfix_indices[i]*offset[i+vector_dim+slice_dim];
     int first_offset_argc;
@@ -1031,7 +1062,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
     Tcl_SplitList(interp,argv[7],&first_offset_argc,&first_offset_argv);
     float *previous_offset=(float *)malloc(sizeof(scalar)*first_offset_argc);
     for (i=0;i<first_offset_argc;i++) previous_offset[i]=atof(first_offset_argv[i]);
-    free(first_offset_argv);
+    //free(first_offset_argv);
     int vector_order_argc;
     char **vector_order_argv;
     Tcl_SplitList(interp,argv[6],&vector_order_argc,&vector_order_argv);
@@ -1059,7 +1090,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
         if (slice_dim!=tmp_dim) continue;
         ordinal final_offset=initial_offset;
         for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
-        free(vector_index_string);
+        //free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
         if (factor_mode) {
@@ -1074,7 +1105,7 @@ save_characterization_slice_delta (ClientData clientData,Tcl_Interp *interp,int 
             }
         }
     }
-    free(previous_offset);
+    //free(previous_offset);
     fclose(O);
     return TCL_OK;
 }
@@ -1105,7 +1136,7 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
     Tcl_SplitList(interp,argv[2],&dim,&sizes_string);
     ordinal size[MAXDIM];
     for (i=0;i<dim;i++) size[i]=atoi(sizes_string[i]);
-    free(sizes_string);
+    //free(sizes_string);
     
     ordinal offset[MAXDIM];
     offset[0]=1;
@@ -1120,7 +1151,7 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
     Tcl_SplitList(interp,argv[5],&postfix_dim,&postfix_indices_string);
     ordinal postfix_indices[MAXDIM];
     for (i=0;i<postfix_dim;i++) postfix_indices[i]=atoi(postfix_indices_string[i]);
-    free(postfix_indices_string);
+    //free(postfix_indices_string);
     ordinal initial_offset=0;
     for (i=0;i<postfix_dim;i++) initial_offset+=postfix_indices[i]*offset[i+vector_dim+slice_dim];
     int first_offset_argc;
@@ -1133,8 +1164,8 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
     Tcl_SplitList(interp,argv[8],&baseline_first_offset_argc,&baseline_first_offset_argv);
     float *baseline_previous_offset=(float *)malloc(sizeof(scalar)*baseline_first_offset_argc);
     for (i=0;i<baseline_first_offset_argc;i++) baseline_previous_offset[i]=atof(baseline_first_offset_argv[i]);
-    free(first_offset_argv);
-    free(baseline_first_offset_argv);
+    //free(first_offset_argv);
+    //free(baseline_first_offset_argv);
     int vector_order_argc;
     char **vector_order_argv;
     Tcl_SplitList(interp,argv[6],&vector_order_argc,&vector_order_argv);
@@ -1168,7 +1199,7 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
         if (slice_dim!=tmp_dim) continue;
         ordinal final_offset=initial_offset;
         for (i=0;i<slice_dim;i++) final_offset+=(atoi(vector_index_string[i])-starting_index)*offset[i+vector_dim];
-        free(vector_index_string);
+        //free(vector_index_string);
         write_ordinal(O,final_offset);
         write_ordinal(O,d->v_length);
         if (factor_mode) {
@@ -1187,8 +1218,8 @@ save_characterization_slice_delta_differential (ClientData clientData,Tcl_Interp
             }
         }
     }
-    free(previous_offset);
-    free(baseline_previous_offset);
+    //free(previous_offset);
+    //free(baseline_previous_offset);
     fclose(O);
     return TCL_OK;
 }
@@ -1215,6 +1246,7 @@ load_characterization_slice (ClientData clientData,Tcl_Interp *interp,int argc,c
         }    
     }
     done_reading();
+    #Info: "Slice loaded from file %s" argv[2]
     return TCL_OK;
 }
 #endif
@@ -2132,6 +2164,12 @@ tcl_verbose (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
     tcl_append_int(interp,verbose);
     return TCL_OK;
 }    
+Gamma_Init (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
+{
+    #tcl set path $::env(RAMSPICE)
+    #include "$path/Gamma/Data/init_gamma.ignore.c"
+    return TCL_OK;
+}
 #ifdef SPICE_COMPILATION
 static int
 set_ckt_lines (ClientData clientData,Tcl_Interp *interp,int argc,char *argv[])
@@ -2307,9 +2345,9 @@ context *new_context(context *i_parent, char *i_name,CTYPE i_type) {
     // Index?
     int index=-1;
     int i;
-    if (i_name) {
+    if (i_name) if(i_name[0]=='#') {
         index=0;
-        for (i=0;i_name[i];i++) {
+        for (i=1;i_name[i];i++) {
             if (i_name[i]<'0') break;
             if (i_name[i]>'9') break;
             index*=10;
@@ -2336,7 +2374,7 @@ context *new_context(context *i_parent, char *i_name,CTYPE i_type) {
     new_context->sibling_order=0;
     new_context->parent=i_parent;
     if (i_parent) {
-        if (index==-1) index=i_parent->num_of_children;
+        if (index==-1) index=i_parent->num_of_children; 
         while (index>=i_parent->max_num_of_children) {
             context **copied_list_of_children=(context **)malloc(sizeof(context *)*i_parent->max_num_of_children*2);
             for (i=0;i<i_parent->max_num_of_children;i++) copied_list_of_children[i]=i_parent->children[i];
@@ -5677,6 +5715,8 @@ int polish2expr(char *expr,int start,int end) {
             Tcl_CreateCommand(interp, "read_bin", tcl_read_bin, NULL, NULL);
             Tcl_CreateCommand(interp, "ginfo", gamma_info, NULL, NULL);
             Tcl_CreateCommand(interp, "heatmap", tcl_heatmap, NULL, NULL);
+            Tcl_CreateCommand(interp, "set_gamma_tech", set_gamma_tech, NULL, NULL);
+            Tcl_CreateCommand(interp, "init_gamma", Gamma_Init, NULL, NULL);
             OpenFileForReading=NULL;
             OpenFileForWriting=NULL;
             #Foreach: type {Info Warning Error Print Nl Token Dinfo Dwarning Derror Dprint Dtoken Dnl} {
@@ -5685,7 +5725,10 @@ int polish2expr(char *expr,int start,int end) {
             #Foreach: global_var $::global_c_variables {
                 $global_var=0.0;
             }
-	    register_tsmc040();
+            register_tsmc040();
+ 	    heatmap_svg_buffer_size=4*1024;
+	    heatmap_svg_buffer=(char *)malloc(sizeof(char)*heatmap_svg_buffer_size);
+            #include "$path/Gamma/Data/register_gamma.ignore.c"
         }
         int execute_main_commands(Tcl_Interp *interp,int argc,char *argv[]) {
             int i;

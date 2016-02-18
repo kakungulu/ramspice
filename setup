@@ -1,7 +1,7 @@
 setenv LD_LIBRARY_PATH `pwd`:/home/ystatter/threads/thread2.7.0:/usr/bin/lib
 setenv RAMSPICE `pwd`
 setenv PATH ${PATH}:${PWD}
-rsc regular
+# rsc regular
 alias comp "$RAMSPICE/Etc/utils/compile.tcl"
 
 

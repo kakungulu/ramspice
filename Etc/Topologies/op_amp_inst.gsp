@@ -55,5 +55,5 @@ vinn 0 inn param:inn
 vb1 0 net017 param:vb1
 vb2 0 net045 param:vb2
 
-.dependence net017_V=outp_V-vdd_V/2
-.dependence net045_V=outp_V-vdd_V/2
+.dependence @net017:V=@outp:V-@vdd:V/2
+.dependence @net045:V=@outp:V-@vdd:V/2

@@ -3,12 +3,15 @@ default ::opt(vin) 0.55
 .param rload = 1e9
 .param in = $::opt(vin)
 .param vdd = $::opt(topv)
+Info: 1 params=[@ param list]
 .size L = 360e-9 $::global_nlmin 10e-6 10e-9
 .size W = 360e-9 @size:L 10e-6 10e-9
 .size iref = $::opt(iref) 1e-6 30e-6 1e-6
 .size rin = 500 500 10e6 10
+Info: 2 params=[@ param list]
 
 iref out 0 size:iref
+Info: 3 params=[@ param list]
 vin 0 in param:in
 vdd 0 vdd param:vdd
 mn_ref  out mid 0 0 nch W=size:W L=size:L

@@ -32,8 +32,8 @@ proc unknown {args} {
         return
     }
     if {[regexp {^[vV](\S+)\s+(.*)$} $args -> name arguments]} {
-        if {[catch "add_vdc $name $arguments"]} {
-	    Warning: SPICE line ignored: $args
+        if {[catch "add_vdc $name $arguments" msg]} {
+	    Warning: SPICE line ignored: msg=$msg info=$::errorInfo
 	}
         return
     }

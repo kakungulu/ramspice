@@ -28,6 +28,6 @@
         *c "\}"
         *c "@size:$s+=step;"
     }
-    *c "if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;"
+    *c "if (tcl_gamma_${::opt(topology)}_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;"
     *c "if (p->content->num_of>=breed_count+@circuit_breed_target) break;"
     *c "\}"

@@ -333,6 +333,7 @@ int det_calc_avoid_cols[256];
 // General Purpose scratch buffer
 char result_buffer[1024*1024*1024];
 long result_position;
+float (*vos)(float isize,float area);
 #endif
 
 

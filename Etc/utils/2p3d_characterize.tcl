@@ -519,7 +519,7 @@ foreach type [split $::opt(device) :] {
                             if {[regexp {^p} $type]} {
                                 set Vt [expr -$Vt]
                             }
-                            ^ @ look_up_tables/$type/$bin_num/Vt/${::corner}($i2,$i3) = $Vt
+                            ^ @ look_up_tables/$type/#$bin_num/Vt/${::corner}($i2,$i3) = $Vt
                             if {$i3>3} {
                                 ^ if "abs($Vt)<abs(\$::minVt)" "set ::minVt $Vt"  
                             }
@@ -542,7 +542,7 @@ foreach type [split $::opt(device) :] {
                                 exit
                             }
                             set Va [expr $max_supply-$Ids_high/$slope]
-                            ^ @ look_up_tables/$type/$bin_num/Va/${::corner}($i2,$i3) = $Va
+                            ^ @ look_up_tables/$type/#$bin_num/Va/${::corner}($i2,$i3) = $Va
                             incr i3
                         }
                     }  
@@ -551,17 +551,17 @@ foreach type [split $::opt(device) :] {
             }
             foreach ::corner $::opt(corner) {
                 foreach array $short_views {
-                    @ /look_up_tables/$type/$bin_num/$array/${::corner}([llength $l_values],[llength $w_values]) !
+                    @ /look_up_tables/$type/#$bin_num/$array/${::corner}([llength $l_values],[llength $w_values]) !
                 }
                 foreach array $short_views {
                     set i3 0
                     foreach L $l_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/${::corner} 0 $i3 $L
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/${::corner} 0 $i3 $L
                         incr i3
                     }
                     set i3 0
                     foreach W $w_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/${::corner} 1 $i3 $W
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/${::corner} 1 $i3 $W
                         incr i3
                     }
                 }
@@ -637,6 +637,7 @@ foreach type [split $::opt(device) :] {
                         lappend index_range $::constraints($var,index_range)
                     }
                     lappend index_range [llength $l_values]
+                    lappend index_range [llength $w_values]
                     Info:  Measuring Ids(Vgs,Vds,Vbs) gm(Vgs,Vds,Vbs), go(Vgs,Vds,Vbs) and gb(Vgs,Vds,Vbs)
                     Info:  Vgs ($::constraints(Vgs,minval),$::constraints(Vgs,maxval)) step=$::constraints(Vgs,step)
                     Info:  Vds ($::constraints(Vds,minval),$::constraints(Vds,maxval)) step=$::constraints(Vds,step)
@@ -668,26 +669,26 @@ foreach type [split $::opt(device) :] {
                 lappend index_range [llength $l_values]
                 lappend index_range [llength $w_values]
                 foreach array $views {
-                    @ look_up_tables/$type/$bin_num/$array/${::corner}([join $index_range ,]) !
+                    @ look_up_tables/$type/#$bin_num/$array/${::corner}([join $index_range ,]) !
                 }
                 foreach array $views {
                     foreach_in_range Vgs i0 { 
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 0 $i0 $Vgs
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 0 $i0 $Vgs
                     }
                     foreach_in_range Vds i1 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 1 $i1 $Vds
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 1 $i1 $Vds
                     }
                     foreach_in_range Vbs i2 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 2 $i2 $Vbs
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 2 $i2 $Vbs
                     }
                     set i3 0
                     foreach L $l_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 3 $i3 $L
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 3 $i3 $L
                         incr i3
                     }
                     set i3 0
                     foreach W $w_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 4 $i3 $W
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 4 $i3 $W
                         incr i3
                     }
                 }
@@ -695,20 +696,20 @@ foreach type [split $::opt(device) :] {
             wait_for_forked char_vig_task
             Info: Loading Saved Slices
             foreach ::corner $::opt(corner) {
-                load_characterization_slice /look_up_tables/$type/$bin_num/Ids/$::corner /tmp/Ids.$::corner
-                load_characterization_slice /look_up_tables/$type/$bin_num/gm/$::corner /tmp/gm.$::corner
-                load_characterization_slice /look_up_tables/$type/$bin_num/go/$::corner /tmp/go.$::corner
-                load_characterization_slice /look_up_tables/$type/$bin_num/gb/$::corner /tmp/go.$::corner
-                normalize_ids /look_up_tables/$type/$bin_num/Ids/$::corner
-                normalize_ids /look_up_tables/$type/$bin_num/gm/$::corner
-                normalize_ids /look_up_tables/$type/$bin_num/go/$::corner
-                normalize_ids /look_up_tables/$type/$bin_num/gb/$::corner
+                load_characterization_slice /look_up_tables/$type/#$bin_num/Ids/$::corner /tmp/Ids.$::corner
+                load_characterization_slice /look_up_tables/$type/#$bin_num/gm/$::corner /tmp/gm.$::corner
+                load_characterization_slice /look_up_tables/$type/#$bin_num/go/$::corner /tmp/go.$::corner
+                load_characterization_slice /look_up_tables/$type/#$bin_num/gb/$::corner /tmp/go.$::corner
+                normalize_ids /look_up_tables/$type/#$bin_num/Ids/$::corner
+                normalize_ids /look_up_tables/$type/#$bin_num/gm/$::corner
+                normalize_ids /look_up_tables/$type/#$bin_num/go/$::corner
+                normalize_ids /look_up_tables/$type/#$bin_num/gb/$::corner
             }
             Info: Saving Array
-            @ /look_up_tables/$type/$bin_num/Ids save $ids_file
-            @ /look_up_tables/$type/$bin_num/gm save $gm_file
-            @ /look_up_tables/$type/$bin_num/go save $go_file
-            @ /look_up_tables/$type/$bin_num/gb save $gb_file
+            @ /look_up_tables/$type/#$bin_num/Ids save $ids_file
+            @ /look_up_tables/$type/#$bin_num/gm save $gm_file
+            @ /look_up_tables/$type/#$bin_num/go save $go_file
+            @ /look_up_tables/$type/#$bin_num/gb save $gb_file
             # Cleanup
             foreach char_file [glob -nocomplain /tmp/char_vig_task*] {
                 file delete $char_file
@@ -806,12 +807,12 @@ foreach type [split $::opt(device) :] {
                             set Vth [lindex $result $i]
                             incr i
                             set Sigma [lindex $result $i]
-                            ^ @ /look_up_tables/$type/$bin_num/Vth_mis/${::corner}($i3,$i4) = [expr $Sigma/$Vth]
+                            ^ @ /look_up_tables/$type/#$bin_num/Vth_mis/${::corner}($i3,$i4) = [expr $Sigma/$Vth]
                             incr i
                             set Ids [lindex $result $i]
                             incr i
                             set Sigma [lindex $result $i]
-                            ^ @ /look_up_tables/$type/$bin_num/Ids_mis/${::corner}($i3,$i4) = [expr $Sigma/$Ids]
+                            ^ @ /look_up_tables/$type/#$bin_num/Ids_mis/${::corner}($i3,$i4) = [expr $Sigma/$Ids]
                             incr i
                             incr i4
                         }    
@@ -823,18 +824,18 @@ foreach type [split $::opt(device) :] {
                 set ::temp $::corner_to_temp($::corner)
                 ######### Initialize database
                 foreach array $views {
-                    Info: New Array: look_up_tables/$type/$bin_num/$array/${::corner}([llength $l_values],[llength $w_values])
-                    @ look_up_tables/$type/$bin_num/$array/${::corner}([llength $l_values],[llength $w_values]) !
+                    Info: New Array: look_up_tables/$type/#$bin_num/$array/${::corner}([llength $l_values],[llength $w_values])
+                    @ look_up_tables/$type/#$bin_num/$array/${::corner}([llength $l_values],[llength $w_values]) !
                 }
                 foreach array $views {
                     set i3 0
                     foreach L $l_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 0 $i3 $L
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 0 $i3 $L
                         incr i3
                     }
                     set i3 0
                     foreach W $w_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 1 $i3 $W
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 1 $i3 $W
                         incr i3
                     }
                 }
@@ -843,11 +844,11 @@ foreach type [split $::opt(device) :] {
             foreach ::corner $::opt(corner) {
                 set ::temp $::corner_to_temp($::corner)
                 foreach array $views {
-                    generate_lut  /look_up_tables/$type/$bin_num/$array/$::corner
+                    generate_lut  /look_up_tables/$type/#$bin_num/$array/$::corner
                 }
             }
-            @ /look_up_tables/$type/$bin_num/Vth_mis save $vth_mis_file
-            @ /look_up_tables/$type/$bin_num/Ids_mis save $ids_mis_file
+            @ /look_up_tables/$type/#$bin_num/Vth_mis save $vth_mis_file
+            @ /look_up_tables/$type/#$bin_num/Ids_mis save $ids_mis_file
             # Cleanup
             foreach char_file [glob -nocomplain /tmp/char_mis_task*] {
                 file delete $char_file
@@ -881,7 +882,7 @@ foreach type [split $::opt(device) :] {
             set views {flicker_const thermal_noise}
             set total_array_volume 1
             proc noise_cont {coord} {
-                @ look_up_tables/$type/$bin_num/flicker_const/${::corner}($coord) = 0
+                @ look_up_tables/$type/#$bin_num/flicker_const/${::corner}($coord) = 0
                 return -code continue
             }
             set index_range {}
@@ -897,31 +898,31 @@ foreach type [split $::opt(device) :] {
                 if {[file exists $thermal_noise_file]} continue
                 set ::temp $::corner_to_temp($::corner)
                 foreach array $views {
-                    @ look_up_tables/$type/$bin_num/$array/${::corner}([join $index_range ,]) !
+                    @ look_up_tables/$type/#$bin_num/$array/${::corner}([join $index_range ,]) !
                 }
                 foreach array $views {
                     foreach_in_range Vgs i0 {  
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 0 $i0 $Vgs
-                        Info: 0/$i0 $Vgs=[LUT_get_legend /look_up_tables/$type/$bin_num/$array/$::corner 0 $i0]
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 0 $i0 $Vgs
+                        Info: 0/$i0 $Vgs=[LUT_get_legend /look_up_tables/$type/#$bin_num/$array/$::corner 0 $i0]
                     }
                     foreach_in_range Vds i1 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 1 $i1 $Vds
-                        Info: 1/$i1 $Vds=[LUT_get_legend /look_up_tables/$type/$bin_num/$array/$::corner 1 $i1]
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 1 $i1 $Vds
+                        Info: 1/$i1 $Vds=[LUT_get_legend /look_up_tables/$type/#$bin_num/$array/$::corner 1 $i1]
                     }
                     foreach_in_range Vbs i2 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 2 $i2 $Vbs
-                        Info: 2/$i2 $Vbs=[LUT_get_legend /look_up_tables/$type/$bin_num/$array/$::corner 2 $i2]
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 2 $i2 $Vbs
+                        Info: 2/$i2 $Vbs=[LUT_get_legend /look_up_tables/$type/#$bin_num/$array/$::corner 2 $i2]
                     }
                     set i3 0
                     foreach L $l_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 3 $i3 $L
-                        Info: 3/$i3 $L=[LUT_get_legend /look_up_tables/$type/$bin_num/$array/$::corner 3 $i3]
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 3 $i3 $L
+                        Info: 3/$i3 $L=[LUT_get_legend /look_up_tables/$type/#$bin_num/$array/$::corner 3 $i3]
                         incr i3
                     }
                     set i3 0
                     foreach W $w_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/$array/$::corner 4 $i3 $W
-                        Info: 3/$i3 $W=[LUT_get_legend /look_up_tables/$type/$bin_num/$array/$::corner 4 $i3]
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/$array/$::corner 4 $i3 $W
+                        Info: 3/$i3 $W=[LUT_get_legend /look_up_tables/$type/#$bin_num/$array/$::corner 4 $i3]
                         incr i3
                     }
                 }
@@ -984,17 +985,17 @@ foreach type [split $::opt(device) :] {
                                     set Ids2 [get_spice_data V(3) 0]
                                     set gm [expr ($Ids2-$Ids1)*1e12/$::epsilon]
                                     if {$gm==0} {
-                                        @ look_up_tables/$type/$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr $dummy_flicker/$dummy_count_flicker]
-                                        @ look_up_tables/$type/$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_thermal/$dummy_count_thermal]
+                                        @ look_up_tables/$type/#$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr $dummy_flicker/$dummy_count_flicker]
+                                        @ look_up_tables/$type/#$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_thermal/$dummy_count_thermal]
                                     } else {
-                                        if {[catch {@ look_up_tables/$type/$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr sqrt($flicker_noise*$W*$L/($gm*$gm))]}]} {
-                                            @ look_up_tables/$type/$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_flicker/$dummy_count_flicker]
+                                        if {[catch {@ look_up_tables/$type/#$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr sqrt($flicker_noise*$W*$L/($gm*$gm))]}]} {
+                                            @ look_up_tables/$type/#$bin_num/flicker_const/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_flicker/$dummy_count_flicker]
                                         } else {
                                             set dummy_flicker [expr $dummy_flicker+sqrt($flicker_noise*$W*$L/($gm*$gm))]
                                             incr dummy_count_flicker
                                         }
-                                        if {[catch {@ look_up_tables/$type/$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr sqrt($thermal_noise/$gm)]}]} {
-                                            @ look_up_tables/$type/$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_thermal/$dummy_count_thermal]
+                                        if {[catch {@ look_up_tables/$type/#$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr sqrt($thermal_noise/$gm)]}]} {
+                                            @ look_up_tables/$type/#$bin_num/thermal_noise/${::corner}($i0,$i1,$i2,$i3,$i4) = [expr $dummy_thermal/$dummy_count_thermal]
                                         } else {
                                             set dummy_thermal [expr $dummy_thermal+sqrt($thermal_noise/$gm)]
                                             incr dummy_count_thermal
@@ -1009,8 +1010,8 @@ foreach type [split $::opt(device) :] {
                     }
                     incr i3
                 }
-                @ /look_up_tables/$type/$bin_num/thermal_noise/$::corner save ${thermal_noise_file}
-                @ /look_up_tables/$type/$bin_num/flicker_const/$::corner save ${flicker_noise_file}
+                @ /look_up_tables/$type/#$bin_num/thermal_noise/$::corner save ${thermal_noise_file}
+                @ /look_up_tables/$type/#$bin_num/flicker_const/$::corner save ${flicker_noise_file}
             }
         }
         set cap_complete 1
@@ -1037,7 +1038,7 @@ foreach type [split $::opt(device) :] {
             }
             set total_array_volume 1
             proc noise_cont {coord} {
-                @ look_up_tables/$type/$bin_num/flicker_const/${::corner}($coord) = 0
+                @ look_up_tables/$type/#$bin_num/flicker_const/${::corner}($coord) = 0
                 return -code continue
             }
             set index_range {}
@@ -1053,26 +1054,26 @@ foreach type [split $::opt(device) :] {
                 if {[file exists [set ${view}_${::corner}_file]]} continue
                 set ::temp $::corner_to_temp($::corner)
                 foreach array $views {
-                    @ look_up_tables/$type/$bin_num/c$array/${::corner}([join $index_range ,]) !
+                    @ look_up_tables/$type/#$bin_num/c$array/${::corner}([join $index_range ,]) !
                 }
                 foreach array $views {
                     foreach_in_range Vgs i0 {  
-                        LUT_set_legend /look_up_tables/$type/$bin_num/c$array/$::corner 0 $i0 $Vgs
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/c$array/$::corner 0 $i0 $Vgs
                     }
                     foreach_in_range Vds i1 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/c$array/$::corner 1 $i1 $Vds
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/c$array/$::corner 1 $i1 $Vds
                     }
                     foreach_in_range Vbs i2 {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/c$array/$::corner 2 $i2 $Vbs
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/c$array/$::corner 2 $i2 $Vbs
                     }
                     set i3 0
                     foreach L $l_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/c$array/$::corner 3 $i3 $L
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/c$array/$::corner 3 $i3 $L
                         incr i3
                     }
                     set i3 0
                     foreach W $w_values {
-                        LUT_set_legend /look_up_tables/$type/$bin_num/c$array/$::corner 4 $i3 $W
+                        LUT_set_legend /look_up_tables/$type/#$bin_num/c$array/$::corner 4 $i3 $W
                         incr i3
                     }
                 }
@@ -1110,7 +1111,7 @@ foreach type [split $::opt(device) :] {
                                     ::spice::ac dec 1 1 10
 				    Info: AC End
                                     foreach view $views {
-                                        @ look_up_tables/$type/$bin_num/c$view/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr [set Captured_C$view]/$unit_area]
+                                        @ look_up_tables/$type/#$bin_num/c$view/${::corner}($i0,$i1,$i2,$i3,$i4) =  [expr [set Captured_C$view]/$unit_area]
                                     }
                                     ::spice::destroy all
                                     ::spice::alter vgs = $Vgs
@@ -1122,7 +1123,7 @@ foreach type [split $::opt(device) :] {
                     incr i3
                 }
                 foreach view $views {
-                    @ /look_up_tables/$type/$bin_num/c$view/$::corner save [set ${view}_${::corner}_file]
+                    @ /look_up_tables/$type/#$bin_num/c$view/$::corner save [set ${view}_${::corner}_file]
                 }
             }
         }

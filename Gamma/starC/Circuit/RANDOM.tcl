@@ -4,5 +4,5 @@
     foreach s $::sizers_list {
         *c "@size:$s=$::sizing_code($s,min)+random()*($::sizing_code($s,max)-$::sizing_code($s,min))/RAND_MAX;"
     }	
-    *c "if (tcl_gamma_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;"
+    *c "if (tcl_gamma_${::opt(topology)}_op_cmd(CD,NULL,0,NULL)==TCL_ERROR) continue;"
     *c "\}"
