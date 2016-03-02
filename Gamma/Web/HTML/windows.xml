@@ -1,0 +1,8 @@
+<windows>
+<HeatMap   id="first_hm" minX="0" maxX="10" minY="0" maxY="10" xaxis="Adc" yaxis="BW" content="BasicWindow" title="Power vs BW vs Adc"/>
+<Sweep    id="first_sweep" title="BW vs Adc" xaxis="Adc" yaxis="BW" content="circ1,circ2,circ3"/>
+<Schema id="first_schema" title="Common Source NMOS" content="cs_nmos"/>
+<Circuit id="circ1" topo="cs_nmos" Adc="30" BW="1e9" Area="20.3"/>
+<Circuit id="circ2" topo="cs_nmos" Adc="40" BW="1e8" Area="30.3"/>
+<Circuit id="circ3" topo="cs_nmos" Adc="50" BW="1e7" Area="40.3"/>
+</windows>
