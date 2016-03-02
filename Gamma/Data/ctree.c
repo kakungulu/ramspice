@@ -2520,7 +2520,7 @@ context *create_context(char *i_key) {
         while ((context_name_buffer[k])&&(context_name_buffer[k]!='(')) k++;
         // New PAT
         if ((context_name_buffer[k]=='(')&&(context_name_buffer[k+1]=='(')) {
-            #Dinfo: "PAT declaration" 
+            #Info: "PAT declaration" 
             context_name_buffer[k]=0;
             int l;
             context *next_context=NULL;
@@ -2717,87 +2717,6 @@ int resolve_real_token_less_thit(char *i_token,node **i_node) {
 }
 int resolve_real_token_greater_thit(char *i_token,node **i_node) {
     return 0;
-}
-int resolve_key(char *i_key,node **i_node,float **array_entry) {
-    node *temp_node=*i_node;
-    char *key=strdup(i_key);
-    // Quick parse
-    int len=strlen(key);
-    int argc=1;
-    int i;
-    int array_start=0;
-    *array_entry=NULL;
-    for (i=0;i<len;i++) {
-        if (key[i]=='(') {
-            array_start=i+1;
-            key[i]=0;
-            len=i;
-        }
-    }
-    for (i=0;i<len;i++) {
-        if ((key[i]!='/')&&(key[i]!=':')) continue;
-        key[i]=0;
-        argc++;
-    }
-    char *argv[1024];
-    int arg_index=0;
-    argv[arg_index++]=key;
-    for (i=0;i<len-1;i++) {
-        if (key[i]==0) {
-            argv[arg_index++]=&(key[i+1]);
-        }
-    } 
-    if (key[0]==0) {
-        temp_node=ctree;
-    }	
-    // Resolution
-    for (i=0;((i<argc)&&(temp_node!=NULL));i++) {
-        if (temp_node==NULL) break;
-        if (argv[i][0]==0) continue;
-        if ((argv[i][0]=='.')&&(argv[i][1]==0)) continue;
-        if ((argv[i][0]=='.')&&(argv[i][1]=='.')&&(argv[i][2]==0)) {
-            temp_node=temp_node->parent;
-            continue;
-        }
-        if (temp_node->rtype==rtype_string)
-        if (!(resolve_string_token(argv[i],&temp_node))) {
-            return 0;
-        } else continue;
-        
-        if (temp_node->rtype==rtype_real)
-        if (!(resolve_real_token(argv[i],&temp_node))) {
-            return 0;
-        } else continue;
-    }  
-    if (temp_node==NULL) return 0;
-    if (temp_node->ctype==ctype_void) return 0;
-    *i_node=temp_node;
-    if (array_start) {
-        LUT *a=(LUT *)temp_node->value;
-        if (a==NULL) {
-            #Error: "(ctree) No such array: %s" temp_node->name
-            return 0;
-        }
-        char *argv[256];
-        int argc=1;
-        argv[0]=&(key[array_start]);
-        for (i=array_start;key[i]!=')';i++) {
-            if (key[i]==',') argv[argc++]=&(key[i+1]);
-        }
-        if (argc!=a->dim) {
-            #Error: "(ctree) Array: %s has %d dimension, but accessed with %d indices" temp_node->name,a->dim,argc
-            return 0;
-        }
-        long offset=1;
-        long index=0;    
-        int i;
-        for (i=0;i<a->dim;i++) {
-            index+=atoi(argv[i])*offset;
-            offset*=a->size[i];
-        }
-        *array_entry=&(a->content[index]);
-    }
-    return 1;
 }
 void add_child(node *parent,node *child) {
     child->parent=parent;

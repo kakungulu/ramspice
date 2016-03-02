@@ -8,30 +8,30 @@ exec $RAMSPICE/ramspice $0 $argv
 ################################################
 proc .param {name = value {min {}} {max {}}} {
     if {[catch {set evaluated_value [expr $value]}]} {
-        @ /param/$name = $value
+        @ $::opt(topology)/param/$name = $value
     } else {
-        @ /param/$name = $evaluated_value
+        @ $::opt(topology)/param/$name = $evaluated_value
     }
     if {$min!={}} {
-        @ /param/$name/min = $min
+        @ $::opt(topology)/param/$name/min = $min
     }
     if {$max!={}} {
-        @ /param/$name/max = $max
+        @ $::opt(topology)/param/$name/max = $max
     }
     Info: New PARAM $name=[@ /param/$name] params=[@ param list]
 }
 proc .size {name = value {min {}} {max {}} {step {}} {dependence {}}} {
     if {[catch {set evaluated_value [expr $value]}]} {
-        @ size/$name = $value
+        @ $::opt(topology)/size/$name = $value
     } else {
-        @ size/$name = $evaluated_value
+        @ $::opt(topology)/size/$name = $evaluated_value
     }
     foreach field {min max step dependence} {
         if {[catch {set evaluated_value [expr [set $field]]}]} {
             set ::sizing_code($name,$field) [set $field]
         } else {
             set ::sizing_code($name,$field) @size:$name:$field
-            @ size:$name:$field = $evaluated_value
+            @ $::opt(topology)/size:$name:$field = $evaluated_value
         }
     }
     default ::sizers_list {}
@@ -59,7 +59,7 @@ proc .property {name args} {
     default opt(unit) {}
     default opt(more) better
     default opt(denom) {}
-    @ property/$name/denom = string $opt(denom)
+    @ $::opt(topology)/property/$name/denom = string $opt(denom)
     if {![info exists opt(expression)]} {
         Error: property requires a -expression switch
         exit
@@ -68,7 +68,7 @@ proc .property {name args} {
     foreach field [array names opt] {
         set ::properties($name,$field) $opt($field)
     }
-    @ property/$name = 0
+    @ $::opt(topology)/property/$name = 0
     # property:$name=>$opt(expression)
     switch $opt(more) {
         better {@ property/$name/op = string +}
@@ -646,6 +646,7 @@ namespace eval C {
         GLOBAL_VARIABLES_GO_HERE
         // The compiled function
         static int tcl_gamma_$!_import_cmd(ClientData clientData,Tcl_Interp *interp,int argc,char *argv[]) {
+	    Gamma_$!_Init(interp);
             LOCAL_BUFFER_INIT_GOES_HERE
             return TCL_OK;
         }
@@ -821,99 +822,7 @@ proc gcc {name {preprocess 1}} {
         foreach target [array names ::C::code] {
             Info: Post processing $target
             set code $::C::code($target)
-            regsub -all {@+} $code "@$::opt(topology):" code
-            while {[regexp {@+([A-Za-z0-9_:]+)} $code -> context_string]} {
-                if {[info exists pointer_names($context_string)]} {
-                    #            regsub "&&@+$context_string" $code `$var_names($context_string) code
-                    regsub "&@+$context_string" $code $pointer_names($context_string) code
-                    regsub "@+$context_string" $code $var_names($context_string) code
-                    continue
-                }
-                Info: Linking $context_string to cTree
-                if {[regexp {^[0-9]} $context_string]} {
-                    regsub -all {[^a-zA-Z_0-9]} CONST_$context_string _ var_name
-                } else {
-                    regsub -all {[^a-zA-Z_0-9]} $context_string _ var_name
-                }
-                regsub -all {[^a-zA-Z_0-9]} P$context_string _ pointer_name
-                if {[lsearch $used_var_names $var_name]!=-1} {
-                    set i 0
-                    while {[lsearch $used_var_names $var_name$i]!=-1} {
-                        incr i
-                    }
-                    set var_name $var_name$i
-                }
-                lappend used_var_names $var_name
-                if {[lsearch $used_pointer_names $pointer_name]!=-1} {
-                    set i 0
-                    while {[lsearch $used_pointer_names $pointer_name$i]!=-1} {
-                        incr i
-                    }
-                    set pointer_name $pointer_name$i
-                }
-                lappend used_pointer_names $pointer_name
-                append global_pointers "float *$pointer_name;\n"
-                append global_variables "float $var_name;\n"
-                if {[regexp {(.*):PAT} $context_string -> base]} {
-                    append global_pointer_init "$pointer_name=(float *)get_PAT(\"$base\");\n"
-                    regsub "&@+$context_string" $code $pointer_name code
-                } elseif {[regexp {(.*):LUT} $context_string -> base]} {
-                    regsub {^[^:]+:} $base {} base
-                    append global_pointer_init "$pointer_name=(float *)get_LUT(\"$base\");\n"
-                    regsub "&@+$context_string" $code $pointer_name code
-                } elseif {[regexp {(.*):CONTEXT} $context_string -> base]} {
-                    append global_pointer_init "c=create_context(\"$base\");\n"
-                    append global_pointer_init "$pointer_name=(float *)`c;\n"
-                    regsub "&@+$context_string" $code $pointer_name code
-                } else {
-                    #            append global_pointer_init "resolve_context(\"$context_string\",`c,`array_entry);\n"
-                    append global_pointer_init "c=create_context(\"$context_string\");\n"
-                    append global_pointer_init "$pointer_name=(float *)(`c->value.s);\n"
-                    append local_buffer_init_goes_here "$var_name=*$pointer_name;\n"
-                    append local_buffer_return_goes_here "*$pointer_name=$var_name;\n"
-                    regsub "&@+$context_string" $code $pointer_name code
-                    regsub "@+$context_string" $code $var_name code
-                }
-                set pointer_names($context_string) $pointer_name
-                set var_names($context_string) $var_name
-                incr i
-            }
-            regsub -all \& $code ` code
-            regsub ${target}_CODE_GOES_HERE $body $code body
-            Info: converted $context_string
-        }
-        Info: Post Processing is Done
-        regsub GLOBAL_POINTERS_GO_HERE $body $global_pointers body
-        regsub GLOBAL_VARIABLES_GO_HERE $body $global_variables body
-        regsub GLOBAL_POINTER_INIT_GO_HERE $body $global_pointer_init body
-        regsub LOCAL_BUFFER_INIT_GOES_HERE $body $local_buffer_init_goes_here body
-        regsub LOCAL_BUFFER_RETURN_GOES_HERE $body $local_buffer_return_goes_here body
-        regsub -all `_ $body {P_} body
-        regsub -all ` $body {\&} body
-        regsub -all {\&look_up} $body {Plook_up} body
-        set ::C::O [open /tmp/gamma_pre_processed.ignore.c w]
-        puts $::C::O $body
-        close $::C::O
-        set ::C::O [open $::env(RAMSPICE)/Etc/Templates/$::opt(topology)/$::opt(topology).c w]
-        ::C::tcl_preprocessor $body
-        close $::C::O
-    }
-}
-proc gcc {name {preprocess 1}} {
-    if {$preprocess} {
-        regsub -all @name $::C::code_template $name body
-        regsub -all {\$\!} $body $::opt(topology) body
-        set global_pointers {}
-        set global_variables {}
-        set global_pointer_init {}
-        set local_buffer_init_goes_here {}
-        set local_buffer_return_goes_here {}
-        set used_var_names {}
-        set used_pointer_names {}
-        foreach target [array names ::C::code] {
-            Info: Post processing $target
-            set code $::C::code($target)
-            regsub -all {@+} $code "@$::opt(topology):" code
+ //           regsub -all {@+} $code "@$::opt(topology):" code
 	    set linked_code {}
 	    set line_num 0
 	    set total_line_num [llength $code]

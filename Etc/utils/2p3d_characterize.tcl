@@ -37,9 +37,9 @@ textbox {
     ###########################################################
 }
 proc source_rf {file {section {}}} {
-    textbox "[string repeat .... [info level]] Translating $file section=$section"
+    textbox "[string repeat .... [info level]] Translating $file section=$bin_num"
     set append 0
-    if {$section=={}} {
+    if {$bin_num=={}} {
         set append 1
     }
     set code {}
@@ -54,14 +54,14 @@ proc source_rf {file {section {}}} {
         }
         if {$line_buffer!={}} {
             if {[regexp {^\s*section\s+(\S+)} $line_buffer -> section_name]} {
-                if {$section_name==$section} {
+                if {$bin_num_name==$bin_num} {
                     set append 1
                     set line_buffer {}
                     continue
                 }
             }
             if {[regexp {^\s*endsection\s+(\S+)} $line_buffer -> section_name]} {
-                if {$section_name==$section} {
+                if {$bin_num_name==$bin_num} {
                     set append 0
                     set line_buffer {}
                     continue
@@ -154,7 +154,7 @@ proc model {name type args} {
 proc include {file args} {
     Info: INCLUDE $file $args
     if {[regexp {section\s*=\s*(\S+)} $args -> section]} {
-        source_rf $file $section
+        source_rf $file $bin_num
     } else {
         source_rf $file   
     }
@@ -191,8 +191,8 @@ proc calc_var {section model bin varname} {
     upvar #0 $varname var
     if {[info exists var]} return
     set expression {}
-    if {[info exists ::parameters($section,$varname)]} {
-        set expression $::parameters($section,$varname)
+    if {[info exists ::parameters($bin_num,$varname)]} {
+        set expression $::parameters($bin_num,$varname)
     }
     if {[info exists ::parameters($model,$bin,$varname)]} {
         set expression $::parameters($model,$bin,$varname)
@@ -204,7 +204,7 @@ proc calc_var {section model bin varname} {
     }
     while {[catch {uplevel \#0 "set $varname \[expr $expression\]"} msg]} {
         if {[regexp {"(\S+)"} $msg -> dep_var]} {
-            calc_var $section $model $bin $dep_var 
+            calc_var $bin_num $model $bin $dep_var 
         } else return
     }
 }
@@ -285,9 +285,9 @@ if {![file exists $output_tech_file]} {
                 set watchdog 0
                 while {$redo && $watchdog<50} {
                     set redo 0
-                    foreach param [concat [array names ::parameters $section,*] [array names ::parameters $model,$bin,*]] {
+                    foreach param [concat [array names ::parameters $bin_num,*] [array names ::parameters $model,$bin,*]] {
                         set varname [lindex [split $param ,] end]
-                        calc_var $section $model $bin $varname
+                        calc_var $bin_num $model $bin $varname
                     }
                 }
                 foreach {key expression} [array get ::parameters $model,$bin,*] {
@@ -299,7 +299,7 @@ if {![file exists $output_tech_file]} {
                         puts $T "+ $param = ?"
                     }
                 }
-                foreach {key expression} [array get ::parameters $section,*] {
+                foreach {key expression} [array get ::parameters $bin_num,*] {
                     set param [lindex [split $key ,] end]
                     catch {unset $param}
                 }
@@ -323,17 +323,17 @@ array set ::corner_to_temp {
     mc 27
 }
 
-proc mosfet {name type D G S B L W {section {}}} {
+proc mosfet {name type D G S B L W {bin_num {}}} {
     set prefix [string index $type 0]
-    if {$section=={}} {
-        set section [find_mosfet_bin $prefix $L $W]
+    if {$bin_num=={}} {
+        set bin_num [find_mosfet_bin $prefix $L $W]
     }
-    set Lmin $::bin($prefix,$section,lmin)
+    set Lmin $::bin($prefix,$bin_num,lmin)
     set sim_corner $::corner
     if {$sim_corner=="mc"} {
         set sim_corner tt
     }
-    netlist "$name $D $G $S $B ${type}_${sim_corner}_${section} L=$L W=$W AD=[expr 2.5*$Lmin*$W] AS=[expr 2.5*$Lmin*$W] PD=[expr 5*$Lmin+$W] PS=[expr 5*$Lmin+$W]"
+    netlist "$name $D $G $S $B ${type}_${sim_corner}_${bin_num} L=$L W=$W AD=[expr 2.5*$Lmin*$W] AS=[expr 2.5*$Lmin*$W] PD=[expr 5*$Lmin+$W] PS=[expr 5*$Lmin+$W]"
 }
 
 textbox {
@@ -716,8 +716,8 @@ foreach type [split $::opt(device) :] {
             }
             #	Info: Ids=[expr [@ /look_up_tables/$type/Ids/ss calc 1.8 1.8 0 180e-9]*220/180]
         }
-	continue
-        if {![file exists $vth_mis_file]||![file exists $ids_mis_file]} {
+        if {0} {
+ #       if {![file exists $vth_mis_file]||![file exists $ids_mis_file]} 
             textbox    "Characterizing Ids and Vt mismatch for $type"    
             set ::fork_limit 6
             set scaling 12
@@ -943,7 +943,7 @@ foreach type [split $::opt(device) :] {
                     Vbs B 0 dc 0 ac 0
                 }
                 # mosfet {name type D G S B L W Lmin}
-                mosfet mn_0_0 $type D G 3 B $bin(n,$section,lmin) $bin(n,$section,wmin) $section
+                mosfet mn_0_0 $type D G 3 B $bin(n,$bin_num,lmin) $bin(n,$bin_num,wmin) $bin_num
                 netlist {
                     .end
                 }
@@ -1088,7 +1088,7 @@ foreach type [split $::opt(device) :] {
                     Vbs B 0 dc 0 ac 0
                 }
                 # mosfet {name type D G S B L W Lmin}
-                mosfet mn_0_0 $type D G 0 B $bin(n,$section,lmin) $bin(n,$section,wmin) $section
+                mosfet mn_0_0 $type D G 0 B $bin(n,$bin_num,lmin) $bin(n,$bin_num,wmin) $bin_num
                 netlist {
                     .end
                 }

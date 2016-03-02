@@ -220,7 +220,7 @@ var SVGgraphline=function(id,x1,y1,x2,y2,color){
     SVGObj.setAttributeNS(null,"y1",y1);
     SVGObj.setAttributeNS(null,"x2",x2);
     SVGObj.setAttributeNS(null,"y2",y2);
-    SVGObj.setAttributeNS(null,"stroke-dasharray","5,5");
+    SVGObj.setAttributeNS(null,"stroke-dasharray","2,2");
     SVGObj.style.stroke=color;
     SVGObj.id=id;
     SVG.appendChild(SVGObj);
@@ -611,27 +611,25 @@ function ClickConfigSweep(i) {
 }
 function OpenNewPlot() {
     var content="<body xmlns=\"http://www.w3.org/1999/xhtml\">";
-    content+="<select name=\"SpecInput_technology\" onchange=\"TechnologyChanged()\">"
-    content+="<option selected=\""+current_technology+"\">"+current_technology+"</option>";
-    for (j=0;j<technology_list.length;j++) {
-        if (technology_list[j]!=current_technology) content+="<option value=\""+technology_list[j]+"\">"+technology_list[j]+"</option>";
-    }
-    content+="</select>"
+    content+="<select name=\"SelectPlotType\" onchange=\"PlotTypeChanged()\">"
+    content+="<option selected=\""+PlotType+"\">"+PlotType+"</option>";
+    if (PlotType!="Pareto Front") content+="<option value=\"Pareto Front\">Pareto Front</option>";
+    if (PlotType!="1D Sweep") content+="<option value=\"1D Sweep\">1D Sweep</option>";
+    if (PlotType!="2D Heat Map") content+="<option value=\"2D Heat Map\">2D Heat Map</option>";
+    content+="</select>";
     content+="<select name=\"SpecInput_topology\" onchange=\"TopologyChanged()\">"
     content+="<option selected=\""+current_topology+"\">"+current_topology+"</option>";
     for (j=0;j<topology_list.length;j++) {
         if (topology_list[j]!=current_topology) content+="<option value=\""+topology_list[j]+"\">"+topology_list[j]+"</option>";
     }
     content+="</select>"
+    content+="<select name=\"SpecInput_technology\" onchange=\"TechnologyChanged()\">"
+    content+="<option selected=\""+current_technology+"\">"+current_technology+"</option>";
+    for (j=0;j<technology_list.length;j++) {
+        if (technology_list[j]!=current_technology) content+="<option value=\""+technology_list[j]+"\">"+technology_list[j]+"</option>";
+    }
+    content+="</select>"
     content+="<table>";
-    content+="<tr><td>Type:</td>";
-    content+="<td>";
-    content+="<select name=\"SelectPlotType\" onchange=\"PlotTypeChanged()\">"
-    content+="<option selected=\""+PlotType+"\">"+PlotType+"</option>";
-    if (PlotType!="Pareto Front") content+="<option value=\"Pareto Front\">Pareto Front</option>";
-    if (PlotType!="1D Sweep") content+="<option value=\"1D Sweep\">1D Sweep</option>";
-    if (PlotType!="2D Heat Map") content+="<option value=\"2D Heat Map\">2D Heat Map</option>";
-    content+="</select></td></tr>"
     content+="<tr><td>X Axis:</td>";
     content+="<td colspan=\"2\">";
     content+="<select name=\"SelectXAxisForPlot\" onchange=\"PlotXChanged()\">"
@@ -1042,7 +1040,7 @@ function DrawSearch(index) {
                 bg.style.fill=pallete[colors.window_bg];
             }
             var val=circuit_list[circuit_table_list[j]][property];
-            var rubric=SVGnum(W.id+"SpecHeadText"+i,val,W.x+(k+0.5)*config_rubric_width,W.y+TILE+config_rubric_height*(i+2)-config_rubric_height/4,config_rubric_height*3/4,config_rubric_width,config_rubric_height);
+            var rubric=SVGnum(W.id+"SpecHeadText"+i,eng(val),W.x+(k+0.5)*config_rubric_width,W.y+TILE+config_rubric_height*(i+2)-config_rubric_height/4,config_rubric_height*3/4,config_rubric_width,config_rubric_height);
             rubric.setAttributeNS(null,"style","fill:green");
             if (property_quality[property]*val<property_quality[property]*SPEC[property]) {
                 rubric.setAttributeNS(null,"style","fill:red");
@@ -1154,16 +1152,16 @@ function DrawGraphGrid(i) {
     spanX=parseFloat(maxX)-parseFloat(minX);
     spanY=parseFloat(maxY)-parseFloat(minY);
     //   Calculate optimal grid
-    var stepX=Math.pow(10,Math.trunc(Math.log10(spanX)));
-    while (spanX/stepX<5) {
-        if (2*spanX/stepX>=5) {stepX=stepX/2; break;}
-        if (5*spanX/stepX>=5) {stepX=stepX/5; break;}
+    var stepX=Math.pow(10,Math.trunc(Math.log10(spanX)))*10;
+    while (spanX/stepX<4) {
+        if (2*spanX/stepX>=4) {stepX=stepX/2; break;}
+        if (5*spanX/stepX>=4) {stepX=stepX/5; break;}
         stepX=stepX/10;
     }
-    var stepY=Math.pow(10,Math.trunc(Math.log10(spanY)));
-    while (spanY/stepY<5) {
-        if (2*spanY/stepY>=5) {stepY=stepY/2; break;}
-        if (5*spanY/stepY>=5) {stepY=stepY/5; break;}
+    var stepY=Math.pow(10,Math.trunc(Math.log10(spanY)))*10;
+    while (spanY/stepY<4) {
+        if (2*spanY/stepY>=4) {stepY=stepY/2; break;}
+        if (5*spanY/stepY>=4) {stepY=stepY/5; break;}
         stepY=stepY/10;
     }
     var startX=Math.trunc(minX/stepX)*stepX;
@@ -1220,10 +1218,10 @@ function InitSweep(i) {
     for (j=0;j<data.length;j++) {
         var SampleX=GetCircuitValue(data[j],W.xaxis);
         var SampleY=GetCircuitValue(data[j],W.yaxis);
-        if (SampleX<W.minX) W.minX=SampleX;
-        if (SampleX>W.maxX) W.maxX=SampleX;
-        if (SampleY<W.minY) W.minY=SampleY;
-        if (SampleY>W.maxY) W.maxY=SampleY;
+        if (parseFloat(SampleX)<W.minX) W.minX=SampleX;
+        if (parseFloat(SampleX)>W.maxX) W.maxX=SampleX;
+        if (parseFloat(SampleY)<W.minY) W.minY=SampleY;
+        if (parseFloat(SampleY)>W.maxY) W.maxY=SampleY;
     }
     var spanX=parseFloat(W.maxX)-parseFloat(W.minX);
     var spanY=parseFloat(W.maxY)-parseFloat(W.minY);
@@ -1277,28 +1275,30 @@ function DrawSweep(i) {
             }
         }
         if (j==2) {
-            var X1=21*X0/32+14*X4/32-3*X8/32;
-            var Y1=21*Y0/32+14*Y4/32-3*Y8/32;
-            var X2=12*X0/32+24*X4/32-4*X8/32;
-            var Y2=12*Y0/32+24*Y4/32-4*Y8/32;
-            var X3=5*X0/32+30*X4/32-3*X8/32;
-            var Y3=5*Y0/32+30*Y4/32-3*Y8/32;
-            SVGgraphline(W.id+"line"+index++,X0,Y0,X1,Y1,pass0).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X2,Y2,X1,Y1,pass0).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X2,Y2,X3,Y3,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X4,Y4,X3,Y3,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            var X1=21*X0/32+14*X4/32-3*X8/32;
+//            var Y1=21*Y0/32+14*Y4/32-3*Y8/32;
+//            var X2=12*X0/32+24*X4/32-4*X8/32;
+//            var Y2=12*Y0/32+24*Y4/32-4*Y8/32;
+//            var X3=5*X0/32+30*X4/32-3*X8/32;
+//            var Y3=5*Y0/32+30*Y4/32-3*Y8/32;
+//            SVGgraphline(W.id+"line"+index++,X0,Y0,X1,Y1,pass0).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X2,Y2,X1,Y1,pass0).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X2,Y2,X3,Y3,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X4,Y4,X3,Y3,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+            SVGgraphline(W.id+"line"+index++,X4,Y4,X0,Y0,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
         }
         if (j>=2) {
-            var X7=21*X8/32+14*X4/32-3*X0/32;
-            var Y7=21*Y8/32+14*Y4/32-3*Y0/32;
-            var X6=12*X8/32+24*X4/32-4*X0/32;
-            var Y6=12*Y8/32+24*Y4/32-4*Y0/32;
-            var X5=5*X8/32+30*X4/32-3*X0/32;
-            var Y5=5*Y8/32+30*Y4/32-3*Y0/32;
-            SVGgraphline(W.id+"line"+index++,X4,Y4,X5,Y5,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X6,Y6,X5,Y5,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X6,Y6,X7,Y7,pass8).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
-            SVGgraphline(W.id+"line"+index++,X8,Y8,X7,Y7,pass8).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            var X7=21*X8/32+14*X4/32-3*X0/32;
+//            var Y7=21*Y8/32+14*Y4/32-3*Y0/32;
+//            var X6=12*X8/32+24*X4/32-4*X0/32;
+//            var Y6=12*Y8/32+24*Y4/32-4*Y0/32;
+//            var X5=5*X8/32+30*X4/32-3*X0/32;
+//            var Y5=5*Y8/32+30*Y4/32-3*Y0/32;
+//            SVGgraphline(W.id+"line"+index++,X4,Y4,X5,Y5,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X6,Y6,X5,Y5,pass4).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X6,Y6,X7,Y7,pass8).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+//            SVGgraphline(W.id+"line"+index++,X8,Y8,X7,Y7,pass8).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
+            SVGgraphline(W.id+"line"+index++,X8,Y8,X4,Y4,pass8).setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");;
         }
         X0=X4;
         Y0=Y4;
@@ -1327,7 +1327,18 @@ function DrawSweep(i) {
         circ.setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");
         circ.setAttributeNS(null,"style","fill:"+pass);
         if (GetCircuitValue(data[j],"selected")) {
-            var num=SVGnum(W.id+"num"+index,GetCircuitValue(data[j],"table_index"),X+2*r,Y-2*r,24);
+	    var x,y;
+	    if (X-(W.x+W.w/config_frame)<TILE) {
+	        x=X+3*r;
+	    } else {
+	        x=X-3*r;
+	    }
+	    if (Y-(W.y+2*TILE)<TILE) {
+	        y=Y+3*r;
+	    } else {
+	        y=Y-3*r;
+	    }
+            var num=SVGtext(W.id+"num"+index,GetCircuitValue(data[j],"table_index"),x-r,y+1.5*r,5*r);
             num.setAttributeNS(null,"style","fill:"+pass);
             num.setAttributeNS(null,"clip-path","url(#"+W.id+"_clip)");
         }

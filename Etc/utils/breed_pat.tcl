@@ -124,23 +124,23 @@ source $::env(RAMSPICE)/Gamma/Init.tcl
 @ $::opt(topo)/size/Wp/min = 120e-9
 @ $::opt(topo)/size/Wn/min = 120e-9
 @ $::opt(topo)/size/Wo/min = 120e-9
-# @ $::opt(topo)/$::opt(topo)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
+@ $::opt(topo)/circuits(([join $pat_sizes ,]|[join $pat_properties ,])) !
 @ $::opt(topo)/config/pat_size_target = $::opt(sample)
 @ $::opt(topo)/config/op_iterations = 10000
-load $::env(RAMSPICE)/Etc/Templates/$::opt(topo)/libGamma.so
-exit
 set i 0
-set initial_size [@ $::opt(topo)/$::opt(topo)/circuits PAT size]
+set initial_size [@ $::opt(topo)/circuits PAT size]
 @ $::opt(topo)/param/unique = 0
 Info: max_Adc=[@ $::opt(topo)/max_Adc] Trying [@ $::opt(topo)/config/pat_size_target]
 ::Gamma::$::opt(topo)::import
+exit
 ::Gamma::$::opt(topo)::random
+exit
 ::Gamma::$::opt(topo)::export
 
 Info: max Adc = [@ $::opt(topo)/max_Adc]
-Info: size after random=[@ $::opt(topo)/$::opt(topo)/circuits PAT size] seed [clock format [clock seconds]]
+Info: size after random=[@ $::opt(topo)/circuits PAT size] seed [clock format [clock seconds]]
 if {$::opt(shell)} {
-    Info: Done, saving PAT=[@ $::opt(topo)/$::opt(topo)/circuits PAT size]
+    Info: Done, saving PAT=[@ $::opt(topo)/circuits PAT size]
     @ $::opt(topo)// save Etc/Templates/$::opt(topo)/$::opt(tech).db
     exit
 }
@@ -155,9 +155,9 @@ while {1} {
     ::Gamma::$::opt(topo)::import
     ::Gamma::$::opt(topo)::random_breed
     ::Gamma::$::opt(topo)::export
-    @ $::opt(topo)/$::opt(topo)/circuits PAT  unique 128
-    Info: 5 Unique Size=[@ $::opt(topo)/$::opt(topo)/circuits PAT size]
-    if {[@ $::opt(topo)/$::opt(topo)/circuits PAT size]>$::opt(target)*0.9} break
+    @ $::opt(topo)/circuits PAT  unique 128
+    Info: 5 Unique Size=[@ $::opt(topo)/circuits PAT size]
+    if {[@ $::opt(topo)/circuits PAT size]>$::opt(target)*0.9} break
 }
 @ $::opt(topo)/size foreach_child s {
     @ $::opt(topo)/size:$s:step = 100e-9
@@ -166,12 +166,12 @@ while {1} {
 #@ $::opt(topo)/param/unique = 0
 #::Gamma::$::opt(topo)::import
 #::Gamma::$::opt(topo)::random_breed
-#@ $::opt(topo)/$::opt(topo)/circuits PAT  unique 128
-Info: Done, saving PAT=[@ $::opt(topo)/$::opt(topo)/circuits PAT size]
+#@ $::opt(topo)/circuits PAT  unique 128
+Info: Done, saving PAT=[@ $::opt(topo)/circuits PAT size]
 @ $::opt(topo)// save Etc/Templates/$::opt(topo)/$::opt(tech).db
 exit
-for {set i 0} {$i<[@ $::opt(topo)/$::opt(topo)/circuits PAT size]} {incr i} {
-    Info: [@ $::opt(topo)/$::opt(topo)/circuits PAT index $i]
+for {set i 0} {$i<[@ $::opt(topo)/circuits PAT size]} {incr i} {
+    Info: [@ $::opt(topo)/circuits PAT index $i]
 }
-Info: [@ $::opt(topo)/$::opt(topo)/circuits PAT size] Pareto points
+Info: [@ $::opt(topo)/circuits PAT size] Pareto points
 exit

@@ -9,8 +9,8 @@
 *c "    float *pZ=(float *)&(create_context(argv[7]))->value.s;"
 foreach dim {X Y Z} argi {1 5 7} {
 *c "    float *P$dim=NULL;"
-    @ / foreach_child s1 {
-        @ /$s1 foreach_child s2 {
+    @ $::opt(topology) foreach_child s1 {
+        @ $::opt(topology)/$s1 foreach_child s2 {
             *c "if (strcmp(argv[$argi],\"${s1}:${s2}\")==0) P$dim=&(@${s1}:${s2});"
 	}    
     }

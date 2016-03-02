@@ -230,6 +230,7 @@ foreach netlist_file [glob -nocomplain $::env(RAMSPICE)/Etc/Topologies/*.gsp] {
     if {$compile_topology} {
         lappend uncompiled_topologies $topology
         puts $CC "$::env(RAMSPICE)/GammaCC/circuit_compiler.tcl -topology $topology | & tee -a log"
+        puts $CC "~/auto_indent.tcl $::env(RAMSPICE)/Etc/Templates/$topology/$topology.c"
     }
 }
 close $CC
