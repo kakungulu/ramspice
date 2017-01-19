@@ -1,4 +1,4 @@
-#!/usr/bin/tclsh8.5
+#!/usr/bin/tclsh
 source $::env(RAMSPICE)/Etc/utils/config.tcl
 namespace eval ::templates:: {}
 proc c {} {
@@ -308,8 +308,8 @@ foreach binary $::opt(bins) {
         set O [open compile${binary}-$target.tcsh w]
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
-        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root -I/usr/include/c++/4.4.4/x86_64-redhat-linux -ldb-6.0 -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
-        set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.5  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
+        set pre_c "/usr/bin/gcc -I${preprocessed}  -fPIC -lm -ltcl8.6  -g -O5 -D $binary_flag -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wnested-externs -Wold-style-definition -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root -I/usr/include/c++/5 -I/usr/include/tcl8.6 -ldb-6.0 -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D SENSDEBUG -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -c"
+        set pre_cpp "/usr/bin/g++  -I${preprocessed} -fPIC -lm -ltcl8.6  -g -O5 -D $binary_flag -Wall -Wextra -fpermissive -Wredundant-decls -Wconversion -I${preprocessed} -I${preprocessed}/ngspice/root/maths/poly -I${preprocessed}/ngspice/root/frontend -I/usr/include/tcl8.6 -I${preprocessed}/ngspice/root/spicelib/devices -I${preprocessed}/ngspice/root/xspice/icm/analog -D X_DISPLAY_MISSING -D CIDER -D SIMULATOR -D HAVE_DECL_BASENAME -c"
         array set mtimes {}
         set copied_filenames {}
         foreach path [all_paths] {
@@ -409,7 +409,7 @@ foreach binary $::opt(bins) {
         puts $O "#!/bin/tcsh"
         puts $O "setenv PATH /opt/centos/devtoolset-1.0/root/usr/bin/:\$PATH"
         puts $O "echo \"Info: $object_files links to $target_name\""
-        puts $O "g++ -L /usr/bin/lib -lm -ltcl8.5  -ldl $object_files/*.o -o $target_name | & tee -a log"
+        puts $O "g++ $object_files/*.o  -I/usr/include/tcl8.6 -L/usr/lib/x86_64-linux-gnu -lm -ltcl8.6  -ldl -o $target_name | & tee -a log"
         puts $O exit
         close $O
         if {![file exists $object_files]} {

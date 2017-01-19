@@ -13,7 +13,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <signal.h>
-#include <db.h>
 #include <time.h>
 #define TCL_CMDPROCARGS(clientData, interp, argc, argv)                 \
     (ClientData clientData, Tcl_Interp *interp, int argc, CONST84 char *argv[])

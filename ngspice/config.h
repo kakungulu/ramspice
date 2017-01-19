@@ -238,7 +238,7 @@
 #define HAVE_MODF 1
 
 /* Define to 1 if you have the <ncurses/termcap.h> header file. */
-#define HAVE_NCURSES_TERMCAP_H 1
+//#define HAVE_NCURSES_TERMCAP_H 1
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -397,7 +397,7 @@
 /* #undef HAVE_TERMCAP */
 
 /* Define to 1 if you have the <termcap.h> header file. */
-#define HAVE_TERMCAP_H 1
+//#define HAVE_TERMCAP_H 1
 
 /* Define to 1 if you have the <termios.h> header file. */
 #define HAVE_TERMIOS_H 1

@@ -43,8 +43,8 @@ int32_t bc_full_int();
 double bc_get_half_scalar();
 ordinal bc_get_ordinal();
 unsigned char bc_get_byte();
-inline void bc_step();
-inline void bc_jump();
+void bc_step();
+void bc_jump();
 
 #endif
 

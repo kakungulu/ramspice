@@ -12,7 +12,6 @@
 #include "Gamma/LUT/look_up_table.h"
 #include "ngspice/MC/tcl_input.h"
 //#include "Analysis/dc_analysis.h"
-#include <db.h>
 #ifdef HAVE_ASPRINTF
 # ifdef HAVE_LIBIBERTY_H /* asprintf */
 #  include <libiberty.h>

@@ -237,10 +237,10 @@ void bc_put_full_int(int32_t i) {
     bytecode_buffer[bytecode_buffer_index].I=i;
 }
 
-inline void bc_step() {
+void bc_step() {
    bytecode_buffer_index++;
 } 
-inline void bc_jump() {
+void bc_jump() {
     bytecode_buffer_index+=(bytecode_buffer[bytecode_buffer_index].I);
 }
 
